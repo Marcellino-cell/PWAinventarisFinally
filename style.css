@@ -3898,3 +3898,149 @@ tbody td {
             black;
     }
 }
+
+
+/* =========================================================
+   LOGIN / ADMIN ACCESS
+========================================================= */
+
+.login-sidebar-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 9px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface);
+    color: var(--text-soft);
+    font-size: 9px;
+    font-weight: 700;
+    text-align: left;
+    pointer-events: auto !important;
+    transition: .2s ease;
+}
+
+.login-sidebar-button:hover {
+    color: var(--primary);
+    border-color: rgba(37,99,235,.22);
+    background: rgba(37,99,235,.05);
+}
+
+.login-sidebar-button > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.login-status-dot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px rgba(220,38,38,.28);
+}
+
+.login-status-dot.logged-in {
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(22,163,74,.35);
+}
+
+.login-modal-box {
+    width: min(100%, 470px);
+}
+
+.login-security-badge {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 12px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(37,99,235,.14);
+    border-radius: 12px;
+    background: rgba(37,99,235,.06);
+    color: var(--primary);
+}
+
+.login-security-badge > i {
+    margin-top: 2px;
+    font-size: 15px;
+}
+
+.login-security-badge strong,
+.login-security-badge span {
+    display: block;
+}
+
+.login-security-badge strong {
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 10px;
+}
+
+.login-security-badge span {
+    color: var(--text-soft);
+    font-size: 8px;
+    line-height: 1.5;
+}
+
+.login-input-wrap {
+    position: relative;
+}
+
+.login-input-wrap > i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-soft);
+    font-size: 10px;
+    pointer-events: none;
+}
+
+.login-input-wrap input {
+    padding-left: 34px !important;
+}
+
+.login-error {
+    min-height: 18px;
+    margin-top: -2px;
+    color: var(--red);
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.login-demo-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: var(--text-soft);
+    font-size: 8px;
+}
+
+.login-demo-note i {
+    color: var(--primary);
+}
+
+.login-demo-note strong {
+    color: var(--text);
+}
+
+/* Saat belum login, tombol aksi tetap terlihat tetapi memberi prompt login. */
+body:not(.admin-logged-in) .edit-button,
+body:not(.admin-logged-in) .delete-button {
+    opacity: .78;
+}
+
+@media (max-width: 600px) {
+    .login-modal-box {
+        width: 100%;
+    }
+}
+
