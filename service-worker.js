@@ -1,8 +1,7 @@
 const CACHE_NAME =
-    "roominventory-v8";
+    "room-inventory-v5-3";
 
-
-const FILES = [
+const APP_FILES = [
 
     "index.html",
 
@@ -12,22 +11,14 @@ const FILES = [
 
     "manifest.json",
 
-    "icons/logo.png",
-
-    "icons/icon-192.png",
-
-    "icons/icon-512.png"
+    "icons/logo.png"
 
 ];
 
 
-/* =========================================================
-   INSTALL
-========================================================= */
-
 self.addEventListener(
     "install",
-    event => {
+    function (event) {
 
         event.waitUntil(
 
@@ -35,55 +26,56 @@ self.addEventListener(
                 .open(
                     CACHE_NAME
                 )
-
                 .then(
-                    cache =>
-                        cache.addAll(
-                            FILES
-                        )
-                )
+                    function (cache) {
 
-                .then(
-                    () =>
-                        self.skipWaiting()
+                        return cache.addAll(
+                            APP_FILES
+                        );
+
+                    }
                 )
 
         );
+
+        self.skipWaiting();
 
     }
 );
 
 
-/* =========================================================
-   ACTIVATE
-========================================================= */
-
 self.addEventListener(
     "activate",
-    event => {
+    function (event) {
 
         event.waitUntil(
 
             caches
                 .keys()
-
                 .then(
-                    keys => {
+                    function (keys) {
 
                         return Promise.all(
 
                             keys
                                 .filter(
-                                    key =>
-                                        key !==
-                                        CACHE_NAME
-                                )
+                                    function (key) {
 
+                                        return (
+                                            key !==
+                                            CACHE_NAME
+                                        );
+
+                                    }
+                                )
                                 .map(
-                                    key =>
-                                        caches.delete(
+                                    function (key) {
+
+                                        return caches.delete(
                                             key
-                                        )
+                                        );
+
+                                    }
                                 )
 
                         );
@@ -91,32 +83,22 @@ self.addEventListener(
                     }
                 )
 
-                .then(
-                    () =>
-                        self.clients.claim()
-                )
-
         );
+
+        self.clients.claim();
 
     }
 );
 
 
-/* =========================================================
-   FETCH
-========================================================= */
-
 self.addEventListener(
     "fetch",
-    event => {
+    function (event) {
 
         if (
-            event.request.method !==
-            "GET"
+            event.request.method !== "GET"
         ) {
-
             return;
-
         }
 
 
@@ -126,61 +108,75 @@ self.addEventListener(
                 .match(
                     event.request
                 )
-
                 .then(
-                    cached => {
+                    function (cached) {
 
                         if (cached) {
-
                             return cached;
-
                         }
 
 
                         return fetch(
                             event.request
                         )
+                        .then(
+                            function (response) {
 
-                            .then(
-                                response => {
+                                if (
+                                    response &&
+                                    response.status === 200 &&
+                                    response.type !== "opaque"
+                                ) {
 
-                                    if (
-                                        response &&
-                                        response.status ===
-                                            200
-                                    ) {
-
-                                        const clone =
-                                            response.clone();
-
-
-                                        caches
-                                            .open(
-                                                CACHE_NAME
-                                            )
-
-                                            .then(
-                                                cache =>
-                                                    cache.put(
-                                                        event.request,
-                                                        clone
-                                                    )
-                                            );
-
-                                    }
+                                    const copy =
+                                        response.clone();
 
 
-                                    return response;
+                                    caches
+                                        .open(
+                                            CACHE_NAME
+                                        )
+                                        .then(
+                                            function (cache) {
+
+                                                cache.put(
+                                                    event.request,
+                                                    copy
+                                                );
+
+                                            }
+                                        );
 
                                 }
-                            )
 
-                            .catch(
-                                () =>
-                                    caches.match(
+
+                                return response;
+
+                            }
+                        )
+                        .catch(
+                            function () {
+
+                                if (
+                                    event.request.mode ===
+                                    "navigate"
+                                ) {
+
+                                    return caches.match(
                                         "index.html"
-                                    )
-                            );
+                                    );
+
+                                }
+
+                                return new Response(
+                                    "",
+                                    {
+                                        status: 503
+                                    }
+                                );
+
+                            }
+                        );
 
                     }
                 )
