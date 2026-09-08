@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
 
     <meta charset="UTF-8">
@@ -12,23 +11,56 @@
 
     <meta
         name="theme-color"
-        content="#7c3aed"
+        content="#0f172a"
     >
 
     <meta
         name="description"
-        content="Sistem Inventaris Ruangan berbasis PWA"
+        content="Sistem Inventaris Ruangan modern berbasis PWA"
     >
-
-    <title>
-        RoomInventory - Sistem Inventaris Ruangan
-    </title>
-
 
     <link
         rel="manifest"
         href="manifest.json"
     >
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="icon/logo 1.jpeg"
+    >
+
+    <title>Sistem Inventaris Ruangan</title>
+
+
+    <!-- GOOGLE FONT -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- FONT AWESOME -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <!-- CSS -->
 
     <link
         rel="stylesheet"
@@ -38,11 +70,12 @@
 </head>
 
 
-<body class="dark">
+<body>
+
 
 <!-- =====================================================
      SPLASH SCREEN
-====================================================== -->
+===================================================== -->
 
 <div
     id="splashScreen"
@@ -51,1796 +84,2869 @@
 
     <div class="splash-grid"></div>
 
+    <div class="splash-glow splash-glow-one"></div>
+
+    <div class="splash-glow splash-glow-two"></div>
+
+
     <div class="splash-content">
+
 
         <div class="splash-logo">
 
             <img
                 src="icon/logo 1.jpeg"
-                alt="Logo"
+                alt="Logo Sistem Inventaris"
                 onerror="this.style.display='none'"
             >
 
         </div>
 
 
+        <div class="splash-system">
+
+            SYSTEM ONLINE
+
+        </div>
+
+
         <h1>
-            RoomInventory
+
+            Sistem Inventaris
+
         </h1>
 
 
         <p>
-            Sistem Inventaris Ruangan
+
+            Ruangan Management System
+
         </p>
 
 
-        <div class="loading-bar">
+        <div class="loading-ring">
 
             <span></span>
 
         </div>
 
 
-        <small>
-            SYSTEM INITIALIZING...
-        </small>
+        <div
+            id="loadingText"
+            class="loading-text"
+        >
+
+            Memuat sistem...
+
+        </div>
+
+
+        <div class="loading-bar">
+
+            <div
+                class="loading-progress"
+            ></div>
+
+        </div>
+
+
+        <div class="loading-status">
+
+            <span></span>
+
+            Initializing application
+
+        </div>
+
 
     </div>
 
 </div>
 
 
+
 <!-- =====================================================
-     APP
-====================================================== -->
-
-<div
-    id="app"
-    class="app"
->
-
-    <!-- =================================================
-         SIDEBAR
-    ================================================== -->
-
-    <aside class="sidebar">
-
-        <div>
-
-            <!-- BRAND -->
-
-            <div class="brand">
-
-                <div class="brand-logo">
-
-                    <img
-                        src="icon/logo 1.jpeg"
-                        alt="Logo"
-                        onerror="this.style.display='none'"
-                    >
-
-                </div>
-
-
-                <div>
-
-                    <h2>
-                        RoomInventory
-                    </h2>
-
-                    <span>
-                        IT INVENTORY SYSTEM
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- NAVIGATION -->
-
-            <nav class="sidebar-nav">
-
-                <button
-                    class="nav-item active"
-                    data-target="dashboard"
-                    type="button"
-                >
-
-                    <svg viewBox="0 0 24 24">
-
-                        <rect
-                            x="3"
-                            y="3"
-                            width="7"
-                            height="7"
-                        ></rect>
-
-                        <rect
-                            x="14"
-                            y="3"
-                            width="7"
-                            height="7"
-                        ></rect>
-
-                        <rect
-                            x="3"
-                            y="14"
-                            width="7"
-                            height="7"
-                        ></rect>
-
-                        <rect
-                            x="14"
-                            y="14"
-                            width="7"
-                            height="7"
-                        ></rect>
-
-                    </svg>
-
-                    <span>
-                        Dashboard
-                    </span>
-
-                </button>
-
-
-                <button
-                    class="nav-item"
-                    data-target="inventaris"
-                    type="button"
-                >
-
-                    <svg viewBox="0 0 24 24">
-
-                        <path
-                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
-                        ></path>
-
-                        <polyline
-                            points="3.29 7 12 12 20.71 7"
-                        ></polyline>
-
-                        <line
-                            x1="12"
-                            y1="22"
-                            x2="12"
-                            y2="12"
-                        ></line>
-
-                    </svg>
-
-                    <span>
-                        Inventaris
-                    </span>
-
-                </button>
-
-
-                <button
-                    class="nav-item"
-                    data-target="statistik"
-                    type="button"
-                >
-
-                    <svg viewBox="0 0 24 24">
-
-                        <line
-                            x1="4"
-                            y1="19"
-                            x2="4"
-                            y2="10"
-                        ></line>
-
-                        <line
-                            x1="10"
-                            y1="19"
-                            x2="10"
-                            y2="4"
-                        ></line>
-
-                        <line
-                            x1="16"
-                            y1="19"
-                            x2="16"
-                            y2="8"
-                        ></line>
-
-                        <line
-                            x1="22"
-                            y1="19"
-                            x2="22"
-                            y2="6"
-                        ></line>
-
-                    </svg>
-
-                    <span>
-                        Statistik
-                    </span>
-
-                </button>
-
-
-                <button
-                    class="nav-item"
-                    data-target="roomOverview"
-                    type="button"
-                >
-
-                    <svg viewBox="0 0 24 24">
-
-                        <path d="M3 21h18"></path>
-
-                        <path
-                            d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"
-                        ></path>
-
-                        <path d="M9 7h2"></path>
-                        <path d="M13 7h2"></path>
-
-                        <path d="M9 11h2"></path>
-                        <path d="M13 11h2"></path>
-
-                        <path d="M10 21v-5h4v5"></path>
-
-                    </svg>
-
-                    <span>
-                        Ruangan
-                    </span>
-
-                </button>
-
-
-                <button
-                    class="nav-item"
-                    data-target="manajemen"
-                    type="button"
-                >
-
-                    <svg viewBox="0 0 24 24">
-
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="3"
-                        ></circle>
-
-                        <path
-                            d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.41 1.41-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.41-1.41.06-.06A1.7 1.7 0 0 0 9.4 15a1.7 1.7 0 0 0-1.56-1.03H7v-2h.84A1.7 1.7 0 0 0 9.4 10.94a1.7 1.7 0 0 0-.34-1.88L9 9l1.41-1.41.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 13.38 6.43V6h2v.43a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.76 9l-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.92 12H21v2h-.08A1.7 1.7 0 0 0 19.4 15Z"
-                        ></path>
-
-                    </svg>
-
-                    <span>
-                        Data Tools
-                    </span>
-
-                </button>
-
-            </nav>
-
-        </div>
-
-
-        <!-- SIDEBAR FOOTER -->
-
-        <div class="sidebar-footer">
-
-            <div class="online-status">
-
-                <span></span>
-
-                <div>
-
-                    <strong>
-                        System Online
-                    </strong>
-
-                    <small>
-                        LocalStorage Database
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <div class="tech-stack">
-
-                <code>
-                    HTML
-                </code>
-
-                <code>
-                    CSS
-                </code>
-
-                <code>
-                    JS
-                </code>
-
-            </div>
-
-        </div>
-
-    </aside>
-
-
-    <!-- =================================================
-         MAIN CONTENT
-    ================================================== -->
-
-    <main class="main-content">
-
-
-        <!-- TOPBAR -->
-
-        <header class="topbar">
-
-            <div class="breadcrumb">
-
-                <span>
-                    Workspace
-                </span>
-
-                <b>
-                    /
-                </b>
-
-                <strong>
-                    Inventory
-                </strong>
-
-            </div>
-
-
-            <div class="topbar-right">
-
-
-                <button
-                    id="installBtn"
-                    class="top-btn"
-                    type="button"
-                    hidden
-                >
-
-                    <svg viewBox="0 0 24 24">
-
-                        <path
-                            d="M12 3v12"
-                        ></path>
-
-                        <path
-                            d="m7 10 5 5 5-5"
-                        ></path>
-
-                        <path
-                            d="M5 21h14"
-                        ></path>
-
-                    </svg>
-
-                    Install
-
-                </button>
-
-
-                <button
-                    id="themeBtn"
-                    class="icon-btn"
-                    type="button"
-                    title="Ganti Tema"
-                >
-
-                    <svg
-                        id="themeIcon"
-                        viewBox="0 0 24 24"
-                    ></svg>
-
-                </button>
-
-
-                <div class="admin">
-
-                    <div class="admin-avatar">
-                        IT
-                    </div>
-
-                    <div>
-
-                        <strong>
-                            System Admin
-                        </strong>
-
-                        <span>
-                            MarcelZuhdan
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <!-- CONTENT -->
-
-        <div class="content">
-
-
-            <!-- =================================================
-                 DASHBOARD
-            ================================================== -->
-
-            <section id="dashboard">
-
-                <div class="hero-heading">
-
-                    <div>
-
-                        <div class="overline">
-                            ROOM INVENTORY
-                        </div>
-
-                        <h1>
-                            Dashboard Inventaris
-                        </h1>
-
-                        <p>
-                            Kelola data inventaris ruangan
-                            dengan sistem yang cepat,
-                            sederhana, dan terorganisir.
-                        </p>
-
-                    </div>
-
-
-                    <div class="system-card">
-
-                        <span>
-                            SYSTEM.STATUS
-                        </span>
-
-                        <strong>
-                            ● ACTIVE
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <!-- STATISTICS CARDS -->
-
-                <div class="stats-grid">
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-card-top">
-
-                            <span>
-                                Total Unit
-                            </span>
-
-                            <div class="stat-icon purple">
-
-                                <svg viewBox="0 0 24 24">
-
-                                    <path
-                                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1.73 2l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
-                                    ></path>
-
-                                    <polyline
-                                        points="3.29 7 12 12 20.71 7"
-                                    ></polyline>
-
-                                    <line
-                                        x1="12"
-                                        y1="22"
-                                        x2="12"
-                                        y2="12"
-                                    ></line>
-
-                                </svg>
-
-                            </div>
-
-                        </div>
-
-
-                        <strong
-                            id="totalBarang"
-                            class="stat-number"
-                        >
-                            0
-                        </strong>
-
-
-                        <small>
-                            Jumlah seluruh unit
-                        </small>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-card-top">
-
-                            <span>
-                                Kondisi Baik
-                            </span>
-
-                            <div class="stat-icon green">
-
-                                <svg viewBox="0 0 24 24">
-
-                                    <polyline
-                                        points="20 6 9 17 4 12"
-                                    ></polyline>
-
-                                </svg>
-
-                            </div>
-
-                        </div>
-
-
-                        <strong
-                            id="barangBaik"
-                            class="stat-number"
-                        >
-                            0
-                        </strong>
-
-
-                        <small>
-                            Unit kondisi baik
-                        </small>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-card-top">
-
-                            <span>
-                                Kerusakan Ringan
-                            </span>
-
-                            <div class="stat-icon yellow">
-
-                                <svg viewBox="0 0 24 24">
-
-                                    <path
-                                        d="M12 9v4"
-                                    ></path>
-
-                                    <path
-                                        d="M12 17h.01"
-                                    ></path>
-
-                                    <path
-                                        d="M10.3 3.8 2.8 17a2 2 0 0 0 1.74 3h14.92a2 2 0 0 0 1.74-3l-7.5-13.2a2 2 0 0 0-3.4 0Z"
-                                    ></path>
-
-                                </svg>
-
-                            </div>
-
-                        </div>
-
-
-                        <strong
-                            id="barangRingan"
-                            class="stat-number"
-                        >
-                            0
-                        </strong>
-
-
-                        <small>
-                            Perlu pemeriksaan
-                        </small>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-card-top">
-
-                            <span>
-                                Kerusakan Berat
-                            </span>
-
-                            <div class="stat-icon red">
-
-                                <svg viewBox="0 0 24 24">
-
-                                    <circle
-                                        cx="12"
-                                        cy="12"
-                                        r="9"
-                                    ></circle>
-
-                                    <line
-                                        x1="15"
-                                        y1="9"
-                                        x2="9"
-                                        y2="15"
-                                    ></line>
-
-                                    <line
-                                        x1="9"
-                                        y1="9"
-                                        x2="15"
-                                        y2="15"
-                                    ></line>
-
-                                </svg>
-
-                            </div>
-
-                        </div>
-
-
-                        <strong
-                            id="barangBerat"
-                            class="stat-number"
-                        >
-                            0
-                        </strong>
-
-
-                        <small>
-                            Perlu tindakan segera
-                        </small>
-
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     FORM
-                ================================================== -->
-
-                <div
-                    id="formPanel"
-                    class="panel"
-                >
-
-                    <div class="panel-title">
-
-                        <div>
-
-                            <span>
-                                DATABASE ENTRY
-                            </span>
-
-                            <h2>
-                                Tambah Inventaris
-                            </h2>
-
-                            <p>
-                                Tambahkan data barang ke sistem.
-                            </p>
-
-                        </div>
-
-
-                        <div class="status-label">
-                            CREATE
-                        </div>
-
-                    </div>
-
-
-                    <form
-                        id="inventoryForm"
-                    >
-
-                        <input
-                            type="hidden"
-                            id="editId"
-                        >
-
-
-                        <div class="form-grid">
-
-
-                            <div class="field">
-
-                                <label>
-                                    Nama Barang
-                                </label>
-
-                                <input
-                                    id="namaBarang"
-                                    type="text"
-                                    placeholder="Contoh: Komputer Desktop"
-                                    autocomplete="off"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="field">
-
-                                <label>
-                                    Kode Inventaris
-                                </label>
-
-                                <input
-                                    id="kodeInventaris"
-                                    type="text"
-                                    placeholder="INV-001"
-                                    autocomplete="off"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="field">
-
-                                <label>
-                                    Nama Ruangan
-                                </label>
-
-                                <input
-                                    id="namaRuangan"
-                                    type="text"
-                                    placeholder="Contoh: Lab Komputer"
-                                    autocomplete="off"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="field">
-
-                                <label>
-                                    Jumlah Barang
-                                </label>
-
-                                <input
-                                    id="jumlahBarang"
-                                    type="number"
-                                    min="1"
-                                    placeholder="1"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="field">
-
-                                <label>
-                                    Kondisi Barang
-                                </label>
-
-                                <select
-                                    id="kondisiBarang"
-                                    required
-                                >
-
-                                    <option value="">
-                                        Pilih kondisi
-                                    </option>
-
-                                    <option value="Baik">
-                                        Baik
-                                    </option>
-
-                                    <option value="Ringan">
-                                        Kerusakan Ringan
-                                    </option>
-
-                                    <option value="Berat">
-                                        Kerusakan Berat
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="form-actions">
-
-                            <button
-                                id="submitBtn"
-                                class="primary-btn"
-                                type="submit"
-                            >
-
-                                <svg viewBox="0 0 24 24">
-
-                                    <path
-                                        d="M12 5v14"
-                                    ></path>
-
-                                    <path
-                                        d="M5 12h14"
-                                    ></path>
-
-                                </svg>
-
-                                Simpan Inventaris
-
-                            </button>
-
-
-                            <button
-                                id="cancelEditBtn"
-                                class="secondary-btn hidden"
-                                type="button"
-                            >
-                                Batal Edit
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-
-                <!-- =================================================
-                     INVENTORY
-                ================================================== -->
-
-                <div
-                    id="inventaris"
-                    class="panel"
-                >
-
-                    <div class="panel-title">
-
-                        <div>
-
-                            <span>
-                                DATA EXPLORER
-                            </span>
-
-                            <h2>
-                                Daftar Inventaris
-                            </h2>
-
-                            <p>
-                                Cari dan kelola seluruh inventaris.
-                            </p>
-
-                        </div>
-
-
-                        <div
-                            id="resultCounter"
-                            class="result-counter"
-                        >
-                            0 data
-                        </div>
-
-                    </div>
-
-
-                    <!-- FILTER -->
-
-                    <div class="filter-toolbar">
-
-
-                        <div class="search-wrapper">
-
-                            <svg viewBox="0 0 24 24">
-
-                                <circle
-                                    cx="11"
-                                    cy="11"
-                                    r="7"
-                                ></circle>
-
-                                <path
-                                    d="m20 20-4-4"
-                                ></path>
-
-                            </svg>
-
-
-                            <input
-                                id="searchInput"
-                                type="search"
-                                placeholder="Cari nama, kode, atau ruangan..."
-                            >
-
-                            <kbd>
-                                Ctrl K
-                            </kbd>
-
-                        </div>
-
-
-                        <select
-                            id="filterRuangan"
-                        >
-
-                            <option value="">
-                                Semua Ruangan
-                            </option>
-
-                        </select>
-
-
-                        <select
-                            id="filterKondisi"
-                        >
-
-                            <option value="">
-                                Semua Kondisi
-                            </option>
-
-                            <option value="Baik">
-                                Baik
-                            </option>
-
-                            <option value="Ringan">
-                                Ringan
-                            </option>
-
-                            <option value="Berat">
-                                Berat
-                            </option>
-
-                        </select>
-
-
-                        <select
-                            id="sortInventory"
-                        >
-
-                            <option value="newest">
-                                Terbaru
-                            </option>
-
-                            <option value="oldest">
-                                Terlama
-                            </option>
-
-                            <option value="nameAsc">
-                                Nama A-Z
-                            </option>
-
-                            <option value="nameDesc">
-                                Nama Z-A
-                            </option>
-
-                            <option value="qtyAsc">
-                                Jumlah Terendah
-                            </option>
-
-                            <option value="qtyDesc">
-                                Jumlah Tertinggi
-                            </option>
-
-                        </select>
-
-
-                        <button
-                            id="resetFilterBtn"
-                            class="icon-btn filter-reset"
-                            type="button"
-                            title="Reset Filter"
-                        >
-
-                            <svg viewBox="0 0 24 24">
-
-                                <path
-                                    d="M3 12a9 9 0 0 1 15.36-6.36L21 8"
-                                ></path>
-
-                                <path
-                                    d="M21 3v5h-5"
-                                ></path>
-
-                                <path
-                                    d="M21 12a9 9 0 0 1-15.36 6.36L3 16"
-                                ></path>
-
-                                <path
-                                    d="M3 21v-5h5"
-                                ></path>
-
-                            </svg>
-
-                        </button>
-
-                    </div>
-
-
-                    <!-- INVENTORY LIST -->
-
-                    <div
-                        id="inventoryList"
-                        class="inventory-list"
-                    ></div>
-
-
-                    <!-- EMPTY -->
-
-                    <div
-                        id="emptyState"
-                        class="empty-state"
-                    >
-
-                        <div class="empty-icon">
-
-                            <svg viewBox="0 0 24 24">
-
-                                <path
-                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1.73 2l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
-                                ></path>
-
-                            </svg>
-
-                        </div>
-
-                        <h3>
-                            Belum ada data
-                        </h3>
-
-                        <p>
-                            Tambahkan inventaris menggunakan
-                            form di atas.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     STATISTIK
-                ================================================== -->
-
-                <div
-                    id="statistik"
-                    class="panel"
-                >
-
-                    <div class="panel-title">
-
-                        <div>
-
-                            <span>
-                                ANALYTICS
-                            </span>
-
-                            <h2>
-                                Statistik Kondisi
-                            </h2>
-
-                            <p>
-                                Statistik kondisi seluruh inventaris.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="statistics">
-
-                        <div
-                            id="donutChart"
-                            class="donut"
-                        >
-
-                            <div class="donut-center">
-
-                                <strong
-                                    id="chartTotal"
-                                >
-                                    0
-                                </strong>
-
-                                <span>
-                                    Total Unit
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="legend">
-
-
-                            <div class="legend-row">
-
-                                <div>
-
-                                    <span
-                                        class="legend-dot good"
-                                    ></span>
-
-                                    Baik
-
-                                </div>
-
-                                <strong
-                                    id="legendBaikPercent"
-                                >
-                                    0%
-                                </strong>
-
-                            </div>
-
-
-                            <div class="legend-row">
-
-                                <div>
-
-                                    <span
-                                        class="legend-dot warning"
-                                    ></span>
-
-                                    Kerusakan Ringan
-
-                                </div>
-
-                                <strong
-                                    id="legendRinganPercent"
-                                >
-                                    0%
-                                </strong>
-
-                            </div>
-
-
-                            <div class="legend-row">
-
-                                <div>
-
-                                    <span
-                                        class="legend-dot danger"
-                                    ></span>
-
-                                    Kerusakan Berat
-
-                                </div>
-
-                                <strong
-                                    id="legendBeratPercent"
-                                >
-                                    0%
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     RUANGAN
-                ================================================== -->
-
-                <div
-                    id="roomOverview"
-                    class="panel"
-                >
-
-                    <div class="panel-title">
-
-                        <div>
-
-                            <span>
-                                ROOM OVERVIEW
-                            </span>
-
-                            <h2>
-                                Ringkasan Ruangan
-                            </h2>
-
-                        </div>
-
-
-                        <div class="room-count">
-
-                            <strong id="roomCount">
-                                0
-                            </strong>
-
-                            <span>
-                                Ruangan
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        id="roomSummary"
-                        class="room-grid"
-                    ></div>
-
-                </div>
-
-
-                <!-- =================================================
-                     HEALTH
-                ================================================== -->
-
-                <div class="health-grid">
-
-
-                    <div class="health-card">
-
-                        <span>
-                            Data Lengkap
-                        </span>
-
-                        <strong
-                            id="completeDataCount"
-                        >
-                            0
-                        </strong>
-
-                        <small>
-                            Record valid
-                        </small>
-
-                    </div>
-
-
-                    <div class="health-card">
-
-                        <span>
-                            Total Record
-                        </span>
-
-                        <strong
-                            id="recordCount"
-                        >
-                            0
-                        </strong>
-
-                        <small>
-                            Data tersimpan
-                        </small>
-
-                    </div>
-
-
-                    <div class="health-card online">
-
-                        <span>
-                            Database Status
-                        </span>
-
-                        <strong
-                            id="databaseStatus"
-                        >
-                            READY
-                        </strong>
-
-                        <small>
-                            LocalStorage aktif
-                        </small>
-
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     ACTIVITY
-                ================================================== -->
-
-                <div class="panel">
-
-                    <div class="panel-title">
-
-                        <div>
-
-                            <span>
-                                SYSTEM LOG
-                            </span>
-
-                            <h2>
-                                Aktivitas Terbaru
-                            </h2>
-
-                        </div>
-
-
-                        <button
-                            id="clearActivityBtn"
-                            class="text-btn"
-                            type="button"
-                        >
-                            Bersihkan
-                        </button>
-
-                    </div>
-
-
-                    <div
-                        id="activityLog"
-                        class="activity-list"
-                    ></div>
-
-                </div>
-
-
-                <!-- =================================================
-                     TOOLS
-                ================================================== -->
-
-                <div
-                    id="manajemen"
-                    class="panel"
-                >
-
-                    <div class="panel-title">
-
-                        <div>
-
-                            <span>
-                                DATA MANAGEMENT
-                            </span>
-
-                            <h2>
-                                Data Tools
-                            </h2>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="tools-grid">
-
-
-                        <button
-                            id="exportBtn"
-                            class="tool-btn"
-                            type="button"
-                        >
-
-                            <span>
-                                ↓
-                            </span>
-
-                            <div>
-
-                                <strong>
-                                    Export Data
-                                </strong>
-
-                                <small>
-                                    Download JSON
-                                </small>
-
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            id="importBtn"
-                            class="tool-btn"
-                            type="button"
-                        >
-
-                            <span>
-                                ↑
-                            </span>
-
-                            <div>
-
-                                <strong>
-                                    Import Data
-                                </strong>
-
-                                <small>
-                                    Masukkan JSON
-                                </small>
-
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            id="backupBtn"
-                            class="tool-btn"
-                            type="button"
-                        >
-
-                            <span>
-                                B
-                            </span>
-
-                            <div>
-
-                                <strong>
-                                    Backup
-                                </strong>
-
-                                <small>
-                                    Simpan cadangan
-                                </small>
-
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            id="restoreBtn"
-                            class="tool-btn"
-                            type="button"
-                        >
-
-                            <span>
-                                R
-                            </span>
-
-                            <div>
-
-                                <strong>
-                                    Restore
-                                </strong>
-
-                                <small>
-                                    Pulihkan data
-                                </small>
-
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            id="printBtn"
-                            class="tool-btn"
-                            type="button"
-                        >
-
-                            <span>
-                                P
-                            </span>
-
-                            <div>
-
-                                <strong>
-                                    Print
-                                </strong>
-
-                                <small>
-                                    Cetak laporan
-                                </small>
-
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            id="clearBtn"
-                            class="tool-btn danger"
-                            type="button"
-                        >
-
-                            <span>
-                                ×
-                            </span>
-
-                            <div>
-
-                                <strong>
-                                    Hapus Semua
-                                </strong>
-
-                                <small>
-                                    Bersihkan database
-                                </small>
-
-                            </div>
-
-                        </button>
-
-                    </div>
-
-
-                    <input
-                        id="importFile"
-                        type="file"
-                        accept=".json,application/json"
-                        hidden
-                    >
-
-
-                    <input
-                        id="restoreFile"
-                        type="file"
-                        accept=".json,application/json"
-                        hidden
-                    >
-
-                </div>
-
-
-                <!-- FOOTER -->
-
-                <footer>
-
-                    <div>
-                        <strong>
-                            RoomInventory
-                        </strong>
-
-                        <span>
-                            Inventory Management System
-                        </span>
-                    </div>
-
-
-                    <div>
-                        <code>
-                            v4.0
-                        </code>
-
-                        <span>
-                            •
-                        </span>
-
-                        <span>
-                            PWA READY
-                        </span>
-                    </div>
-
-                </footer>
-
-            </section>
-
-        </div>
-
-                <!-- =====================================================
-     FOOTER
+     DIGITAL BACKGROUND
 ===================================================== -->
 
-<footer class="site-footer">
+<div class="background-effects">
 
-    <div class="footer-left">
 
-        <div class="footer-brand">
+    <div class="bg-grid"></div>
+
+
+    <div
+        class="bg-glow bg-glow-one"
+    ></div>
+
+
+    <div
+        class="bg-glow bg-glow-two"
+    ></div>
+
+
+    <div
+        class="network network-one"
+    ></div>
+
+
+    <div
+        class="network network-two"
+    ></div>
+
+
+    <div
+        class="network network-three"
+    ></div>
+
+
+</div>
+
+
+
+<!-- =====================================================
+     MOBILE HEADER
+===================================================== -->
+
+<header class="mobile-header">
+
+
+    <button
+        id="mobileMenuButton"
+        class="mobile-menu-button"
+        type="button"
+        aria-label="Menu"
+    >
+
+        <i class="fa-solid fa-bars"></i>
+
+    </button>
+
+
+    <div class="mobile-title">
+
+        Inventaris
+
+    </div>
+
+
+    <button
+        id="mobileThemeButton"
+        class="mobile-theme-button"
+        type="button"
+        aria-label="Tema"
+    >
+
+        <i class="fa-solid fa-moon"></i>
+
+    </button>
+
+
+</header>
+
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside
+    id="sidebar"
+    class="sidebar"
+>
+
+
+    <div class="sidebar-header">
+
+
+        <div class="brand-logo">
+
             <img
                 src="icon/logo 1.jpeg"
                 alt="Logo"
                 onerror="this.style.display='none'"
             >
 
-            <div>
-                <strong>
-                    Sistem Inventaris Ruangan
-                </strong>
 
-                <span>
-                    Room Management System
-                </span>
+            <div class="brand-fallback">
+
+                <i class="fa-solid fa-boxes-stacked"></i>
+
             </div>
+
+
         </div>
 
+
+        <div class="brand-text">
+
+            <strong>
+
+                INVENTORY
+
+            </strong>
+
+
+            <span>
+
+                ROOM SYSTEM
+
+            </span>
+
+        </div>
+
+
     </div>
 
 
-    <div class="footer-center">
 
-        <span>
-            © <span id="footerYear"></span>
-            Sistem Inventaris Ruangan
-        </span>
+    <div class="system-badge">
 
-        <span class="footer-divider">
-            •
-        </span>
+        <span class="status-dot"></span>
 
-        <span>
-            Built with XII RPL 5
-            <i class="fa-solid fa-code"></i>
-            for better management MarcelZuhdan
-        </span>
+        SYSTEM ONLINE
 
     </div>
 
 
-    <div class="footer-right">
 
-        <span class="footer-status">
-            <span></span>
-            System Online
-        </span>
+    <nav class="sidebar-menu">
 
-        <span class="footer-version">
-            v5.1
-        </span>
+
+        <div class="menu-label">
+
+            MAIN MENU
+
+        </div>
+
+
+
+        <button
+            class="menu-item active"
+            data-target="dashboard"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-chart-pie"></i>
+
+                Dashboard
+
+            </span>
+
+        </button>
+
+
+
+        <button
+            class="menu-item"
+            data-target="inventory"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-boxes-stacked"></i>
+
+                Inventaris
+
+            </span>
+
+        </button>
+
+
+
+        <button
+            class="menu-item"
+            data-target="monitoring"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-desktop"></i>
+
+                Monitoring
+
+            </span>
+
+        </button>
+
+
+
+        <button
+            class="menu-item"
+            data-target="statistics"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-chart-column"></i>
+
+                Statistik
+
+            </span>
+
+        </button>
+
+
+
+        <div class="menu-label menu-label-second">
+
+            TOOLS
+
+        </div>
+
+
+
+        <button
+            id="exportButton"
+            class="menu-item"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-file-export"></i>
+
+                Export CSV
+
+            </span>
+
+        </button>
+
+
+
+        <button
+            id="backupButton"
+            class="menu-item"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-database"></i>
+
+                Backup Data
+
+            </span>
+
+        </button>
+
+
+
+        <button
+            id="restoreButton"
+            class="menu-item"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-clock-rotate-left"></i>
+
+                Restore Backup
+
+            </span>
+
+        </button>
+
+
+
+        <button
+            id="printButton"
+            class="menu-item"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-print"></i>
+
+                Print
+
+            </span>
+
+        </button>
+
+
+    </nav>
+
+
+
+    <div class="sidebar-bottom">
+
+
+        <button
+            id="installButton"
+            class="install-button hidden"
+            type="button"
+        >
+
+            <i class="fa-solid fa-download"></i>
+
+            Install App
+
+        </button>
+
+
+
+        <button
+            id="themeButton"
+            class="theme-button"
+            type="button"
+        >
+
+            <span>
+
+                <i class="fa-solid fa-moon"></i>
+
+                Dark Mode
+
+            </span>
+
+
+            <i class="fa-solid fa-toggle-on"></i>
+
+        </button>
+
+
+
+        <div class="sidebar-footer">
+
+            INVENTORY SYSTEM v5.2
+
+        </div>
+
 
     </div>
 
-</footer>
 
-    </main>
+</aside>
+
+
+
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
+<main class="main-content">
+
+
+
+    <!-- =================================================
+         DASHBOARD
+    ================================================== -->
+
+    <section
+        id="dashboard"
+        class="page-section active-section"
+    >
+
+
+        <div class="topbar">
+
+
+            <div>
+
+
+                <div class="page-kicker">
+
+                    <span></span>
+
+                    ROOM INVENTORY SYSTEM
+
+                </div>
+
+
+                <h1>
+
+                    Dashboard
+
+                </h1>
+
+
+                <p>
+
+                    Kelola data inventaris ruangan secara cepat dan terstruktur.
+
+                </p>
+
+
+            </div>
+
+
+
+            <div class="topbar-right">
+
+
+                <div class="live-clock">
+
+                    <i class="fa-regular fa-clock"></i>
+
+
+                    <div>
+
+
+                        <strong id="liveClock">
+
+                            00:00:00
+
+                        </strong>
+
+
+                        <span id="liveDate">
+
+                            -
+
+                        </span>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <button
+                    id="quickAddButton"
+                    class="primary-button"
+                    type="button"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Tambah Inventaris
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- HERO -->
+
+        <div class="hero-panel">
+
+
+            <div class="hero-content">
+
+
+                <div class="terminal-tag">
+
+                    <span></span>
+
+                    SYSTEM_READY
+
+                </div>
+
+
+
+                <h2>
+
+                    Inventory Control
+
+                    <span>
+                        Center
+                    </span>
+
+                </h2>
+
+
+
+                <p>
+
+                    Pantau seluruh aset ruangan dalam satu dashboard
+                    dengan data yang tersimpan secara lokal.
+
+                </p>
+
+
+
+                <div class="hero-actions">
+
+
+                    <button
+                        id="heroAddButton"
+                        class="hero-button primary"
+                        type="button"
+                    >
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Tambah Data
+
+                    </button>
+
+
+
+                    <button
+                        id="heroMonitorButton"
+                        class="hero-button secondary"
+                        type="button"
+                    >
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                        Monitoring
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="hero-terminal">
+
+
+                <div class="terminal-header">
+
+
+                    <div class="terminal-dots">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+
+                    <small>
+
+                        inventory-system
+
+                    </small>
+
+
+                </div>
+
+
+
+                <div class="terminal-body">
+
+
+                    <p>
+
+                        <span class="terminal-green">
+                            $
+                        </span>
+
+                        system.status()
+
+                    </p>
+
+
+                    <p class="terminal-result">
+
+                        → operational
+
+                    </p>
+
+
+
+                    <p>
+
+                        <span class="terminal-green">
+                            $
+                        </span>
+
+                        inventory.scan()
+
+                    </p>
+
+
+                    <p class="terminal-result">
+
+                        →
+
+                        <span id="terminalTotal">
+                            0
+                        </span>
+
+                        items found
+
+                    </p>
+
+
+
+                    <p>
+
+                        <span class="terminal-green">
+                            $
+                        </span>
+
+                        storage.check()
+
+                    </p>
+
+
+                    <p class="terminal-result">
+
+                        →
+
+                        <span id="terminalStorage">
+                            0%
+                        </span>
+
+                        utilized
+
+                    </p>
+
+
+
+                    <p class="terminal-cursor">
+
+                        █
+
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- STAT CARDS -->
+
+        <div class="stats-grid">
+
+
+            <div class="stat-card">
+
+
+                <div class="stat-icon blue">
+
+                    <i class="fa-solid fa-boxes-stacked"></i>
+
+                </div>
+
+
+                <div class="stat-info">
+
+                    <span>
+
+                        Total Barang
+
+                    </span>
+
+
+                    <strong id="totalItems">
+
+                        0
+
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="stat-card">
+
+
+                <div class="stat-icon green">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                </div>
+
+
+                <div class="stat-info">
+
+                    <span>
+
+                        Kondisi Baik
+
+                    </span>
+
+
+                    <strong id="goodItems">
+
+                        0
+
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="stat-card">
+
+
+                <div class="stat-icon orange">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                </div>
+
+
+                <div class="stat-info">
+
+                    <span>
+
+                        Perlu Perhatian
+
+                    </span>
+
+
+                    <strong id="attentionItems">
+
+                        0
+
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="stat-card">
+
+
+                <div class="stat-icon purple">
+
+                    <i class="fa-solid fa-layer-group"></i>
+
+                </div>
+
+
+                <div class="stat-info">
+
+                    <span>
+
+                        Total Stok
+
+                    </span>
+
+
+                    <strong id="totalStock">
+
+                        0
+
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- OVERVIEW -->
+
+        <div class="dashboard-grid">
+
+
+            <div class="panel large-panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+
+                        <div class="section-label">
+
+                            OVERVIEW
+
+                        </div>
+
+
+                        <h3>
+
+                            Ringkasan Inventaris
+
+                        </h3>
+
+
+                    </div>
+
+
+                    <button
+                        class="text-button"
+                        data-target="inventory"
+                        type="button"
+                    >
+
+                        Lihat semua
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+
+                </div>
+
+
+
+                <div class="overview-grid">
+
+
+                    <div class="overview-box">
+
+                        <span>
+
+                            Total Ruangan
+
+                        </span>
+
+
+                        <strong id="totalRooms">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="overview-box">
+
+                        <span>
+
+                            Jumlah Kategori
+
+                        </span>
+
+
+                        <strong id="totalCategories">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="overview-box">
+
+                        <span>
+
+                            Barang Menipis
+
+                        </span>
+
+
+                        <strong id="lowStockCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="overview-box">
+
+                        <span>
+
+                            Data Lengkap
+
+                        </span>
+
+
+                        <strong id="dataHealth">
+
+                            0%
+
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="progress-section">
+
+
+                    <div class="progress-title">
+
+                        <span>
+
+                            Data Health
+
+                        </span>
+
+
+                        <strong id="healthPercent">
+
+                            0%
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="progress-track">
+
+                        <div
+                            id="healthProgress"
+                            class="progress-fill"
+                            style="width: 0%"
+                        ></div>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+
+                        <div class="section-label">
+
+                            ALERT
+
+                        </div>
+
+
+                        <h3>
+
+                            Stok Rendah
+
+                        </h3>
+
+
+                    </div>
+
+
+                    <i class="fa-solid fa-bell panel-header-icon"></i>
+
+
+                </div>
+
+
+                <div
+                    id="lowStockPreview"
+                    class="mini-list"
+                ></div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- RECENT INVENTORY -->
+
+        <div class="panel">
+
+
+            <div class="panel-header">
+
+
+                <div>
+
+
+                    <div class="section-label">
+
+                        ACTIVITY
+
+                    </div>
+
+
+                    <h3>
+
+                        Inventaris Terbaru
+
+                    </h3>
+
+
+                </div>
+
+
+            </div>
+
+
+            <div
+                id="recentItems"
+                class="recent-list"
+            ></div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         INVENTORY
+    ================================================== -->
+
+    <section
+        id="inventory"
+        class="page-section"
+    >
+
+
+        <div class="topbar">
+
+
+            <div>
+
+
+                <div class="page-kicker">
+
+                    <span></span>
+
+                    DATA MANAGEMENT
+
+                </div>
+
+
+                <h1>
+
+                    Inventaris
+
+                </h1>
+
+
+                <p>
+
+                    Kelola semua barang dan aset ruangan.
+
+                </p>
+
+
+            </div>
+
+
+
+            <button
+                id="inventoryAddButton"
+                class="primary-button"
+                type="button"
+            >
+
+                <i class="fa-solid fa-plus"></i>
+
+                Tambah Inventaris
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- FILTER -->
+
+        <div class="filter-panel">
+
+
+            <div class="search-box">
+
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Cari kode, nama, ruangan..."
+                    autocomplete="off"
+                >
+
+
+            </div>
+
+
+
+            <select id="roomFilter">
+
+                <option value="all">
+
+                    Semua Ruangan
+
+                </option>
+
+            </select>
+
+
+
+            <select id="conditionFilter">
+
+                <option value="all">
+
+                    Semua Kondisi
+
+                </option>
+
+
+                <option value="Baik">
+
+                    Baik
+
+                </option>
+
+
+                <option value="Ringan">
+
+                    Rusak Ringan
+
+                </option>
+
+
+                <option value="Berat">
+
+                    Rusak Berat
+
+                </option>
+
+            </select>
+
+
+
+            <select id="sortFilter">
+
+
+                <option value="newest">
+
+                    Terbaru
+
+                </option>
+
+
+                <option value="oldest">
+
+                    Terlama
+
+                </option>
+
+
+                <option value="nameAsc">
+
+                    Nama A-Z
+
+                </option>
+
+
+                <option value="nameDesc">
+
+                    Nama Z-A
+
+                </option>
+
+
+                <option value="stockHigh">
+
+                    Stok Terbanyak
+
+                </option>
+
+
+                <option value="stockLow">
+
+                    Stok Tersedikit
+
+                </option>
+
+
+            </select>
+
+
+
+            <button
+                id="resetFilterButton"
+                class="secondary-button"
+                type="button"
+            >
+
+                <i class="fa-solid fa-rotate-left"></i>
+
+                Reset
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- TABLE -->
+
+        <div class="panel table-panel">
+
+
+            <div class="table-header">
+
+
+                <span class="table-count">
+
+                    <span id="resultCount">
+                        0
+                    </span>
+
+                    item ditemukan
+
+                </span>
+
+
+            </div>
+
+
+
+            <div class="table-wrapper">
+
+
+                <table>
+
+
+                    <thead>
+
+
+                        <tr>
+
+                            <th>
+                                Kode
+                            </th>
+
+                            <th>
+                                Nama Barang
+                            </th>
+
+                            <th>
+                                Kategori
+                            </th>
+
+                            <th>
+                                Ruangan
+                            </th>
+
+                            <th>
+                                Jumlah
+                            </th>
+
+                            <th>
+                                Kondisi
+                            </th>
+
+                            <th>
+                                Tanggal
+                            </th>
+
+                            <th>
+                                Aksi
+                            </th>
+
+                        </tr>
+
+
+                    </thead>
+
+
+                    <tbody
+                        id="inventoryTableBody"
+                    ></tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+
+            <div
+                id="emptyState"
+                class="empty-state hidden"
+            >
+
+
+                <div class="empty-icon">
+
+                    <i class="fa-solid fa-box-open"></i>
+
+                </div>
+
+
+                <h3>
+
+                    Belum ada data
+
+                </h3>
+
+
+                <p>
+
+                    Tambahkan inventaris pertama untuk mulai menggunakan sistem.
+
+                </p>
+
+
+                <button
+                    id="emptyAddButton"
+                    class="primary-button"
+                    type="button"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Tambah Inventaris
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         MONITORING
+    ================================================== -->
+
+    <section
+        id="monitoring"
+        class="page-section"
+    >
+
+
+        <div class="topbar">
+
+
+            <div>
+
+
+                <div class="page-kicker">
+
+                    <span></span>
+
+                    SYSTEM MONITOR
+
+                </div>
+
+
+                <h1>
+
+                    Monitoring
+
+                </h1>
+
+
+                <p>
+
+                    Informasi kondisi dan kesehatan data inventaris.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="monitor-grid">
+
+
+            <div class="panel">
+
+
+                <div class="monitor-card-icon blue">
+
+                    <i class="fa-solid fa-cubes"></i>
+
+                </div>
+
+
+                <span>
+
+                    Total Item
+
+                </span>
+
+
+                <strong id="monitorTotal">
+
+                    0
+
+                </strong>
+
+
+                <small>
+
+                    Semua data inventaris
+
+                </small>
+
+
+            </div>
+
+
+
+            <div class="panel">
+
+
+                <div class="monitor-card-icon green">
+
+                    <i class="fa-solid fa-check"></i>
+
+                </div>
+
+
+                <span>
+
+                    Kondisi Baik
+
+                </span>
+
+
+                <strong id="monitorGood">
+
+                    0
+
+                </strong>
+
+
+                <small>
+
+                    Barang dalam kondisi baik
+
+                </small>
+
+
+            </div>
+
+
+
+            <div class="panel">
+
+
+                <div class="monitor-card-icon orange">
+
+                    <i class="fa-solid fa-bolt"></i>
+
+                </div>
+
+
+                <span>
+
+                    Stok Rendah
+
+                </span>
+
+
+                <strong id="monitorLowStock">
+
+                    0
+
+                </strong>
+
+
+                <small>
+
+                    Jumlah stok ≤ 2
+
+                </small>
+
+
+            </div>
+
+
+
+            <div class="panel">
+
+
+                <div class="monitor-card-icon purple">
+
+                    <i class="fa-solid fa-hard-drive"></i>
+
+                </div>
+
+
+                <span>
+
+                    Storage
+
+                </span>
+
+
+                <strong id="monitorStorage">
+
+                    0%
+
+                </strong>
+
+
+                <small>
+
+                    Penggunaan local storage
+
+                </small>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="dashboard-grid">
+
+
+            <div class="panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+
+                        <div class="section-label">
+
+                            HEALTH
+
+                        </div>
+
+
+                        <h3>
+
+                            Kondisi Barang
+
+                        </h3>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="health-list">
+
+
+                    <div class="health-row">
+
+
+                        <div class="health-name">
+
+                            <span
+                                class="health-dot green-dot"
+                            ></span>
+
+                            Baik
+
+                        </div>
+
+
+                        <strong id="healthGoodCount">
+
+                            0
+
+                        </strong>
+
+
+                    </div>
+
+
+
+                    <div class="health-row">
+
+
+                        <div class="health-name">
+
+                            <span
+                                class="health-dot orange-dot"
+                            ></span>
+
+                            Rusak Ringan
+
+                        </div>
+
+
+                        <strong id="healthLightCount">
+
+                            0
+
+                        </strong>
+
+
+                    </div>
+
+
+
+                    <div class="health-row">
+
+
+                        <div class="health-name">
+
+                            <span
+                                class="health-dot red-dot"
+                            ></span>
+
+                            Rusak Berat
+
+                        </div>
+
+
+                        <strong id="healthHeavyCount">
+
+                            0
+
+                        </strong>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+
+                        <div class="section-label">
+
+                            ROOMS
+
+                        </div>
+
+
+                        <h3>
+
+                            Distribusi Ruangan
+
+                        </h3>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <div
+                    id="roomOverview"
+                    class="room-overview"
+                ></div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- ACTIVITY -->
+
+        <div class="panel">
+
+
+            <div class="panel-header">
+
+
+                <div>
+
+
+                    <div class="section-label">
+
+                        ACTIVITY LOG
+
+                    </div>
+
+
+                    <h3>
+
+                        Aktivitas Sistem
+
+                    </h3>
+
+
+                </div>
+
+
+                <button
+                    id="clearActivityButton"
+                    class="danger-outline-button"
+                    type="button"
+                >
+
+                    <i class="fa-solid fa-trash"></i>
+
+                    Bersihkan
+
+                </button>
+
+
+            </div>
+
+
+            <div
+                id="activityLog"
+                class="activity-log"
+            ></div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         STATISTICS
+    ================================================== -->
+
+    <section
+        id="statistics"
+        class="page-section"
+    >
+
+
+        <div class="topbar">
+
+
+            <div>
+
+
+                <div class="page-kicker">
+
+                    <span></span>
+
+                    DATA ANALYTICS
+
+                </div>
+
+
+                <h1>
+
+                    Statistik
+
+                </h1>
+
+
+                <p>
+
+                    Analisis sederhana data inventaris.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="statistics-grid">
+
+
+            <!-- DONUT -->
+
+            <div class="panel donut-panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+
+                        <div class="section-label">
+
+                            CONDITION
+
+                        </div>
+
+
+                        <h3>
+
+                            Kondisi Barang
+
+                        </h3>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="donut-container">
+
+
+                    <div
+                        id="conditionDonut"
+                        class="donut-chart"
+                    >
+
+
+                        <div class="donut-center">
+
+
+                            <strong id="donutTotal">
+
+                                0
+
+                            </strong>
+
+
+                            <span>
+
+                                item
+
+                            </span>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="legend-list">
+
+
+                    <div class="legend-item">
+
+                        <span
+                            class="legend-color good-color"
+                        ></span>
+
+                        Baik
+
+                        <strong id="legendGood">
+
+                            0%
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span
+                            class="legend-color light-color"
+                        ></span>
+
+                        Ringan
+
+                        <strong id="legendLight">
+
+                            0%
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span
+                            class="legend-color heavy-color"
+                        ></span>
+
+                        Berat
+
+                        <strong id="legendHeavy">
+
+                            0%
+
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- STOCK -->
+
+            <div class="panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+
+                        <div class="section-label">
+
+                            STOCK
+
+                        </div>
+
+
+                        <h3>
+
+                            Kondisi Stok
+
+                        </h3>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="stock-stat-list">
+
+
+                    <div class="stock-stat">
+
+
+                        <div class="stock-stat-top">
+
+                            <span>
+
+                                Stok Aman
+
+                            </span>
+
+
+                            <strong
+                                id="safeStockCount"
+                            >
+
+                                0
+
+                            </strong>
+
+
+                        </div>
+
+
+                        <div class="mini-progress">
+
+
+                            <div
+                                id="safeStockProgress"
+                                style="width:0%"
+                            ></div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <div class="stock-stat">
+
+
+                        <div class="stock-stat-top">
+
+                            <span>
+
+                                Stok Rendah
+
+                            </span>
+
+
+                            <strong
+                                id="lowStockStat"
+                            >
+
+                                0
+
+                            </strong>
+
+
+                        </div>
+
+
+                        <div
+                            class="mini-progress orange-progress"
+                        >
+
+
+                            <div
+                                id="lowStockProgress"
+                                style="width:0%"
+                            ></div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- CATEGORY -->
+
+            <div class="panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+
+                        <div class="section-label">
+
+                            CATEGORIES
+
+                        </div>
+
+
+                        <h3>
+
+                            Kategori Terbanyak
+
+                        </h3>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div
+                    id="categoryStats"
+                    class="category-stats"
+                ></div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         FOOTER
+    ================================================== -->
+
+    <footer class="site-footer">
+
+
+        <div class="footer-left">
+
+
+            <div class="footer-brand">
+
+
+                <img
+                    src="icon/logo 1.jpeg"
+                    alt="Logo"
+                    onerror="this.style.display='none'"
+                >
+
+
+                <div>
+
+
+                    <strong>
+
+                        Sistem Inventaris Ruangan
+
+                    </strong>
+
+
+                    <span>
+
+                        Room Management System
+
+                    </span>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="footer-center">
+
+
+            <span>
+
+                ©
+
+                <span id="footerYear"></span>
+
+                Sistem Inventaris Ruangan
+
+            </span>
+
+
+            <span class="footer-divider">
+
+                •
+
+            </span>
+
+
+            <span>
+
+                Built with
+
+                <i class="fa-solid fa-code"></i>
+
+                for better management
+
+            </span>
+
+
+        </div>
+
+
+
+        <div class="footer-right">
+
+
+            <span class="footer-status">
+
+                <span></span>
+
+                System Online
+
+            </span>
+
+
+            <span class="footer-version">
+
+                v5.2
+
+            </span>
+
+
+        </div>
+
+
+    </footer>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     INVENTORY MODAL
+===================================================== -->
+
+<div
+    id="inventoryModal"
+    class="modal-overlay"
+>
+
+
+    <div class="modal-box">
+
+
+        <div class="modal-header">
+
+
+            <div>
+
+
+                <div class="section-label">
+
+                    INVENTORY DATA
+
+                </div>
+
+
+                <h2 id="modalTitle">
+
+                    Tambah Inventaris
+
+                </h2>
+
+
+            </div>
+
+
+            <button
+                id="closeModalButton"
+                class="modal-close"
+                type="button"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+
+        </div>
+
+
+
+        <form id="inventoryForm">
+
+
+            <input
+                type="hidden"
+                id="inventoryId"
+            >
+
+
+
+            <div class="form-grid">
+
+
+                <div class="form-group">
+
+
+                    <label for="inventoryCode">
+
+                        Kode Inventaris
+
+                    </label>
+
+
+                    <input
+                        id="inventoryCode"
+                        type="text"
+                        placeholder="Contoh: INV-001"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="inventoryName">
+
+                        Nama Barang
+
+                    </label>
+
+
+                    <input
+                        id="inventoryName"
+                        type="text"
+                        placeholder="Contoh: Laptop"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="inventoryCategory">
+
+                        Kategori
+
+                    </label>
+
+
+                    <input
+                        id="inventoryCategory"
+                        type="text"
+                        placeholder="Contoh: Elektronik"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="inventoryRoom">
+
+                        Ruangan
+
+                    </label>
+
+
+                    <input
+                        id="inventoryRoom"
+                        type="text"
+                        placeholder="Contoh: Lab RPL"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="inventoryQuantity">
+
+                        Jumlah
+
+                    </label>
+
+
+                    <input
+                        id="inventoryQuantity"
+                        type="number"
+                        min="0"
+                        value="1"
+                        required
+                    >
+
+
+                </div>
+
+
+
+                <div class="form-group">
+
+
+                    <label for="inventoryCondition">
+
+                        Kondisi
+
+                    </label>
+
+
+                    <select
+                        id="inventoryCondition"
+                        required
+                    >
+
+
+                        <option value="Baik">
+
+                            Baik
+
+                        </option>
+
+
+                        <option value="Ringan">
+
+                            Rusak Ringan
+
+                        </option>
+
+
+                        <option value="Berat">
+
+                            Rusak Berat
+
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="form-group">
+
+
+                <label for="inventoryNotes">
+
+                    Keterangan
+
+                </label>
+
+
+                <textarea
+                    id="inventoryNotes"
+                    rows="4"
+                    placeholder="Tambahkan keterangan..."
+                ></textarea>
+
+
+            </div>
+
+
+
+            <div class="modal-actions">
+
+
+                <button
+                    id="cancelModalButton"
+                    class="secondary-button"
+                    type="button"
+                >
+
+                    Batal
+
+                </button>
+
+
+                <button
+                    class="primary-button"
+                    type="submit"
+                >
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+
+                    Simpan Data
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
 
 </div>
 
 
+
 <!-- =====================================================
-     DELETE MODAL
-====================================================== -->
+     CONFIRM MODAL
+===================================================== -->
 
 <div
     id="confirmModal"
-    class="modal"
-    aria-hidden="true"
+    class="modal-overlay"
 >
 
-    <div class="modal-backdrop"></div>
 
-    <div
-        class="modal-box"
-        role="dialog"
-    >
+    <div class="confirm-box">
 
-        <div class="modal-symbol danger">
-            !
+
+        <div class="confirm-icon">
+
+            <i class="fa-solid fa-triangle-exclamation"></i>
+
         </div>
 
-        <h3>
-            Hapus Data?
-        </h3>
 
-        <p>
-            Data inventaris yang dipilih
-            akan dihapus permanen dari database lokal.
+        <h2 id="confirmTitle">
+
+            Konfirmasi
+
+        </h2>
+
+
+        <p id="confirmMessage">
+
+            Apakah Anda yakin?
+
         </p>
 
-        <div class="modal-actions">
-
-            <button
-                id="cancelDeleteBtn"
-                class="secondary-btn"
-                type="button"
-            >
-                Batal
-            </button>
-
-            <button
-                id="confirmDeleteBtn"
-                class="danger-btn"
-                type="button"
-            >
-                Hapus
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =====================================================
-     GENERAL MODAL
-====================================================== -->
-
-<div
-    id="dataModal"
-    class="modal"
-    aria-hidden="true"
->
-
-    <div class="modal-backdrop"></div>
-
-    <div
-        class="modal-box"
-        role="dialog"
-    >
-
-        <div class="modal-symbol">
-            i
-        </div>
-
-        <h3
-            id="dataModalTitle"
-        >
-            Konfirmasi
-        </h3>
-
-        <p
-            id="dataModalText"
-        ></p>
-
 
         <div class="modal-actions">
 
-            <button
-                id="dataModalCancel"
-                class="secondary-btn"
-                type="button"
-            >
-                Batal
-            </button>
 
             <button
-                id="dataModalConfirm"
-                class="primary-btn"
+                id="confirmCancel"
+                class="secondary-button"
                 type="button"
             >
-                Lanjutkan
+
+                Batal
+
             </button>
+
+
+            <button
+                id="confirmYes"
+                class="danger-button"
+                type="button"
+            >
+
+                Ya, Lanjutkan
+
+            </button>
+
 
         </div>
 
+
     </div>
 
+
 </div>
+
 
 
 <!-- =====================================================
      TOAST
-====================================================== -->
+===================================================== -->
 
 <div
-    id="toast"
-    class="toast"
+    id="toastContainer"
+    class="toast-container"
+></div>
+
+
+
+<!-- =====================================================
+     RESTORE FILE
+===================================================== -->
+
+<input
+    type="file"
+    id="restoreFileInput"
+    accept=".json,application/json"
+    hidden
 >
 
-    <div
-        id="toastIcon"
-        class="toast-icon"
-    >
-        ✓
-    </div>
 
-    <div>
 
-        <strong
-            id="toastTitle"
-        >
-            Berhasil
-        </strong>
-
-        <span
-            id="toastMessage"
-        >
-            Data berhasil disimpan.
-        </span>
-
-    </div>
-
-</div>
-
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
 
 <script src="script.js"></script>
 
-</body>
 
+
+<!-- =====================================================
+     SPLASH FAILSAFE
+===================================================== -->
+
+<script>
+
+(function () {
+
+    const splash =
+        document.getElementById(
+            "splashScreen"
+        );
+
+
+    const loadingText =
+        document.getElementById(
+            "loadingText"
+        );
+
+
+    if (!splash) {
+        return;
+    }
+
+
+    const messages = [
+
+        "Memuat sistem...",
+
+        "Menyiapkan database...",
+
+        "Memuat inventaris...",
+
+        "Menyiapkan dashboard...",
+
+        "Sistem siap!"
+
+    ];
+
+
+    let messageIndex = 0;
+
+
+    const messageTimer =
+        setInterval(
+            function () {
+
+                messageIndex++;
+
+
+                if (
+                    loadingText &&
+                    messageIndex <
+                    messages.length
+                ) {
+
+                    loadingText.textContent =
+                        messages[messageIndex];
+
+                }
+
+
+                if (
+                    messageIndex >=
+                    messages.length
+                ) {
+
+                    clearInterval(
+                        messageTimer
+                    );
+
+                }
+
+            },
+            450
+        );
+
+
+    let hidden = false;
+
+
+    function hideSplash() {
+
+
+        if (hidden) {
+            return;
+        }
+
+
+        hidden = true;
+
+
+        clearInterval(
+            messageTimer
+        );
+
+
+        if (loadingText) {
+
+            loadingText.textContent =
+                "Sistem siap!";
+
+        }
+
+
+        splash.classList.add(
+            "hide"
+        );
+
+
+        setTimeout(
+            function () {
+
+                if (splash) {
+
+                    splash.remove();
+
+                }
+
+            },
+            800
+        );
+
+    }
+
+
+    window.addEventListener(
+        "load",
+        function () {
+
+            setTimeout(
+                hideSplash,
+                350
+            );
+
+        }
+    );
+
+
+    /* FAILSAFE */
+
+    setTimeout(
+        hideSplash,
+        3500
+    );
+
+
+})();
+
+</script>
+
+
+</body>
 </html>
