@@ -3901,38 +3901,112 @@ tbody td {
 
 
 /* =========================================================
-   LOGIN / ADMIN ACCESS
+   LOGIN / ADMIN ACCESS - PREMIUM
 ========================================================= */
 
 .login-sidebar-button {
+    position: relative;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 11px 12px;
     margin-bottom: 9px;
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    background: var(--surface);
-    color: var(--text-soft);
+    border: 1px solid rgba(37,99,235,.20);
+    border-radius: 13px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(37,99,235,.10),
+            rgba(124,58,237,.07)
+        );
+    color: var(--text);
     font-size: 9px;
     font-weight: 700;
     text-align: left;
+    cursor: pointer;
     pointer-events: auto !important;
-    transition: .2s ease;
+    overflow: hidden;
+    transition:
+        transform .25s ease,
+        border-color .25s ease,
+        background .25s ease,
+        box-shadow .25s ease;
+}
+
+.login-sidebar-button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 80%;
+    height: 100%;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.14),
+            transparent
+        );
+    transform: skewX(-20deg);
+    transition: left .65s ease;
+    pointer-events: none;
 }
 
 .login-sidebar-button:hover {
-    color: var(--primary);
-    border-color: rgba(37,99,235,.22);
-    background: rgba(37,99,235,.05);
+    transform: translateY(-2px);
+    color: var(--text);
+    border-color: rgba(37,99,235,.42);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(37,99,235,.16),
+            rgba(124,58,237,.12)
+        );
+    box-shadow:
+        0 10px 26px
+        rgba(37,99,235,.15);
+}
+
+.login-sidebar-button:hover::before {
+    left: 135%;
 }
 
 .login-sidebar-button > span:first-child {
+    min-width: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
+}
+
+.login-sidebar-button > span:first-child > i {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 34px;
+    border-radius: 10px;
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #7c3aed
+        );
+    color: #fff;
+    font-size: 12px;
+    box-shadow:
+        0 7px 16px
+        rgba(37,99,235,.23);
+}
+
+.login-sidebar-button #loginButtonText {
+    display: block;
+    color: var(--text);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
 }
 
 .login-status-dot {
@@ -3940,34 +4014,120 @@ tbody td {
     height: 8px;
     flex: 0 0 8px;
     border-radius: 50%;
-    background: var(--red);
-    box-shadow: 0 0 8px rgba(220,38,38,.28);
+    background: #64748b;
+    box-shadow: none;
+    transition:
+        background .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease;
+}
+
+.login-status-dot:not(.logged-in) {
+    background: var(--orange);
+    box-shadow: 0 0 9px rgba(234,88,12,.28);
 }
 
 .login-status-dot.logged-in {
     background: var(--green);
-    box-shadow: 0 0 8px rgba(22,163,74,.35);
+    box-shadow: 0 0 11px rgba(22,163,74,.55);
+    animation: loginPulse 1.8s ease-in-out infinite;
 }
+
+.admin-logged-in .login-sidebar-button {
+    border-color: rgba(22,163,74,.28);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(22,163,74,.10),
+            rgba(16,185,129,.06)
+        );
+}
+
+.admin-logged-in .login-sidebar-button:hover {
+    border-color: rgba(22,163,74,.45);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(22,163,74,.15),
+            rgba(16,185,129,.09)
+        );
+    box-shadow:
+        0 10px 26px
+        rgba(22,163,74,.13);
+}
+
+.admin-logged-in .login-sidebar-button > span:first-child > i {
+    background:
+        linear-gradient(
+            135deg,
+            #16a34a,
+            #059669
+        );
+    box-shadow:
+        0 7px 16px
+        rgba(22,163,74,.20);
+}
+
+@keyframes loginPulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.35);
+        opacity: .72;
+    }
+}
+
+/* =========================================================
+   LOGIN MODAL
+========================================================= */
 
 .login-modal-box {
     width: min(100%, 470px);
+    border: 1px solid rgba(37,99,235,.18);
+    box-shadow:
+        0 30px 80px rgba(15,23,42,.28),
+        0 0 55px rgba(37,99,235,.08);
+}
+
+body.dark .login-modal-box {
+    border-color: rgba(96,165,250,.15);
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.50),
+        0 0 55px rgba(37,99,235,.10);
 }
 
 .login-security-badge {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 11px 12px;
+    padding: 12px 13px;
     margin-bottom: 18px;
-    border: 1px solid rgba(37,99,235,.14);
+    border: 1px solid rgba(37,99,235,.15);
     border-radius: 12px;
-    background: rgba(37,99,235,.06);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(37,99,235,.08),
+            rgba(124,58,237,.06)
+        );
     color: var(--primary);
 }
 
 .login-security-badge > i {
-    margin-top: 2px;
-    font-size: 15px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0;
+    border-radius: 8px;
+    background: rgba(37,99,235,.10);
+    font-size: 12px;
 }
 
 .login-security-badge strong,
@@ -3979,12 +4139,13 @@ tbody td {
     margin-bottom: 4px;
     color: var(--text);
     font-size: 10px;
+    font-weight: 800;
 }
 
 .login-security-badge span {
     color: var(--text-soft);
     font-size: 8px;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 .login-input-wrap {
@@ -3993,20 +4154,25 @@ tbody td {
 
 .login-input-wrap > i {
     position: absolute;
-    left: 12px;
+    left: 13px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-soft);
-    font-size: 10px;
+    font-size: 11px;
     pointer-events: none;
+    z-index: 2;
 }
 
 .login-input-wrap input {
-    padding-left: 34px !important;
+    padding-left: 37px !important;
+}
+
+.login-input-wrap input:focus + i {
+    color: var(--primary);
 }
 
 .login-error {
-    min-height: 18px;
+    min-height: 19px;
     margin-top: -2px;
     color: var(--red);
     font-size: 8px;
@@ -4022,6 +4188,7 @@ tbody td {
     border-top: 1px solid var(--border);
     color: var(--text-soft);
     font-size: 8px;
+    line-height: 1.5;
 }
 
 .login-demo-note i {
@@ -4032,15 +4199,25 @@ tbody td {
     color: var(--text);
 }
 
-/* Saat belum login, tombol aksi tetap terlihat tetapi memberi prompt login. */
-body:not(.admin-logged-in) .edit-button,
-body:not(.admin-logged-in) .delete-button {
-    opacity: .78;
-}
-
 @media (max-width: 600px) {
+
+    .login-sidebar-button {
+        padding: 10px 11px;
+    }
+
+    .login-sidebar-button > span:first-child > i {
+        width: 33px;
+        height: 33px;
+        flex-basis: 33px;
+    }
+
     .login-modal-box {
         width: 100%;
     }
 }
 
+/* Saat belum login, tombol edit/hapus tetap terlihat tetapi terkunci. */
+body:not(.admin-logged-in) .edit-button,
+body:not(.admin-logged-in) .delete-button {
+    opacity: .78;
+}
