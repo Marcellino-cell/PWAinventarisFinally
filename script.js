@@ -1,19 +1,17 @@
 /* =========================================================
-   SISTEM INVENTARIS RUANGAN V6.0
-   FIREBASE GOOGLE LOGIN + LOCAL ADMIN
-   PWA + LOCAL STORAGE
+   SISTEM INVENTARIS RUANGAN
+   FULL JAVASCRIPT V5.4
+   FIREBASE GOOGLE AUTH + LOCAL ADMIN
 ========================================================= */
 
 
 /* =========================================================
-   FIREBASE IMPORT
+   FIREBASE
 ========================================================= */
 
-/* =========================================================
-   FIREBASE CONFIG BARU
-========================================================= */
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 
 import {
     getAuth,
@@ -27,7 +25,6 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
-
 const firebaseConfig = {
     apiKey: "AIzaSyCGYXZYJroOjIsBw0PD2h6KqoEyZKb-Gxw",
     authDomain: "sistem-inventaris-ruangan-2026.firebaseapp.com",
@@ -38,10 +35,6 @@ const firebaseConfig = {
     measurementId: "G-W1Z7CFXX0M"
 };
 
-
-/* =========================================================
-   INITIALIZE FIREBASE
-========================================================= */
 
 const firebaseApp =
     initializeApp(firebaseConfig);
@@ -58,48 +51,38 @@ googleProvider.setCustomParameters({
 
 
 /* =========================================================
-   FIREBASE APP
+   IMPORTANT
+   GANTI EMAIL INI DENGAN EMAIL GOOGLE KAMU
 ========================================================= */
 
-const firebaseApp =
-    initializeApp(
-        firebaseConfig
-    );
+const ADMIN_GOOGLE_EMAILS = [
 
+    "GANTI_DENGAN_EMAIL_GOOGLE_KAMU@gmail.com"
 
-/*
-   Auth dibuat saat dibutuhkan.
-   Dengan cara ini halaman tidak terus-menerus
-   memanggil Firebase Authentication ketika
-   user hanya memakai mode lokal.
-*/
-
-let auth = null;
-
-let googleProvider = null;
+];
 
 
 /* =========================================================
-   STORAGE
+   STORAGE KEY
 ========================================================= */
 
 const STORAGE_KEY =
-    "roomInventoryData_v60";
-
-const ACTIVITY_KEY =
-    "roomInventoryActivity_v60";
+    "roomInventoryData_v53";
 
 const THEME_KEY =
-    "roomInventoryTheme_v60";
+    "roomInventoryTheme_v53";
 
-const AUTH_KEY =
-    "roomInventoryAdminAuth_v60";
-
-const GOOGLE_USER_KEY =
-    "roomInventoryGoogleUser_v60";
+const ACTIVITY_KEY =
+    "roomInventoryActivity_v53";
 
 const AUTO_BACKUP_KEY =
-    "roomInventoryAutoBackup_v60";
+    "roomInventoryAutoBackup_v53";
+
+const AUTH_KEY =
+    "roomInventoryAdminAuth_v53";
+
+const GOOGLE_USER_KEY =
+    "roomInventoryGoogleUser_v53";
 
 
 /* =========================================================
@@ -114,7 +97,22 @@ const ADMIN_PASSWORD =
 
 
 /* =========================================================
-   STATE
+   OLD STORAGE
+========================================================= */
+
+const OLD_STORAGE_KEYS = [
+
+    "roomInventoryData_v5",
+
+    "roomInventoryData_v4",
+
+    "roomInventoryData_v3"
+
+];
+
+
+/* =========================================================
+   GLOBAL
 ========================================================= */
 
 let inventoryData = [];
@@ -131,7 +129,26 @@ let isAdminLoggedIn = false;
 
 let currentGoogleUser = null;
 
-let googleLoginBusy = false;
+
+/* =========================================================
+   CONFIG FOOTER
+========================================================= */
+
+const FOOTER_CONFIG = {
+
+    supportBy:
+        "RPL Developer Team",
+
+    github:
+        "https://github.com/",
+
+    linkedin:
+        "https://www.linkedin.com/",
+
+    phone:
+        "tel:+6281234567890"
+
+};
 
 
 /* =========================================================
@@ -139,7 +156,9 @@ let googleLoginBusy = false;
 ========================================================= */
 
 function $(id) {
+
     return document.getElementById(id);
+
 }
 
 
@@ -157,7 +176,7 @@ document.addEventListener(
    INIT
 ========================================================= */
 
-function init() {
+async function init() {
 
     try {
 
@@ -175,25 +194,27 @@ function init() {
 
         updateClock();
 
-        setInterval(
-            updateClock,
-            1000
-        );
+        updateFooterYear();
+
+        hideSplash();
 
         registerServiceWorker();
 
-        setTimeout(
-            hideSplash,
-            500
-        );
+        await setupFirebaseAuth();
 
     }
+
     catch (error) {
 
-        /*
-           Jangan spam console dengan Firebase error.
-           Error internal aplikasi tetap ditangani.
-        */
+        console.error(
+            "Initialization error:",
+            error
+        );
+
+        showToast(
+            "Terjadi error saat memuat aplikasi.",
+            "error"
+        );
 
         hideSplash();
 
@@ -203,23 +224,12 @@ function init() {
 
 
 /* =========================================================
-   FIREBASE AUTH INIT
+   FIREBASE AUTH SETUP
 ========================================================= */
 
-async function getFirebaseAuth() {
-
-    if (auth) {
-        return auth;
-    }
-
+async function setupFirebaseAuth() {
 
     try {
-
-        auth =
-            getAuth(
-                firebaseApp
-            );
-
 
         await setPersistence(
             auth,
@@ -227,29 +237,74 @@ async function getFirebaseAuth() {
         );
 
 
-        googleProvider =
-            new GoogleAuthProvider();
+        onAuthStateChanged(
+            auth,
+            function (
+                user
+            ) {
+
+                handleFirebaseUser(
+                    user
+                );
+
+            }
+        );
 
 
-        googleProvider.setCustomParameters({
+        try {
 
-            prompt:
-                "select_account"
+            const result =
+                await getRedirectResult(
+                    auth
+                );
 
-        });
 
+            if (
+                result &&
+                result.user
+            ) {
 
-        return auth;
+                console.log(
+                    "Google redirect login berhasil."
+                );
+
+            }
+
+        }
+
+        catch (
+            redirectError
+        ) {
+
+            if (
+                redirectError.code !==
+                "auth/no-auth-event"
+            ) {
+
+                console.warn(
+                    "Redirect result:",
+                    redirectError
+                );
+
+            }
+
+        }
 
     }
-    catch (error) {
 
-        /*
-           Sengaja tidak console.error.
-           Error ditampilkan sebagai pesan UI.
-        */
+    catch (
+        error
+    ) {
 
-        throw error;
+        console.error(
+            "Firebase setup error:",
+            error
+        );
+
+        setGoogleStatus(
+            "Firebase Authentication belum siap.",
+            true
+        );
 
     }
 
@@ -257,19 +312,481 @@ async function getFirebaseAuth() {
 
 
 /* =========================================================
-   LOCAL AUTH
+   FIREBASE USER HANDLER
+========================================================= */
+
+function handleFirebaseUser(
+    user
+) {
+
+    currentGoogleUser =
+        user || null;
+
+
+    if (
+        user
+    ) {
+
+        const email =
+            (
+                user.email ||
+                ""
+            )
+            .toLowerCase()
+            .trim();
+
+
+        const isAllowed =
+            ADMIN_GOOGLE_EMAILS
+                .map(
+                    item =>
+                        item
+                            .toLowerCase()
+                            .trim()
+                )
+                .includes(
+                    email
+                );
+
+
+        localStorage.setItem(
+            GOOGLE_USER_KEY,
+            JSON.stringify({
+
+                uid:
+                    user.uid,
+
+                email:
+                    user.email,
+
+                displayName:
+                    user.displayName,
+
+                photoURL:
+                    user.photoURL
+
+            })
+        );
+
+
+        if (
+            isAllowed
+        ) {
+
+            isAdminLoggedIn =
+                true;
+
+
+            localStorage.setItem(
+                AUTH_KEY,
+                "google-admin"
+            );
+
+
+            updateAuthUI();
+
+
+            showGoogleAccount(
+                user
+            );
+
+        }
+
+        else {
+
+            isAdminLoggedIn =
+                false;
+
+
+            localStorage.removeItem(
+                AUTH_KEY
+            );
+
+
+            updateAuthUI();
+
+
+            showGoogleAccount(
+                user,
+                false
+            );
+
+        }
+
+    }
+
+    else {
+
+        currentGoogleUser =
+            null;
+
+
+        const localAuth =
+            localStorage.getItem(
+                AUTH_KEY
+            );
+
+
+        if (
+            localAuth !==
+            "local-admin"
+        ) {
+
+            isAdminLoggedIn =
+                false;
+
+            localStorage.removeItem(
+                AUTH_KEY
+            );
+
+        }
+
+
+        localStorage.removeItem(
+            GOOGLE_USER_KEY
+        );
+
+
+        updateAuthUI();
+
+        clearGoogleAccount();
+
+    }
+
+}
+
+
+/* =========================================================
+   GOOGLE LOGIN
+========================================================= */
+
+async function loginWithGoogle() {
+
+    const button =
+        $("googleLoginButton");
+
+
+    try {
+
+        if (
+            button
+        ) {
+
+            button.classList.add(
+                "loading"
+            );
+
+            button.disabled =
+                true;
+
+        }
+
+
+        setGoogleStatus(
+            "Membuka login Google..."
+        );
+
+
+        /*
+           Desktop / laptop:
+           popup login.
+        */
+
+        if (
+            window.innerWidth >
+            700
+        ) {
+
+            await signInWithPopup(
+                auth,
+                googleProvider
+            );
+
+        }
+
+        else {
+
+            /*
+               Mobile:
+               redirect login.
+            */
+
+            await signInWithRedirect(
+                auth,
+                googleProvider
+            );
+
+        }
+
+    }
+
+    catch (
+        error
+    ) {
+
+        console.error(
+            "Google Login Error:",
+            error
+        );
+
+
+        let message =
+            "Login Google gagal.";
+
+
+        switch (
+            error.code
+        ) {
+
+            case "auth/popup-closed-by-user":
+
+                message =
+                    "Jendela Google ditutup.";
+
+                break;
+
+
+            case "auth/popup-blocked":
+
+                message =
+                    "Popup Google diblokir browser.";
+
+                break;
+
+
+            case "auth/unauthorized-domain":
+
+                message =
+                    "Domain website belum ditambahkan di Firebase Authorized Domains.";
+
+                break;
+
+
+            case "auth/network-request-failed":
+
+                message =
+                    "Koneksi internet bermasalah.";
+
+                break;
+
+
+            default:
+
+                message =
+                    error.message ||
+                    message;
+
+        }
+
+
+        setGoogleStatus(
+            message,
+            true
+        );
+
+
+        showToast(
+            message,
+            "error"
+        );
+
+    }
+
+    finally {
+
+        if (
+            button
+        ) {
+
+            button.classList.remove(
+                "loading"
+            );
+
+            button.disabled =
+                false;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   GOOGLE LOGOUT
+========================================================= */
+
+async function logoutGoogle() {
+
+    try {
+
+        await signOut(
+            auth
+        );
+
+    }
+
+    catch (
+        error
+    ) {
+
+        console.error(
+            "Google logout error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GOOGLE ACCOUNT UI
+========================================================= */
+
+function showGoogleAccount(
+    user,
+    allowed = true
+) {
+
+    const status =
+        $("googleLoginStatus");
+
+
+    if (
+        !status
+    ) {
+
+        return;
+
+    }
+
+
+    const name =
+        user.displayName ||
+        user.email ||
+        "Google User";
+
+
+    if (
+        allowed
+    ) {
+
+        status.innerHTML = `
+
+            <span class="google-user-success">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Login sebagai
+                <strong>
+                    ${escapeHtml(name)}
+                </strong>
+
+            </span>
+
+        `;
+
+    }
+
+    else {
+
+        status.innerHTML = `
+
+            <span class="google-user-warning">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                Akun Google berhasil login,
+                tetapi bukan akun admin.
+
+            </span>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   CLEAR GOOGLE UI
+========================================================= */
+
+function clearGoogleAccount() {
+
+    setGoogleStatus(
+        ""
+    );
+
+}
+
+
+/* =========================================================
+   GOOGLE STATUS
+========================================================= */
+
+function setGoogleStatus(
+    message,
+    error = false
+) {
+
+    const element =
+        $("googleLoginStatus");
+
+
+    if (
+        !element
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !message
+    ) {
+
+        element.innerHTML =
+            "";
+
+        return;
+
+    }
+
+
+    element.innerHTML = `
+
+        <span
+            class="${error ? "google-user-error" : ""}"
+        >
+
+            ${escapeHtml(
+                message
+            )}
+
+        </span>
+
+    `;
+
+}
+
+
+/* =========================================================
+   LOCAL AUTH LOAD
 ========================================================= */
 
 function loadLocalAuth() {
 
-    const saved =
+    const state =
         localStorage.getItem(
             AUTH_KEY
         );
 
 
     if (
-        saved ===
+        state ===
         "local-admin"
     ) {
 
@@ -277,36 +794,8 @@ function loadLocalAuth() {
             true;
 
     }
-    else if (
-        saved ===
-        "google-admin"
-    ) {
-
-        const user =
-            getSavedGoogleUser();
 
 
-        if (user) {
-
-            currentGoogleUser =
-                user;
-
-            isAdminLoggedIn =
-                true;
-
-        }
-        else {
-
-            localStorage.removeItem(
-                AUTH_KEY
-            );
-
-            isAdminLoggedIn =
-                false;
-
-        }
-
-    }
     else {
 
         isAdminLoggedIn =
@@ -320,77 +809,118 @@ function loadLocalAuth() {
 }
 
 
-function getSavedGoogleUser() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                GOOGLE_USER_KEY
-            );
-
-
-        return saved
-            ? JSON.parse(saved)
-            : null;
-
-    }
-    catch {
-
-        return null;
-
-    }
-
-}
-
-
 /* =========================================================
    AUTH UI
 ========================================================= */
 
 function updateAuthUI() {
 
-    const button =
-        $("loginButton");
+    document.body.classList.toggle(
+        "admin-logged-in",
+        isAdminLoggedIn
+    );
+
 
     const text =
         $("loginButtonText");
 
 
-    if (!button) {
-        return;
-    }
+    const icon =
+        $("loginButtonIcon");
 
 
-    if (isAdminLoggedIn) {
+    const dot =
+        $("loginStatusDot");
 
-        if (currentGoogleUser) {
 
-            if (text) {
+    const button =
+        $("loginButton");
 
-                text.textContent =
-                    "Google Admin";
 
-            }
+    if (
+        isAdminLoggedIn
+    ) {
 
-        }
-        else {
-
-            if (text) {
-
-                text.textContent =
-                    "Logout Admin";
-
-            }
-
-        }
-
-    }
-    else {
-
-        if (text) {
+        if (
+            text
+        ) {
 
             text.textContent =
+                "Logout Admin";
+
+        }
+
+
+        if (
+            icon
+        ) {
+
+            icon.className =
+                "fa-solid fa-right-from-bracket";
+
+        }
+
+
+        if (
+            dot
+        ) {
+
+            dot.classList.add(
+                "logged-in"
+            );
+
+        }
+
+
+        if (
+            button
+        ) {
+
+            button.title =
+                "Logout Admin";
+
+        }
+
+    }
+
+    else {
+
+        if (
+            text
+        ) {
+
+            text.textContent =
+                "Login Admin";
+
+        }
+
+
+        if (
+            icon
+        ) {
+
+            icon.className =
+                "fa-solid fa-right-to-bracket";
+
+        }
+
+
+        if (
+            dot
+        ) {
+
+            dot.classList.remove(
+                "logged-in"
+            );
+
+        }
+
+
+        if (
+            button
+        ) {
+
+            button.title =
                 "Login Admin";
 
         }
@@ -406,7 +936,9 @@ function updateAuthUI() {
 
 function openLoginModal() {
 
-    if (isAdminLoggedIn) {
+    if (
+        isAdminLoggedIn
+    ) {
 
         logoutAdmin();
 
@@ -415,13 +947,44 @@ function openLoginModal() {
     }
 
 
+    $("loginForm")
+        ?.reset();
+
+
+    if (
+        $("loginError")
+    ) {
+
+        $("loginError")
+            .textContent =
+            "";
+
+    }
+
+
+    clearGoogleAccount();
+
+
     $("loginModal")
         ?.classList.add(
             "show"
         );
 
 
-    clearLoginMessages();
+    document.body.classList.add(
+        "modal-open"
+    );
+
+
+    setTimeout(
+        function () {
+
+            $("loginUsername")
+                ?.focus();
+
+        },
+        120
+    );
 
 }
 
@@ -433,27 +996,10 @@ function closeLoginModal() {
             "show"
         );
 
-}
 
-
-function clearLoginMessages() {
-
-    if ($("loginError")) {
-
-        $("loginError")
-            .textContent =
-            "";
-
-    }
-
-
-    if ($("googleLoginStatus")) {
-
-        $("googleLoginStatus")
-            .innerHTML =
-            "";
-
-    }
+    document.body.classList.remove(
+        "modal-open"
+    );
 
 }
 
@@ -462,7 +1008,7 @@ function clearLoginMessages() {
    LOCAL LOGIN
 ========================================================= */
 
-function handleLocalLogin(
+function handleLoginSubmit(
     event
 ) {
 
@@ -475,6 +1021,7 @@ function handleLocalLogin(
             .trim() ||
         "";
 
+
     const password =
         $("loginPassword")
             ?.value ||
@@ -483,17 +1030,13 @@ function handleLocalLogin(
 
     if (
         username ===
-        ADMIN_USERNAME
-        &&
+        ADMIN_USERNAME &&
         password ===
         ADMIN_PASSWORD
     ) {
 
         isAdminLoggedIn =
             true;
-
-        currentGoogleUser =
-            null;
 
 
         localStorage.setItem(
@@ -502,24 +1045,20 @@ function handleLocalLogin(
         );
 
 
-        localStorage.removeItem(
-            GOOGLE_USER_KEY
-        );
-
-
         updateAuthUI();
+
 
         closeLoginModal();
 
 
         addActivity(
             "Login Admin lokal",
-            "fa-circle-check"
+            "fa-right-to-bracket"
         );
 
 
         showToast(
-            "Login Admin berhasil.",
+            "Login admin berhasil.",
             "success"
         );
 
@@ -529,7 +1068,9 @@ function handleLocalLogin(
     }
 
 
-    if ($("loginError")) {
+    if (
+        $("loginError")
+    ) {
 
         $("loginError")
             .textContent =
@@ -538,7 +1079,9 @@ function handleLocalLogin(
     }
 
 
-    if ($("loginPassword")) {
+    if (
+        $("loginPassword")
+    ) {
 
         $("loginPassword")
             .value =
@@ -553,328 +1096,28 @@ function handleLocalLogin(
 
 
 /* =========================================================
-   GOOGLE LOGIN
-========================================================= */
-
-async function loginWithGoogle() {
-
-    if (googleLoginBusy) {
-        return;
-    }
-
-
-    googleLoginBusy =
-        true;
-
-
-    const button =
-        $("googleLoginButton");
-
-
-    if (button) {
-
-        button.disabled =
-            true;
-
-        button.textContent =
-            "Menghubungkan ke Google...";
-
-    }
-
-
-    setGoogleStatus(
-        "Membuka Login Google...",
-        "info"
-    );
-
-
-    try {
-
-        const firebaseAuth =
-            await getFirebaseAuth();
-
-
-        const result =
-            await signInWithPopup(
-                firebaseAuth,
-                googleProvider
-            );
-
-
-        if (
-            !result ||
-            !result.user
-        ) {
-
-            throw new Error(
-                "Akun Google tidak ditemukan."
-            );
-
-        }
-
-
-        const user =
-            result.user;
-
-
-        currentGoogleUser = {
-
-            uid:
-                user.uid,
-
-            email:
-                user.email ||
-                "",
-
-            displayName:
-                user.displayName ||
-                "Google Admin",
-
-            photoURL:
-                user.photoURL ||
-                ""
-
-        };
-
-
-        isAdminLoggedIn =
-            true;
-
-
-        localStorage.setItem(
-            AUTH_KEY,
-            "google-admin"
-        );
-
-
-        localStorage.setItem(
-            GOOGLE_USER_KEY,
-            JSON.stringify(
-                currentGoogleUser
-            )
-        );
-
-
-        updateAuthUI();
-
-
-        closeLoginModal();
-
-
-        addActivity(
-            `Login Google: ${
-                currentGoogleUser.email
-            }`,
-            "fa-circle-check"
-        );
-
-
-        showToast(
-            `Login Google berhasil. Selamat datang, ${
-                currentGoogleUser.displayName
-            }.`,
-            "success"
-        );
-
-    }
-    catch (error) {
-
-        /*
-           Tidak console.error(error)
-           supaya console tidak dipenuhi
-           auth/api-key-not-valid.
-        */
-
-        handleGoogleError(
-            error
-        );
-
-    }
-    finally {
-
-        googleLoginBusy =
-            false;
-
-
-        if (button) {
-
-            button.disabled =
-                false;
-
-            button.innerHTML = `
-                <span class="google-icon">
-                    G
-                </span>
-                Login dengan Google
-            `;
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   GOOGLE ERROR
-========================================================= */
-
-function handleGoogleError(
-    error
-) {
-
-    const code =
-        error?.code ||
-        "";
-
-
-    let message =
-        "Login Google tidak dapat dilakukan.";
-
-
-    if (
-        code.includes(
-            "api-key-not-valid"
-        )
-        ||
-        code.includes(
-            "invalid-api-key"
-        )
-    ) {
-
-        message =
-            "Firebase Authentication belum siap. Periksa Web App Firebase dan API key project baru.";
-
-    }
-
-    else if (
-        code ===
-        "auth/unauthorized-domain"
-    ) {
-
-        message =
-            "Domain ini belum ditambahkan ke Authorized domains Firebase.";
-
-    }
-
-    else if (
-        code ===
-        "auth/operation-not-allowed"
-    ) {
-
-        message =
-            "Google Login belum diaktifkan di Firebase.";
-
-    }
-
-    else if (
-        code ===
-        "auth/popup-blocked"
-    ) {
-
-        message =
-            "Popup Google diblokir browser.";
-
-    }
-
-    else if (
-        code ===
-        "auth/popup-closed-by-user"
-    ) {
-
-        message =
-            "Login Google dibatalkan.";
-
-    }
-
-    else if (
-        code ===
-        "auth/network-request-failed"
-    ) {
-
-        message =
-            "Koneksi internet bermasalah.";
-
-    }
-
-
-    setGoogleStatus(
-        message,
-        "error"
-    );
-
-
-    showToast(
-        message,
-        "error"
-    );
-
-}
-
-
-/* =========================================================
-   GOOGLE STATUS
-========================================================= */
-
-function setGoogleStatus(
-    message,
-    type = "info"
-) {
-
-    const element =
-        $("googleLoginStatus");
-
-
-    if (!element) {
-        return;
-    }
-
-
-    element.innerHTML = `
-
-        <div class="google-status-message ${type}">
-
-            ${escapeHtml(
-                message
-            )}
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================================
    LOGOUT
 ========================================================= */
 
 async function logoutAdmin() {
 
-    try {
-
-        if (
-            auth &&
+    const usingGoogle =
+        Boolean(
             currentGoogleUser
-        ) {
+        );
 
-            /*
-               Tidak perlu memaksa refresh auth.
-            */
 
-        }
+    if (
+        usingGoogle
+    ) {
 
-    }
-    catch {
-        /* intentionally ignored */
+        await logoutGoogle();
+
     }
 
 
     isAdminLoggedIn =
         false;
-
-    currentGoogleUser =
-        null;
 
 
     localStorage.removeItem(
@@ -882,9 +1125,11 @@ async function logoutAdmin() {
     );
 
 
-    localStorage.removeItem(
-        GOOGLE_USER_KEY
-    );
+    closeLoginModal();
+
+    closeInventoryModal();
+
+    closeConfirmModal();
 
 
     updateAuthUI();
@@ -897,7 +1142,7 @@ async function logoutAdmin() {
 
 
     showToast(
-        "Logout berhasil.",
+        "Logout berhasil. Data kembali terkunci.",
         "info"
     );
 
@@ -905,21 +1150,26 @@ async function logoutAdmin() {
 
 
 /* =========================================================
-   REQUIRE ADMIN
+   ADMIN CHECK
 ========================================================= */
 
 function requireAdmin(
-    action
+    action =
+        "melakukan perubahan data"
 ) {
 
-    if (isAdminLoggedIn) {
+    if (
+        isAdminLoggedIn
+    ) {
+
         return true;
+
     }
 
 
     showToast(
-        `Silakan login Admin untuk ${action}.`,
-        "warning"
+        `Silakan login admin untuk ${action}.`,
+        "error"
     );
 
 
@@ -932,7 +1182,7 @@ function requireAdmin(
 
 
 /* =========================================================
-   EVENT BINDING
+   EVENTS
 ========================================================= */
 
 function bindEvents() {
@@ -951,10 +1201,17 @@ function bindEvents() {
         );
 
 
+    $("cancelLoginButton")
+        ?.addEventListener(
+            "click",
+            closeLoginModal
+        );
+
+
     $("loginForm")
         ?.addEventListener(
             "submit",
-            handleLocalLogin
+            handleLoginSubmit
         );
 
 
@@ -972,6 +1229,54 @@ function bindEvents() {
         );
 
 
+    $("loginModal")
+        ?.addEventListener(
+            "click",
+            function (
+                event
+            ) {
+
+                if (
+                    event.target ===
+                    $("loginModal")
+                ) {
+
+                    closeLoginModal();
+
+                }
+
+            }
+        );
+
+
+    /* NAVIGATION */
+
+    document
+        .querySelectorAll(
+            ".menu-item[data-target]"
+        )
+        .forEach(
+            function (
+                button
+            ) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        switchSection(
+                            button.dataset.target
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* MOBILE */
+
     $("mobileMenuButton")
         ?.addEventListener(
             "click",
@@ -986,27 +1291,7 @@ function bindEvents() {
         );
 
 
-    document
-        .querySelectorAll(
-            ".menu-item"
-        )
-        .forEach(
-            button => {
-
-                button.addEventListener(
-                    "click",
-                    function () {
-
-                        switchSection(
-                            button.dataset.section
-                        );
-
-                    }
-                );
-
-            }
-        );
-
+    /* THEME */
 
     $("themeButton")
         ?.addEventListener(
@@ -1015,7 +1300,23 @@ function bindEvents() {
         );
 
 
+    $("mobileThemeButton")
+        ?.addEventListener(
+            "click",
+            toggleTheme
+        );
+
+
+    /* ADD */
+
     $("quickAddButton")
+        ?.addEventListener(
+            "click",
+            openAddModal
+        );
+
+
+    $("heroAddButton")
         ?.addEventListener(
             "click",
             openAddModal
@@ -1039,12 +1340,17 @@ function bindEvents() {
     $("heroMonitorButton")
         ?.addEventListener(
             "click",
-            () =>
+            function () {
+
                 switchSection(
                     "monitoring"
-                )
+                );
+
+            }
         );
 
+
+    /* INVENTORY */
 
     $("closeModalButton")
         ?.addEventListener(
@@ -1102,6 +1408,8 @@ function bindEvents() {
         );
 
 
+    /* CONFIRM */
+
     $("confirmCancel")
         ?.addEventListener(
             "click",
@@ -1112,14 +1420,34 @@ function bindEvents() {
     $("confirmYes")
         ?.addEventListener(
             "click",
-            executeConfirm
+            function () {
+
+                const callback =
+                    confirmCallback;
+
+
+                closeConfirmModal();
+
+
+                if (
+                    typeof callback ===
+                    "function"
+                ) {
+
+                    callback();
+
+                }
+
+            }
         );
 
 
-    $("clearActivityButton")
+    /* TOOLS */
+
+    $("exportButton")
         ?.addEventListener(
             "click",
-            clearActivities
+            exportCSV
         );
 
 
@@ -1133,9 +1461,12 @@ function bindEvents() {
     $("restoreButton")
         ?.addEventListener(
             "click",
-            () =>
+            function () {
+
                 $("restoreFileInput")
-                    ?.click()
+                    ?.click();
+
+            }
         );
 
 
@@ -1146,10 +1477,21 @@ function bindEvents() {
         );
 
 
-    $("exportButton")
+    $("printButton")
         ?.addEventListener(
             "click",
-            exportCSV
+            function () {
+
+                window.print();
+
+            }
+        );
+
+
+    $("clearActivityButton")
+        ?.addEventListener(
+            "click",
+            clearActivities
         );
 
 
@@ -1160,63 +1502,44 @@ function bindEvents() {
         );
 
 
-    $("inventoryModal")
+    window.addEventListener(
+        "beforeinstallprompt",
+        function (
+            event
+        ) {
+
+            event.preventDefault();
+
+
+            deferredInstallPrompt =
+                event;
+
+
+            $("installButton")
+                ?.classList.remove(
+                    "hidden"
+                );
+
+        }
+    );
+
+
+    /* GPS */
+
+    $("footerGpsButton")
         ?.addEventListener(
             "click",
-            event => {
-
-                if (
-                    event.target ===
-                    $("inventoryModal")
-                ) {
-
-                    closeInventoryModal();
-
-                }
-
-            }
+            openGPS
         );
 
 
-    $("loginModal")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target ===
-                    $("loginModal")
-                ) {
-
-                    closeLoginModal();
-
-                }
-
-            }
-        );
-
-
-    $("confirmModal")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target ===
-                    $("confirmModal")
-                ) {
-
-                    closeConfirmModal();
-
-                }
-
-            }
-        );
-
+    /* ESC */
 
     document.addEventListener(
         "keydown",
-        event => {
+        function (
+            event
+        ) {
 
             if (
                 event.key ===
@@ -1235,23 +1558,86 @@ function bindEvents() {
     );
 
 
-    window.addEventListener(
-        "beforeinstallprompt",
-        event => {
+    $("inventoryModal")
+        ?.addEventListener(
+            "click",
+            function (
+                event
+            ) {
 
-            event.preventDefault();
+                if (
+                    event.target ===
+                    $("inventoryModal")
+                ) {
 
-            deferredInstallPrompt =
-                event;
+                    closeInventoryModal();
+
+                }
+
+            }
+        );
 
 
-            $("installButton")
-                ?.classList.remove(
-                    "hidden"
-                );
+    $("confirmModal")
+        ?.addEventListener(
+            "click",
+            function (
+                event
+            ) {
 
-        }
-    );
+                if (
+                    event.target ===
+                    $("confirmModal")
+                ) {
+
+                    closeConfirmModal();
+
+                }
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   PASSWORD
+========================================================= */
+
+function togglePassword() {
+
+    const input =
+        $("loginPassword");
+
+    const button =
+        $("togglePasswordButton");
+
+
+    if (
+        !input ||
+        !button
+    ) {
+
+        return;
+
+    }
+
+
+    const show =
+        input.type ===
+        "password";
+
+
+    input.type =
+        show
+            ? "text"
+            : "password";
+
+
+    button.innerHTML =
+        show
+            ? '<i class="fa-solid fa-eye-slash"></i>'
+            : '<i class="fa-solid fa-eye"></i>';
 
 }
 
@@ -1264,14 +1650,29 @@ function switchSection(
     target
 ) {
 
+    const section =
+        $(target);
+
+
+    if (
+        !section
+    ) {
+
+        return;
+
+    }
+
+
     document
         .querySelectorAll(
             ".page-section"
         )
         .forEach(
-            section => {
+            function (
+                item
+            ) {
 
-                section.classList.remove(
+                item.classList.remove(
                     "active-section"
                 );
 
@@ -1279,16 +1680,23 @@ function switchSection(
         );
 
 
+    section.classList.add(
+        "active-section"
+    );
+
+
     document
         .querySelectorAll(
-            ".menu-item"
+            ".menu-item[data-target]"
         )
         .forEach(
-            item => {
+            function (
+                item
+            ) {
 
                 item.classList.toggle(
                     "active",
-                    item.dataset.section ===
+                    item.dataset.target ===
                     target
                 );
 
@@ -1296,16 +1704,22 @@ function switchSection(
         );
 
 
-    $(target)
-        ?.classList.add(
-            "active-section"
-        );
-
-
     $("sidebar")
         ?.classList.remove(
             "open"
         );
+
+
+    window.scrollTo(
+        {
+            top:
+                0,
+
+            behavior:
+                "smooth"
+
+        }
+    );
 
 
     if (
@@ -1325,6 +1739,8 @@ function switchSection(
 
         updateMonitoring();
 
+        renderActivity();
+
     }
 
 
@@ -1337,75 +1753,242 @@ function switchSection(
 
     }
 
-
-    if (
-        target ===
-        "activity"
-    ) {
-
-        renderActivity();
-
-    }
-
 }
 
 
 /* =========================================================
-   PASSWORD
+   DATA
 ========================================================= */
 
-function togglePassword() {
+function loadData() {
 
-    const input =
-        $("loginPassword");
+    try {
+
+        let saved =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
 
 
-    const button =
-        $("togglePasswordButton");
+        if (
+            !saved
+        ) {
+
+            for (
+                const key
+                of OLD_STORAGE_KEYS
+            ) {
+
+                const old =
+                    localStorage.getItem(
+                        key
+                    );
 
 
-    if (!input) {
-        return;
+                if (
+                    old
+                ) {
+
+                    saved =
+                        old;
+
+
+                    localStorage.setItem(
+                        STORAGE_KEY,
+                        old
+                    );
+
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+
+        inventoryData =
+            saved
+                ? normalizeData(
+                    JSON.parse(
+                        saved
+                    )
+                )
+                : [];
+
     }
 
-
-    if (
-        input.type ===
-        "password"
+    catch (
+        error
     ) {
 
-        input.type =
-            "text";
+        console.error(
+            error
+        );
 
-
-        if (button) {
-
-            button.textContent =
-                "Hide";
-
-        }
-
-    }
-    else {
-
-        input.type =
-            "password";
-
-
-        if (button) {
-
-            button.textContent =
-                "Show";
-
-        }
+        inventoryData =
+            [];
 
     }
 
 }
 
 
+function normalizeData(
+    data
+) {
+
+    if (
+        !Array.isArray(
+            data
+        )
+    ) {
+
+        return [];
+
+    }
+
+
+    return data.map(
+        function (
+            item,
+            index
+        ) {
+
+            return {
+
+                id:
+                    item.id ||
+                    createId(),
+
+                kodeInventaris:
+                    String(
+                        item.kodeInventaris ||
+                        item.code ||
+                        `INV-${String(
+                            index + 1
+                        ).padStart(
+                            3,
+                            "0"
+                        )}`
+                    ),
+
+                nama:
+                    String(
+                        item.nama ||
+                        item.name ||
+                        "Tanpa Nama"
+                    ),
+
+                kategori:
+                    String(
+                        item.kategori ||
+                        item.category ||
+                        "Lainnya"
+                    ),
+
+                ruangan:
+                    String(
+                        item.ruangan ||
+                        item.room ||
+                        "Umum"
+                    ),
+
+                jumlah:
+                    Math.max(
+                        0,
+                        Number(
+                            item.jumlah ??
+                            item.quantity ??
+                            0
+                        )
+                    ),
+
+                kondisi:
+                    normalizeCondition(
+                        item.kondisi ||
+                        item.condition
+                    ),
+
+                keterangan:
+                    String(
+                        item.keterangan ||
+                        item.notes ||
+                        ""
+                    ),
+
+                tanggal:
+                    item.tanggal ||
+                    new Date()
+                        .toISOString(),
+
+                updatedAt:
+                    item.updatedAt ||
+                    new Date()
+                        .toISOString()
+
+            };
+
+        }
+    );
+
+}
+
+
+function normalizeCondition(
+    value
+) {
+
+    const text =
+        String(
+            value ||
+            "Baik"
+        )
+        .toLowerCase();
+
+
+    if (
+        text.includes(
+            "ringan"
+        )
+    ) {
+
+        return "Ringan";
+
+    }
+
+
+    if (
+        text.includes(
+            "berat"
+        )
+    ) {
+
+        return "Berat";
+
+    }
+
+
+    return "Baik";
+
+}
+
+
+function saveData() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+            inventoryData
+        )
+    );
+
+}
+
+
 /* =========================================================
-   INVENTORY MODAL
+   MODAL INVENTORY
 ========================================================= */
 
 function openAddModal() {
@@ -1434,11 +2017,6 @@ function openAddModal() {
         ?.reset();
 
 
-    $("inventoryId")
-        .value =
-        "";
-
-
     $("inventoryQuantity")
         .value =
         "1";
@@ -1455,14 +2033,8 @@ function openAddModal() {
         );
 
 
-    setTimeout(
-        () => {
-
-            $("inventoryCode")
-                ?.focus();
-
-        },
-        100
+    document.body.classList.add(
+        "modal-open"
     );
 
 }
@@ -1486,21 +2058,14 @@ function openEditModal(
     const item =
         inventoryData.find(
             entry =>
-                String(
-                    entry.id
-                ) ===
-                String(
-                    id
-                )
+                entry.id ===
+                id
         );
 
 
-    if (!item) {
-
-        showToast(
-            "Data tidak ditemukan.",
-            "error"
-        );
+    if (
+        !item
+    ) {
 
         return;
 
@@ -1508,9 +2073,7 @@ function openEditModal(
 
 
     editingId =
-        String(
-            id
-        );
+        id;
 
 
     $("modalTitle")
@@ -1555,14 +2118,18 @@ function openEditModal(
 
     $("inventoryNotes")
         .value =
-        item.keterangan ||
-        "";
+        item.keterangan;
 
 
     $("inventoryModal")
         ?.classList.add(
             "show"
         );
+
+
+    document.body.classList.add(
+        "modal-open"
+    );
 
 }
 
@@ -1575,6 +2142,11 @@ function closeInventoryModal() {
         );
 
 
+    document.body.classList.remove(
+        "modal-open"
+    );
+
+
     editingId =
         null;
 
@@ -1582,7 +2154,7 @@ function closeInventoryModal() {
 
 
 /* =========================================================
-   FORM SUBMIT
+   FORM
 ========================================================= */
 
 function handleFormSubmit(
@@ -1653,8 +2225,8 @@ function handleFormSubmit(
     ) {
 
         showToast(
-            "Semua field wajib diisi.",
-            "warning"
+            "Lengkapi data terlebih dahulu.",
+            "error"
         );
 
         return;
@@ -1666,12 +2238,13 @@ function handleFormSubmit(
         !Number.isFinite(
             quantity
         ) ||
-        quantity < 0
+        quantity <
+        0
     ) {
 
         showToast(
             "Jumlah tidak valid.",
-            "warning"
+            "error"
         );
 
         return;
@@ -1682,28 +2255,23 @@ function handleFormSubmit(
     const duplicate =
         inventoryData.find(
             item =>
-
-                String(
-                    item.kodeInventaris
-                ).toLowerCase() ===
-                code.toLowerCase()
-
-                &&
-
-                String(
-                    item.id
-                ) !==
-                String(
+                item
+                    .kodeInventaris
+                    .toLowerCase() ===
+                code
+                    .toLowerCase() &&
+                item.id !==
                     editingId
-                )
         );
 
 
-    if (duplicate) {
+    if (
+        duplicate
+    ) {
 
         showToast(
             "Kode inventaris sudah digunakan.",
-            "warning"
+            "error"
         );
 
         return;
@@ -1711,28 +2279,16 @@ function handleFormSubmit(
     }
 
 
-    if (editingId) {
+    if (
+        editingId
+    ) {
 
         const index =
             inventoryData.findIndex(
                 item =>
-                    String(
-                        item.id
-                    ) ===
-                    String(
-                        editingId
-                    )
+                    item.id ===
+                    editingId
             );
-
-
-        if (
-            index ===
-            -1
-        ) {
-
-            return;
-
-        }
 
 
         inventoryData[index] = {
@@ -1779,6 +2335,7 @@ function handleFormSubmit(
         );
 
     }
+
     else {
 
         inventoryData.unshift({
@@ -1825,7 +2382,7 @@ function handleFormSubmit(
 
 
         showToast(
-            "Inventaris berhasil ditambahkan.",
+            "Data berhasil ditambahkan.",
             "success"
         );
 
@@ -1863,34 +2420,33 @@ function deleteInventory(
     const item =
         inventoryData.find(
             entry =>
-                String(
-                    entry.id
-                ) ===
-                String(
-                    id
-                )
+                entry.id ===
+                id
         );
 
 
-    if (!item) {
+    if (
+        !item
+    ) {
+
         return;
+
     }
 
 
     openConfirmModal(
         "Hapus Inventaris",
         `Yakin ingin menghapus "${item.nama}"?`,
-        () => {
+        function () {
+
+            createAutoBackup();
+
 
             inventoryData =
                 inventoryData.filter(
                     entry =>
-                        String(
-                            entry.id
-                        ) !==
-                        String(
-                            id
-                        )
+                        entry.id !==
+                        id
                 );
 
 
@@ -1927,17 +2483,23 @@ function renderInventory() {
         $("inventoryTableBody");
 
 
-    if (!tbody) {
+    if (
+        !tbody
+    ) {
+
         return;
+
     }
 
 
     const search =
-        $("searchInput")
-            ?.value
-            .trim()
-            .toLowerCase() ||
-        "";
+        (
+            $("searchInput")
+                ?.value ||
+            ""
+        )
+        .toLowerCase()
+        .trim();
 
 
     const room =
@@ -1962,40 +2524,52 @@ function renderInventory() {
         inventoryData.filter(
             item => {
 
-                const searchable =
-                    [
-                        item.kodeInventaris,
-                        item.nama,
-                        item.kategori,
-                        item.ruangan
-                    ]
-                    .join(" ")
-                    .toLowerCase();
-
-
-                const searchMatch =
+                const matchesSearch =
                     !search ||
-                    searchable.includes(
-                        search
-                    );
+                    item
+                        .kodeInventaris
+                        .toLowerCase()
+                        .includes(
+                            search
+                        ) ||
+                    item
+                        .nama
+                        .toLowerCase()
+                        .includes(
+                            search
+                        ) ||
+                    item
+                        .kategori
+                        .toLowerCase()
+                        .includes(
+                            search
+                        ) ||
+                    item
+                        .ruangan
+                        .toLowerCase()
+                        .includes(
+                            search
+                        );
 
 
-                const roomMatch =
-                    room === "all" ||
+                const matchesRoom =
+                    room ===
+                    "all" ||
                     item.ruangan ===
                     room;
 
 
-                const conditionMatch =
-                    condition === "all" ||
+                const matchesCondition =
+                    condition ===
+                    "all" ||
                     item.kondisi ===
                     condition;
 
 
                 return (
-                    searchMatch &&
-                    roomMatch &&
-                    conditionMatch
+                    matchesSearch &&
+                    matchesRoom &&
+                    matchesCondition
                 );
 
             }
@@ -2003,7 +2577,10 @@ function renderInventory() {
 
 
     result.sort(
-        (a, b) => {
+        function (
+            a,
+            b
+        ) {
 
             if (
                 sort ===
@@ -2054,12 +2631,8 @@ function renderInventory() {
             ) {
 
                 return (
-                    Number(
-                        b.jumlah
-                    ) -
-                    Number(
-                        a.jumlah
-                    )
+                    b.jumlah -
+                    a.jumlah
                 );
 
             }
@@ -2071,12 +2644,8 @@ function renderInventory() {
             ) {
 
                 return (
-                    Number(
-                        a.jumlah
-                    ) -
-                    Number(
-                        b.jumlah
-                    )
+                    a.jumlah -
+                    b.jumlah
                 );
 
             }
@@ -2100,15 +2669,17 @@ function renderInventory() {
 
 
     result.forEach(
-        item => {
+        function (
+            item
+        ) {
 
-            const row =
+            const tr =
                 document.createElement(
                     "tr"
                 );
 
 
-            row.innerHTML = `
+            tr.innerHTML = `
 
                 <td>
 
@@ -2156,9 +2727,7 @@ function renderInventory() {
 
                 <td>
 
-                    ${Number(
-                        item.jumlah
-                    )}
+                    ${item.jumlah}
 
                 </td>
 
@@ -2166,9 +2735,7 @@ function renderInventory() {
                 <td>
 
                     <span
-                        class="condition-badge ${String(
-                            item.kondisi
-                        ).toLowerCase()}"
+                        class="condition-badge ${item.kondisi.toLowerCase()}"
                     >
 
                         ${conditionLabel(
@@ -2198,7 +2765,9 @@ function renderInventory() {
                             type="button"
                             title="Edit"
                         >
-                            Edit
+
+                            <i class="fa-solid fa-pen"></i>
+
                         </button>
 
 
@@ -2207,7 +2776,9 @@ function renderInventory() {
                             type="button"
                             title="Hapus"
                         >
-                            ×
+
+                            <i class="fa-solid fa-trash"></i>
+
                         </button>
 
                     </div>
@@ -2217,48 +2788,50 @@ function renderInventory() {
             `;
 
 
-            row.querySelector(
+            tr.querySelector(
                 ".edit-button"
-            )
-            ?.addEventListener(
+            )?.addEventListener(
                 "click",
-                () =>
+                function () {
+
                     openEditModal(
                         item.id
-                    )
+                    );
+
+                }
             );
 
 
-            row.querySelector(
+            tr.querySelector(
                 ".delete-button"
-            )
-            ?.addEventListener(
+            )?.addEventListener(
                 "click",
-                () =>
+                function () {
+
                     deleteInventory(
                         item.id
-                    )
+                    );
+
+                }
             );
 
 
             tbody.appendChild(
-                row
+                tr
             );
 
         }
     );
 
 
-    setText(
-        "resultCount",
-        result.length
-    );
+    $("resultCount").textContent =
+        result.length;
 
 
     $("emptyState")
         ?.classList.toggle(
             "hidden",
-            result.length > 0
+            result.length !== 0
         );
 
 }
@@ -2290,13 +2863,13 @@ function updateDashboard() {
         ).length;
 
 
-    const totalStock =
+    const stock =
         inventoryData.reduce(
             (
-                sum,
+                total,
                 item
             ) =>
-                sum +
+                total +
                 Number(
                     item.jumlah ||
                     0
@@ -2305,407 +2878,31 @@ function updateDashboard() {
         );
 
 
-    setText(
-        "totalItems",
-        total
-    );
+    $("totalItems").textContent =
+        total;
 
 
-    setText(
-        "goodItems",
-        good
-    );
+    $("goodItems").textContent =
+        good;
 
 
-    setText(
-        "attentionItems",
-        attention
-    );
+    $("attentionItems").textContent =
+        attention;
 
 
-    setText(
-        "totalStock",
-        totalStock
-    );
+    $("totalStock").textContent =
+        stock;
 
 
-    renderRecent();
-
-    renderLowStock();
-
-    renderRooms();
-
-}
-
-
-/* =========================================================
-   RECENT
-========================================================= */
-
-function renderRecent() {
-
-    const container =
-        $("recentItems");
-
-
-    if (!container) {
-        return;
-    }
-
-
-    const items =
-        [...inventoryData]
-            .sort(
-                (a, b) =>
-                    new Date(
-                        b.tanggal
-                    ) -
-                    new Date(
-                        a.tanggal
-                    )
-            )
-            .slice(
-                0,
-                5
-            );
-
-
-    if (!items.length) {
-
-        container.innerHTML = `
-            <div class="empty-mini">
-                Belum ada inventaris.
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        items
-            .map(
-                item => `
-
-                    <div class="recent-item">
-
-                        <div class="recent-item-main">
-
-                            <strong>
-                                ${escapeHtml(
-                                    item.nama
-                                )}
-                            </strong>
-
-                            <span>
-                                ${escapeHtml(
-                                    item.ruangan
-                                )}
-                                ·
-                                ${item.jumlah}
-                                unit
-                            </span>
-
-                        </div>
-
-                        <span class="recent-date">
-                            ${formatDate(
-                                item.tanggal
-                            )}
-                        </span>
-
-                    </div>
-
-                `
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   LOW STOCK
-========================================================= */
-
-function renderLowStock() {
-
-    const container =
-        $("lowStockPreview");
-
-
-    if (!container) {
-        return;
-    }
-
-
-    const items =
-        inventoryData
-            .filter(
-                item =>
-                    Number(
-                        item.jumlah
-                    ) <= 2
-            )
-            .slice(
-                0,
-                5
-            );
-
-
-    if (!items.length) {
-
-        container.innerHTML = `
-            <div class="empty-mini">
-                Tidak ada stok rendah.
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        items
-            .map(
-                item => `
-
-                    <div class="mini-item">
-
-                        <div class="mini-item-main">
-
-                            <strong>
-                                ${escapeHtml(
-                                    item.nama
-                                )}
-                            </strong>
-
-                            <span>
-                                ${escapeHtml(
-                                    item.ruangan
-                                )}
-                            </span>
-
-                        </div>
-
-                        <span class="mini-stock">
-                            ${item.jumlah}
-                        </span>
-
-                    </div>
-
-                `
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   ROOM
-========================================================= */
-
-function renderRooms() {
-
-    const container =
-        $("roomOverview");
-
-
-    if (!container) {
-        return;
-    }
-
-
-    const rooms = {};
-
-
-    inventoryData.forEach(
-        item => {
-
-            rooms[
-                item.ruangan
-            ] = (
-                rooms[
-                    item.ruangan
-                ] ||
-                0
-            ) +
-            Number(
-                item.jumlah ||
-                0
-            );
-
-        }
-    );
-
-
-    const entries =
-        Object.entries(
-            rooms
-        )
-        .sort(
-            (a, b) =>
-                b[1] -
-                a[1]
-        );
-
-
-    if (!entries.length) {
-
-        container.innerHTML = `
-            <div class="empty-mini">
-                Belum ada data ruangan.
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    const max =
-        Math.max(
-            ...entries.map(
-                item =>
-                    item[1]
-            ),
-            1
-        );
-
-
-    container.innerHTML =
-        entries
-            .slice(
-                0,
-                8
-            )
-            .map(
-                ([room, count]) => {
-
-                    const width =
-                        Math.round(
-                            count /
-                            max *
-                            100
-                        );
-
-
-                    return `
-
-                        <div class="room-row">
-
-                            <div class="room-name">
-                                ${escapeHtml(
-                                    room
-                                )}
-                            </div>
-
-                            <div class="room-bar">
-
-                                <div
-                                    style="width:${width}%"
-                                ></div>
-
-                            </div>
-
-                            <strong>
-                                ${count}
-                            </strong>
-
-                        </div>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   MONITORING
-========================================================= */
-
-function updateMonitoring() {
-
-    const total =
-        inventoryData.length;
-
-
-    const good =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Baik"
-        ).length;
-
-
-    const light =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Ringan"
-        ).length;
-
-
-    const heavy =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Berat"
-        ).length;
-
-
-    const lowStock =
-        inventoryData.filter(
-            item =>
-                Number(
-                    item.jumlah
-                ) <= 2
-        ).length;
-
-
-    setText(
-        "monitorTotal",
-        total
-    );
-
-
-    setText(
-        "monitorGood",
-        good
-    );
-
-
-    setText(
-        "monitorLowStock",
-        lowStock
-    );
-
-
-    setText(
-        "monitorHealthGood",
-        good
-    );
-
-
-    setText(
-        "monitorHealthLight",
-        light
-    );
-
-
-    setText(
-        "monitorHealthHeavy",
-        heavy
-    );
+    $("terminalTotal").textContent =
+        total;
 
 
     updateHealth();
 
-    updateStorage();
+    renderRecent();
+
+    renderLowStock();
 
 }
 
@@ -2716,40 +2913,16 @@ function updateMonitoring() {
 
 function updateHealth() {
 
-    const total =
-        inventoryData.length;
+    if (
+        !inventoryData.length
+    ) {
+
+        $("dataHealth").textContent =
+            "0%";
 
 
-    if (!total) {
-
-        setText(
-            "dataHealth",
-            "0%"
-        );
-
-
-        setText(
-            "healthGoodCount",
-            "0"
-        );
-
-
-        setText(
-            "healthLightCount",
-            "0"
-        );
-
-
-        setText(
-            "healthHeavyCount",
-            "0"
-        );
-
-
-        setWidth(
-            "healthProgress",
-            "0%"
-        );
+        $("healthProgress").style.width =
+            "0%";
 
 
         return;
@@ -2757,201 +2930,30 @@ function updateHealth() {
     }
 
 
-    const good =
+    const complete =
         inventoryData.filter(
             item =>
-                item.kondisi ===
-                "Baik"
-        ).length;
-
-
-    const light =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Ringan"
-        ).length;
-
-
-    const heavy =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Berat"
+                item.kodeInventaris &&
+                item.nama &&
+                item.kategori &&
+                item.ruangan
         ).length;
 
 
     const percentage =
         Math.round(
-            good /
-            total *
+            complete /
+            inventoryData.length *
             100
         );
 
 
-    setText(
-        "dataHealth",
-        `${percentage}%`
-    );
+    $("dataHealth").textContent =
+        `${percentage}%`;
 
 
-    setWidth(
-        "healthProgress",
-        `${percentage}%`
-    );
-
-
-    setText(
-        "healthGoodCount",
-        good
-    );
-
-
-    setText(
-        "healthLightCount",
-        light
-    );
-
-
-    setText(
-        "healthHeavyCount",
-        heavy
-    );
-
-}
-
-
-/* =========================================================
-   STORAGE
-========================================================= */
-
-function updateStorage() {
-
-    try {
-
-        const data =
-            localStorage.getItem(
-                STORAGE_KEY
-            ) ||
-            "";
-
-
-        const bytes =
-            new Blob(
-                [data]
-            ).size;
-
-
-        const percentage =
-            Math.min(
-                100,
-                Math.round(
-                    bytes /
-                    (
-                        5 *
-                        1024 *
-                        1024
-                    ) *
-                    100
-                )
-            );
-
-
-        setText(
-            "monitorStorage",
-            `${percentage}%`
-        );
-
-
-        setText(
-            "terminalStorage",
-            `${percentage}%`
-        );
-
-    }
-    catch {
-
-        setText(
-            "monitorStorage",
-            "0%"
-        );
-
-
-        setText(
-            "terminalStorage",
-            "0%"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   STATISTICS
-========================================================= */
-
-function renderStatistics() {
-
-    const total =
-        inventoryData.length;
-
-
-    const totalStock =
-        inventoryData.reduce(
-            (
-                sum,
-                item
-            ) =>
-                sum +
-                Number(
-                    item.jumlah ||
-                    0
-                ),
-            0
-        );
-
-
-    const rooms =
-        new Set(
-            inventoryData.map(
-                item =>
-                    item.ruangan
-            )
-        );
-
-
-    const categories =
-        new Set(
-            inventoryData.map(
-                item =>
-                    item.kategori
-            )
-        );
-
-
-    setText(
-        "statTotalItems",
-        total
-    );
-
-
-    setText(
-        "statTotalStock",
-        totalStock
-    );
-
-
-    setText(
-        "statTotalRooms",
-        rooms.size
-    );
-
-
-    setText(
-        "statTotalCategories",
-        categories.size
-    );
+    $("healthProgress").style.width =
+        `${percentage}%`;
 
 
     const good =
@@ -2978,1923 +2980,16 @@ function renderStatistics() {
         ).length;
 
 
-    const goodPercent =
-        total
-            ? Math.round(
-                good /
-                total *
-                100
-            )
-            : 0;
+    $("healthGoodCount").textContent =
+        good;
 
 
-    const lightPercent =
-        total
-            ? Math.round(
-                light /
-                total *
-                100
-            )
-            : 0;
+    $("healthLightCount").textContent =
+        light;
 
 
-    const heavyPercent =
-        total
-            ? Math.round(
-                heavy /
-                total *
-                100
-            )
-            : 0;
-
-
-    setText(
-        "donutTotal",
-        total
-    );
-
-
-    setText(
-        "legendGood",
-        `${goodPercent}%`
-    );
-
-
-    setText(
-        "legendLight",
-        `${lightPercent}%`
-    );
-
-
-    setText(
-        "legendHeavy",
-        `${heavyPercent}%`
-    );
-
-
-    const goodEnd =
-        goodPercent;
-
-
-    const lightEnd =
-        goodPercent +
-        lightPercent;
-
-
-    const donut =
-        $("conditionDonut");
-
-
-    if (donut) {
-
-        donut.style.background =
-
-            `conic-gradient(
-                var(--green) 0% ${goodEnd}%,
-                var(--orange) ${goodEnd}% ${lightEnd}%,
-                var(--red) ${lightEnd}% 100%
-            )`;
-
-    }
-
-
-    renderCategories();
-
-}
-
-
-/* =========================================================
-   CATEGORIES
-========================================================= */
-
-function renderCategories() {
-
-    const container =
-        $("categoryStats");
-
-
-    if (!container) {
-        return;
-    }
-
-
-    const categories = {};
-
-
-    inventoryData.forEach(
-        item => {
-
-            categories[
-                item.kategori
-            ] = (
-                categories[
-                    item.kategori
-                ] ||
-                0
-            ) +
-            Number(
-                item.jumlah ||
-                0
-            );
-
-        }
-    );
-
-
-    const list =
-        Object.entries(
-            categories
-        )
-        .sort(
-            (a, b) =>
-                b[1] -
-                a[1]
-        )
-        .slice(
-            0,
-            8
-        );
-
-
-    if (!list.length) {
-
-        container.innerHTML = `
-            <div class="empty-mini">
-                Belum ada kategori.
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    const max =
-        Math.max(
-            ...list.map(
-                item =>
-                    item[1]
-            ),
-            1
-        );
-
-
-    container.innerHTML =
-        list
-            .map(
-                ([name, count]) => {
-
-                    const width =
-                        Math.round(
-                            count /
-                            max *
-                            100
-                        );
-
-
-                    return `
-
-                        <div class="category-item">
-
-                            <div class="category-name">
-                                ${escapeHtml(
-                                    name
-                                )}
-                            </div>
-
-                            <div class="category-bar">
-
-                                <div
-                                    style="width:${width}%"
-                                ></div>
-
-                            </div>
-
-                            <strong>
-                                ${count}
-                            </strong>
-
-                        </div>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   ACTIVITY
-========================================================= */
-
-function loadActivity() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                ACTIVITY_KEY
-            );
-
-
-        const parsed =
-            saved
-                ? JSON.parse(
-                    saved
-                )
-                : [];
-
-
-        activityData =
-            Array.isArray(
-                parsed
-            )
-                ? parsed
-                : [];
-
-    }
-    catch {
-
-        activityData =
-            [];
-
-    }
-
-}
-
-
-function saveActivity() {
-
-    localStorage.setItem(
-        ACTIVITY_KEY,
-        JSON.stringify(
-            activityData.slice(
-                0,
-                50
-            )
-        )
-    );
-
-}
-
-
-function addActivity(
-    text,
-    icon = "fa-circle-info"
-) {
-
-    activityData.unshift({
-
-        id:
-            createId(),
-
-        text:
-            text,
-
-        icon:
-            icon,
-
-        time:
-            new Date()
-                .toISOString()
-
-    });
-
-
-    activityData =
-        activityData.slice(
-            0,
-            50
-        );
-
-
-    saveActivity();
-
-    renderActivity();
-
-}
-
-
-function renderActivity() {
-
-    const container =
-        $("activityLog");
-
-
-    if (!container) {
-        return;
-    }
-
-
-    if (!activityData.length) {
-
-        container.innerHTML = `
-            <div class="empty-mini">
-                Belum ada aktivitas.
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        activityData
-            .slice(
-                0,
-                30
-            )
-            .map(
-                item => `
-
-                    <div class="activity-item">
-
-                        <div class="activity-icon">
-                            •
-                        </div>
-
-                        <div class="activity-text">
-
-                            <strong>
-                                ${escapeHtml(
-                                    item.text
-                                )}
-                            </strong>
-
-                            <span>
-                                Sistem Inventaris
-                            </span>
-
-                        </div>
-
-                        <div class="activity-time">
-                            ${formatTime(
-                                item.time
-                            )}
-                        </div>
-
-                    </div>
-
-                `
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   CLEAR ACTIVITY
-========================================================= */
-
-function clearActivities() {
-
-    if (
-        !requireAdmin(
-            "menghapus aktivitas"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    if (!activityData.length) {
-
-        showToast(
-            "Aktivitas sudah kosong.",
-            "info"
-        );
-
-        return;
-
-    }
-
-
-    openConfirmModal(
-        "Hapus Aktivitas",
-        "Semua aktivitas akan dihapus.",
-        () => {
-
-            activityData =
-                [];
-
-
-            saveActivity();
-
-            renderActivity();
-
-
-            showToast(
-                "Aktivitas berhasil dihapus.",
-                "success"
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   BACKUP
-========================================================= */
-
-function createBackup() {
-
-    if (
-        !requireAdmin(
-            "membuat backup"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    const backup = {
-
-        version:
-            "6.0",
-
-        createdAt:
-            new Date()
-                .toISOString(),
-
-        inventory:
-            inventoryData,
-
-        activities:
-            activityData
-
-    };
-
-
-    localStorage.setItem(
-        AUTO_BACKUP_KEY,
-        JSON.stringify(
-            backup
-        )
-    );
-
-
-    downloadFile(
-        JSON.stringify(
-            backup,
-            null,
-            2
-        ),
-        `inventory-backup-${fileDate()}.json`,
-        "application/json"
-    );
-
-
-    addActivity(
-        "Membuat backup data",
-        "fa-database"
-    );
-
-
-    showToast(
-        "Backup berhasil dibuat.",
-        "success"
-    );
-
-}
-
-
-/* =========================================================
-   RESTORE
-========================================================= */
-
-function handleRestore(
-    event
-) {
-
-    if (
-        !requireAdmin(
-            "melakukan restore"
-        )
-    ) {
-
-        event.target.value =
-            "";
-
-        return;
-
-    }
-
-
-    const file =
-        event.target.files?.[0];
-
-
-    if (!file) {
-        return;
-    }
-
-
-    readJSON(file)
-        .then(
-            data => {
-
-                if (
-                    !data ||
-                    !Array.isArray(
-                        data.inventory
-                    )
-                ) {
-
-                    throw new Error(
-                        "Backup tidak valid."
-                    );
-
-                }
-
-
-                openConfirmModal(
-                    "Restore Backup",
-                    "Data saat ini akan diganti.",
-                    () => {
-
-                        inventoryData =
-                            normalizeData(
-                                data.inventory
-                            );
-
-
-                        if (
-                            Array.isArray(
-                                data.activities
-                            )
-                        ) {
-
-                            activityData =
-                                data.activities;
-
-                        }
-
-
-                        saveData();
-
-                        saveActivity();
-
-                        renderAll();
-
-
-                        addActivity(
-                            "Memulihkan backup",
-                            "fa-clock"
-                        );
-
-
-                        showToast(
-                            "Backup berhasil dipulihkan.",
-                            "success"
-                        );
-
-                    }
-                );
-
-            }
-        )
-        .catch(
-            () => {
-
-                showToast(
-                    "File backup tidak valid.",
-                    "error"
-                );
-
-            }
-        )
-        .finally(
-            () => {
-
-                event.target.value =
-                    "";
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   EXPORT CSV
-========================================================= */
-
-function exportCSV() {
-
-    if (
-        !inventoryData.length
-    ) {
-
-        showToast(
-            "Belum ada data.",
-            "info"
-        );
-
-        return;
-
-    }
-
-
-    const headers = [
-
-        "Kode Inventaris",
-        "Nama Barang",
-        "Kategori",
-        "Ruangan",
-        "Jumlah",
-        "Kondisi",
-        "Keterangan",
-        "Tanggal"
-
-    ];
-
-
-    const rows =
-        inventoryData.map(
-            item => [
-
-                item.kodeInventaris,
-
-                item.nama,
-
-                item.kategori,
-
-                item.ruangan,
-
-                item.jumlah,
-
-                conditionLabel(
-                    item.kondisi
-                ),
-
-                item.keterangan,
-
-                formatDate(
-                    item.tanggal
-                )
-
-            ]
-        );
-
-
-    const csv =
-        [
-            headers,
-            ...rows
-        ]
-        .map(
-            row =>
-                row
-                    .map(
-                        csvEscape
-                    )
-                    .join(",")
-        )
-        .join("\n");
-
-
-    downloadFile(
-        "\uFEFF" +
-        csv,
-        `inventaris-${fileDate()}.csv`,
-        "text/csv;charset=utf-8;"
-    );
-
-
-    addActivity(
-        "Export CSV",
-        "fa-file-export"
-    );
-
-
-    showToast(
-        "Data berhasil diexport.",
-        "success"
-    );
-
-}
-
-
-/* =========================================================
-   RESET FILTER
-========================================================= */
-
-function resetFilters() {
-
-    $("searchInput")
-        .value =
-        "";
-
-    $("roomFilter")
-        .value =
-        "all";
-
-    $("conditionFilter")
-        .value =
-        "all";
-
-    $("sortFilter")
-        .value =
-        "newest";
-
-
-    renderInventory();
-
-}
-
-
-/* =========================================================
-   CONFIRM
-========================================================= */
-
-function openConfirmModal(
-    title,
-    message,
-    callback
-) {
-
-    setText(
-        "confirmTitle",
-        title
-    );
-
-
-    setText(
-        "confirmMessage",
-        message
-    );
-
-
-    confirmCallback =
-        callback;
-
-
-    $("confirmModal")
-        ?.classList.add(
-            "show"
-        );
-
-}
-
-
-function closeConfirmModal() {
-
-    $("confirmModal")
-        ?.classList.remove(
-            "show"
-        );
-
-
-    confirmCallback =
-        null;
-
-}
-
-
-function executeConfirm() {
-
-    const callback =
-        confirmCallback;
-
-
-    closeConfirmModal();
-
-
-    if (
-        typeof callback ===
-        "function"
-    ) {
-
-        callback();
-
-    }
-
-}
-
-
-/* =========================================================
-   THEME
-========================================================= */
-
-function loadTheme() {
-
-    const theme =
-        localStorage.getItem(
-            THEME_KEY
-        );
-
-
-    const dark =
-        theme ===
-        "dark";
-
-
-    document.body.classList.toggle(
-        "dark",
-        dark
-    );
-
-
-    updateThemeButton(
-        dark
-    );
-
-}
-
-
-function toggleTheme() {
-
-    const dark =
-        document.body.classList.toggle(
-            "dark"
-        );
-
-
-    localStorage.setItem(
-        THEME_KEY,
-        dark
-            ? "dark"
-            : "light"
-    );
-
-
-    updateThemeButton(
-        dark
-    );
-
-}
-
-
-function updateThemeButton(
-    dark
-) {
-
-    const button =
-        $("themeButton");
-
-
-    if (!button) {
-        return;
-    }
-
-
-    button.innerHTML =
-        dark
-            ? "☀ Mode Terang"
-            : "☾ Mode Gelap";
-
-}
-
-
-/* =========================================================
-   DATA
-========================================================= */
-
-function loadData() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                STORAGE_KEY
-            );
-
-
-        inventoryData =
-            saved
-                ? normalizeData(
-                    JSON.parse(
-                        saved
-                    )
-                )
-                : [];
-
-    }
-    catch {
-
-        inventoryData =
-            [];
-
-    }
-
-}
-
-
-function saveData() {
-
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(
-            inventoryData
-        )
-    );
-
-}
-
-
-function normalizeData(
-    data
-) {
-
-    if (
-        !Array.isArray(
-            data
-        )
-    ) {
-
-        return [];
-
-    }
-
-
-    return data.map(
-        item => ({
-
-            id:
-                item.id ||
-                createId(),
-
-            kodeInventaris:
-                item.kodeInventaris ||
-                item.kode ||
-                "",
-
-            nama:
-                item.nama ||
-                item.name ||
-                "",
-
-            kategori:
-                item.kategori ||
-                item.category ||
-                "",
-
-            ruangan:
-                item.ruangan ||
-                item.room ||
-                "",
-
-            jumlah:
-                Number(
-                    item.jumlah ??
-                    item.quantity ??
-                    0
-                ),
-
-            kondisi:
-                item.kondisi ||
-                item.condition ||
-                "Baik",
-
-            keterangan:
-                item.keterangan ||
-                item.notes ||
-                "",
-
-            tanggal:
-                item.tanggal ||
-                item.createdAt ||
-                new Date()
-                    .toISOString(),
-
-            updatedAt:
-                item.updatedAt ||
-                new Date()
-                    .toISOString()
-
-        })
-    );
-
-}
-
-
-/* =========================================================
-   FILTER ROOM
-========================================================= */
-
-function updateRoomFilter() {
-
-    const select =
-        $("roomFilter");
-
-
-    if (!select) {
-        return;
-    }
-
-
-    const current =
-        select.value;
-
-
-    const rooms =
-        [
-            ...new Set(
-                inventoryData
-                    .map(
-                        item =>
-                            item.ruangan
-                    )
-                    .filter(Boolean)
-            )
-        ]
-        .sort(
-            (a, b) =>
-                a.localeCompare(
-                    b,
-                    "id"
-                )
-        );
-
-
-    select.innerHTML = `
-        <option value="all">
-            Semua Ruangan
-        </option>
-    `;
-
-
-    rooms.forEach(
-        room => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                room;
-
-
-            option.textContent =
-                room;
-
-
-            select.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    if (
-        rooms.includes(
-            current
-        )
-    ) {
-
-        select.value =
-            current;
-
-    }
-
-}
-
-
-/* =========================================================
-   RENDER ALL
-========================================================= */
-
-function renderAll() {
-
-    renderInventory();
-
-    updateDashboard();
-
-    updateMonitoring();
-
-    renderStatistics();
-
-    renderActivity();
-
-    updateRoomFilter();
-
-    updateStorage();
-
-    updateFooterYear();
-
-    updateAuthUI();
-
-}
-
-
-/* =========================================================
-   SPLASH
-========================================================= */
-
-function hideSplash() {
-
-    const splash =
-        $("splashScreen");
-
-
-    if (!splash) {
-        return;
-    }
-
-
-    setText(
-        "loadingText",
-        "Sistem siap!"
-    );
-
-
-    setTimeout(
-        () => {
-
-            splash.classList.add(
-                "hide"
-            );
-
-        },
-        350
-    );
-
-}
-
-
-/* =========================================================
-   CLOCK
-========================================================= */
-
-function updateClock() {
-
-    const now =
-        new Date();
-
-
-    if ($("liveClock")) {
-
-        $("liveClock")
-            .textContent =
-            now.toLocaleTimeString(
-                "id-ID",
-                {
-
-                    hour:
-                        "2-digit",
-
-                    minute:
-                        "2-digit",
-
-                    second:
-                        "2-digit"
-
-                }
-            );
-
-    }
-
-
-    if ($("liveDate")) {
-
-        $("liveDate")
-            .textContent =
-            now.toLocaleDateString(
-                "id-ID",
-                {
-
-                    weekday:
-                        "long",
-
-                    day:
-                        "numeric",
-
-                    month:
-                        "long",
-
-                    year:
-                        "numeric"
-
-                }
-            );
-
-    }
-
-}
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-function updateFooterYear() {
-
-    setText(
-        "footerYear",
-        new Date()
-            .getFullYear()
-    );
-
-}
-
-
-/* =========================================================
-   PWA
-========================================================= */
-
-function registerServiceWorker() {
-
-    if (
-        !("serviceWorker" in navigator)
-    ) {
-        return;
-    }
-
-
-    if (
-        location.protocol ===
-        "file:"
-    ) {
-        return;
-    }
-
-
-    window.addEventListener(
-        "load",
-        () => {
-
-            navigator.serviceWorker
-                .register(
-                    "service-worker.js",
-                    {
-                        updateViaCache:
-                            "none"
-                    }
-                )
-                .catch(
-                    () => {
-                        /*
-                           SW error tidak dibiarkan
-                           memenuhi console.
-                        */
-                    }
-                );
-
-        }
-    );
-
-}
-
-
-async function installPWA() {
-
-    if (
-        !deferredInstallPrompt
-    ) {
-
-        showToast(
-            "Installasi belum tersedia di browser ini.",
-            "info"
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        await deferredInstallPrompt.prompt();
-
-        await deferredInstallPrompt.userChoice;
-
-    }
-    catch {
-        /* ignore */
-    }
-
-
-    deferredInstallPrompt =
-        null;
-
-
-    $("installButton")
-        ?.classList.add(
-            "hidden"
-        );
-
-}
-
-
-/* =========================================================
-   UTILITIES
-========================================================= */
-
-function createId() {
-
-    if (
-        window.crypto?.randomUUID
-    ) {
-
-        return crypto.randomUUID();
-
-    }
-
-
-    return (
-        Date.now()
-            .toString(36) +
-        Math.random()
-            .toString(36)
-            .slice(2)
-    );
-
-}
-
-
-function formatDate(
-    value
-) {
-
-    const date =
-        new Date(
-            value
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "-";
-
-    }
-
-
-    return date.toLocaleDateString(
-        "id-ID",
-        {
-
-            day:
-                "2-digit",
-
-            month:
-                "short",
-
-            year:
-                "numeric"
-
-        }
-    );
-
-}
-
-
-function formatTime(
-    value
-) {
-
-    const date =
-        new Date(
-            value
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "-";
-
-    }
-
-
-    return date.toLocaleTimeString(
-        "id-ID",
-        {
-
-            hour:
-                "2-digit",
-
-            minute:
-                "2-digit"
-
-        }
-    );
-
-}
-
-
-function fileDate() {
-
-    const date =
-        new Date();
-
-
-    return [
-
-        date.getFullYear(),
-
-        String(
-            date.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        ),
-
-        String(
-            date.getDate()
-        ).padStart(
-            2,
-            "0"
-        )
-
-    ].join("-");
-
-}
-
-
-function conditionLabel(
-    value
-) {
-
-    if (
-        value ===
-        "Ringan"
-    ) {
-
-        return "Rusak Ringan";
-
-    }
-
-
-    if (
-        value ===
-        "Berat"
-    ) {
-
-        return "Rusak Berat";
-
-    }
-
-
-    return "Baik";
-
-}
-
-
-function csvEscape(
-    value
-) {
-
-    const text =
-        String(
-            value ??
-            ""
-        );
-
-
-    if (
-        text.includes(",") ||
-        text.includes('"') ||
-        text.includes("\n")
-    ) {
-
-        return (
-            '"' +
-            text.replace(
-                /"/g,
-                '""'
-            ) +
-            '"'
-        );
-
-    }
-
-
-    return text;
-
-}
-
-
-function downloadFile(
-    content,
-    filename,
-    type
-) {
-
-    const blob =
-        new Blob(
-            [content],
-            {
-                type
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-
-    const link =
-        document.createElement(
-            "a"
-        );
-
-
-    link.href =
-        url;
-
-
-    link.download =
-        filename;
-
-
-    link.style.display =
-        "none";
-
-
-    document.body.appendChild(
-        link
-    );
-
-
-    link.click();
-
-
-    link.remove();
-
-
-    setTimeout(
-        () => {
-
-            URL.revokeObjectURL(
-                url
-            );
-
-        },
-        300
-    );
-
-}
-
-
-function readJSON(
-    file
-) {
-
-    return new Promise(
-        (
-            resolve,
-            reject
-        ) => {
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                () => {
-
-                    try {
-
-                        resolve(
-                            JSON.parse(
-                                reader.result
-                            )
-                        );
-
-                    }
-                    catch (
-                        error
-                    ) {
-
-                        reject(
-                            error
-                        );
-
-                    }
-
-                };
-
-
-            reader.onerror =
-                () =>
-                    reject(
-                        reader.error
-                    );
-
-
-            reader.readAsText(
-                file
-            );
-
-        }
-    );
-
-}
-
-
-function escapeHtml(
-    value
-) {
-
-    return String(
-        value ??
-        ""
-    )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-function setText(
-    id,
-    value
-) {
-
-    const element =
-        $(id);
-
-
-    if (element) {
-
-        element.textContent =
-            String(
-                value ??
-                ""
-            );
-
-    }
-
-}
-
-
-function setWidth(
-    id,
-    value
-) {
-
-    const element =
-        $(id);
-
-
-    if (element) {
-
-        element.style.width =
-            value;
-
-    }
-
-}
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function showToast(
-    message,
-    type = "info"
-) {
-
-    const container =
-        $("toastContainer");
-
-
-    if (!container) {
-        return;
-    }
-
-
-    const toast =
-        document.createElement(
-            "div"
-        );
-
-
-    const icon =
-        type === "success"
-            ? "✓"
-            : type === "error"
-                ? "!"
-                : type === "warning"
-                    ? "!"
-                    : "i";
-
-
-    toast.className =
-        `toast ${type}`;
-
-
-    toast.innerHTML = `
-
-        <i>
-            ${icon}
-        </i>
-
-        <div>
-
-            <strong>
-                ${
-                    type === "success"
-                        ? "Berhasil"
-                        : type === "error"
-                            ? "Error"
-                            : type === "warning"
-                                ? "Peringatan"
-                                : "Informasi"
-                }
-            </strong>
-
-            <span>
-                ${escapeHtml(
-                    message
-                )}
-            </span>
-
-        </div>
-
-    `;
-
-
-    container.appendChild(
-        toast
-    );
-
-
-    requestAnimationFrame(
-        () => {
-
-            toast.classList.add(
-                "show"
-            );
-
-        }
-    );
-
-
-    setTimeout(
-        () => {
-
-            toast.classList.remove(
-                "show"
-            );
-
-
-            setTimeout(
-                () =>
-                    toast.remove(),
-                300
-            );
-
-        },
-        3500
-    );
-
-}
-
-
-/* =========================================================
-   GLOBAL
-========================================================= */
-
-window.inventoryApp = {
-
-    loginGoogle:
-        loginWithGoogle,
-
-    logout:
-        logoutAdmin,
-
-    isAdmin:
-        () =>
-            isAdminLoggedIn,
-
-    data:
-        () =>
-            inventoryData
-
-};
-
-/* =========================================================
-   LOW STOCK
-========================================================= */
-
-function renderLowStock() {
-
-    const container =
-        $("lowStockPreview");
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    const items =
-        inventoryData
-            .filter(
-                item =>
-                    Number(
-                        item.jumlah
-                    ) <= 2
-            )
-            .slice(
-                0,
-                5
-            );
-
-
-    if (!items.length) {
-
-        container.innerHTML = `
-
-            <div class="empty-mini">
-
-                Tidak ada stok rendah.
-
-            </div>
-
-        `;
-
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        items.map(
-            function (
-                item
-            ) {
-
-                return `
-
-                    <div class="mini-item">
-
-                        <div class="mini-item-main">
-
-                            <strong>
-
-                                ${escapeHtml(
-                                    item.nama
-                                )}
-
-                            </strong>
-
-                            <span>
-
-                                ${escapeHtml(
-                                    item.ruangan
-                                )}
-
-                            </span>
-
-                        </div>
-
-                        <span class="mini-stock">
-
-                            ${item.jumlah}
-
-                        </span>
-
-                    </div>
-
-                `;
-
-            }
-        ).join("");
+    $("healthHeavyCount").textContent =
+        heavy;
 
 }
 
@@ -4909,7 +3004,9 @@ function renderRecent() {
         $("recentItems");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
@@ -4921,33 +3018,32 @@ function renderRecent() {
             ...inventoryData
         ]
         .sort(
-            (a,b) =>
+            (
+                a,
+                b
+            ) =>
                 new Date(
                     b.tanggal
-                )
-                -
+                ) -
                 new Date(
                     a.tanggal
                 )
         )
         .slice(
             0,
-            6
+            5
         );
 
 
-    if (!items.length) {
+    if (
+        !items.length
+    ) {
 
         container.innerHTML = `
-
             <div class="empty-mini">
-
                 Belum ada inventaris.
-
             </div>
-
         `;
-
 
         return;
 
@@ -4955,12 +3051,9 @@ function renderRecent() {
 
 
     container.innerHTML =
-        items.map(
-            function (
-                item
-            ) {
-
-                return `
+        items
+            .map(
+                item => `
 
                     <div class="recent-item">
 
@@ -4999,10 +3092,100 @@ function renderRecent() {
 
                     </div>
 
-                `;
+                `
+            )
+            .join("");
 
-            }
-        ).join("");
+}
+
+
+/* =========================================================
+   LOW STOCK
+========================================================= */
+
+function renderLowStock() {
+
+    const container =
+        $("lowStockPreview");
+
+
+    if (
+        !container
+    ) {
+
+        return;
+
+    }
+
+
+    const items =
+        inventoryData
+            .filter(
+                item =>
+                    Number(
+                        item.jumlah
+                    ) <=
+                    2
+            )
+            .slice(
+                0,
+                5
+            );
+
+
+    if (
+        !items.length
+    ) {
+
+        container.innerHTML = `
+            <div class="empty-mini">
+                Tidak ada stok rendah.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        items
+            .map(
+                item => `
+
+                    <div class="mini-item">
+
+                        <div class="mini-item-main">
+
+                            <strong>
+
+                                ${escapeHtml(
+                                    item.nama
+                                )}
+
+                            </strong>
+
+                            <span>
+
+                                ${escapeHtml(
+                                    item.ruangan
+                                )}
+
+                            </span>
+
+                        </div>
+
+                        <span class="mini-stock">
+
+                            ${item.jumlah}
+
+                        </span>
+
+                    </div>
+
+                `
+            )
+            .join("");
 
 }
 
@@ -5017,7 +3200,9 @@ function updateRoomFilter() {
         $("roomFilter");
 
 
-    if (!select) {
+    if (
+        !select
+    ) {
 
         return;
 
@@ -5038,7 +3223,10 @@ function updateRoomFilter() {
             )
         ]
         .sort(
-            (a,b) =>
+            (
+                a,
+                b
+            ) =>
                 a.localeCompare(
                     b,
                     "id"
@@ -5049,9 +3237,7 @@ function updateRoomFilter() {
     select.innerHTML = `
 
         <option value="all">
-
             Semua Ruangan
-
         </option>
 
     `;
@@ -5099,108 +3285,6 @@ function updateRoomFilter() {
 
 
 /* =========================================================
-   MONITORING
-========================================================= */
-
-function updateMonitoring() {
-
-    const total =
-        inventoryData.length;
-
-
-    const good =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Baik"
-        ).length;
-
-
-    const light =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Ringan"
-        ).length;
-
-
-    const heavy =
-        inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Berat"
-        ).length;
-
-
-    const low =
-        inventoryData.filter(
-            item =>
-                Number(
-                    item.jumlah
-                ) <= 2
-        ).length;
-
-
-    if ($("monitorTotal")) {
-
-        $("monitorTotal")
-            .textContent =
-            total;
-
-    }
-
-
-    if ($("monitorGood")) {
-
-        $("monitorGood")
-            .textContent =
-            good;
-
-    }
-
-
-    if ($("monitorLowStock")) {
-
-        $("monitorLowStock")
-            .textContent =
-            low;
-
-    }
-
-
-    if ($("healthGoodCount")) {
-
-        $("healthGoodCount")
-            .textContent =
-            good;
-
-    }
-
-
-    if ($("healthLightCount")) {
-
-        $("healthLightCount")
-            .textContent =
-            light;
-
-    }
-
-
-    if ($("healthHeavyCount")) {
-
-        $("healthHeavyCount")
-            .textContent =
-            heavy;
-
-    }
-
-
-    renderRooms();
-
-}
-
-
-/* =========================================================
    ROOM OVERVIEW
 ========================================================= */
 
@@ -5210,36 +3294,30 @@ function renderRooms() {
         $("roomOverview");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
     }
 
 
-    const roomData =
-        {};
+    const roomData = {};
 
 
     inventoryData.forEach(
-        function (
-            item
-        ) {
+        item => {
 
             roomData[
                 item.ruangan
             ] =
-
                 (
                     roomData[
                         item.ruangan
-                    ]
-                    ||
+                    ] ||
                     0
-                )
-
-                +
-
+                ) +
                 Number(
                     item.jumlah ||
                     0
@@ -5254,24 +3332,24 @@ function renderRooms() {
             roomData
         )
         .sort(
-            (a,b) =>
+            (
+                a,
+                b
+            ) =>
                 b[1] -
                 a[1]
         );
 
 
-    if (!rooms.length) {
+    if (
+        !rooms.length
+    ) {
 
         container.innerHTML = `
-
             <div class="empty-mini">
-
                 Belum ada data ruangan.
-
             </div>
-
         `;
-
 
         return;
 
@@ -5295,12 +3373,9 @@ function renderRooms() {
                 8
             )
             .map(
-                function (
-                    [
-                        room,
-                        count
-                    ]
-                ) {
+                (
+                    [room, count]
+                ) => {
 
                     const width =
                         Math.round(
@@ -5348,6 +3423,77 @@ function renderRooms() {
 
 
 /* =========================================================
+   MONITORING
+========================================================= */
+
+function updateMonitoring() {
+
+    const good =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Baik"
+        ).length;
+
+
+    const light =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Ringan"
+        ).length;
+
+
+    const heavy =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Berat"
+        ).length;
+
+
+    const lowStock =
+        inventoryData.filter(
+            item =>
+                Number(
+                    item.jumlah
+                ) <=
+                2
+        ).length;
+
+
+    $("monitorTotal").textContent =
+        inventoryData.length;
+
+
+    $("monitorGood").textContent =
+        good;
+
+
+    $("monitorLowStock").textContent =
+        lowStock;
+
+
+    $("monitorHealthGood").textContent =
+        good;
+
+
+    $("monitorHealthLight").textContent =
+        light;
+
+
+    $("monitorHealthHeavy").textContent =
+        heavy;
+
+
+    updateStorage();
+
+    renderRooms();
+
+}
+
+
+/* =========================================================
    STATISTICS
 ========================================================= */
 
@@ -5381,189 +3527,75 @@ function renderStatistics() {
         ).length;
 
 
-    if ($("donutTotal")) {
-
-        $("donutTotal")
-            .textContent =
-            total;
-
-    }
-
-
     const goodPercent =
         total
-
             ? Math.round(
                 good /
                 total *
                 100
             )
-
             : 0;
 
 
     const lightPercent =
         total
-
             ? Math.round(
                 light /
                 total *
                 100
             )
-
             : 0;
 
 
     const heavyPercent =
         total
-
             ? Math.round(
                 heavy /
                 total *
                 100
             )
-
             : 0;
 
 
-    if ($("legendGood")) {
-
-        $("legendGood")
-            .textContent =
-            `${goodPercent}%`;
-
-    }
+    $("donutTotal").textContent =
+        total;
 
 
-    if ($("legendLight")) {
-
-        $("legendLight")
-            .textContent =
-            `${lightPercent}%`;
-
-    }
+    $("legendGood").textContent =
+        `${goodPercent}%`;
 
 
-    if ($("legendHeavy")) {
-
-        $("legendHeavy")
-            .textContent =
-            `${heavyPercent}%`;
-
-    }
+    $("legendLight").textContent =
+        `${lightPercent}%`;
 
 
-    const startLight =
+    $("legendHeavy").textContent =
+        `${heavyPercent}%`;
+
+
+    const endGood =
         goodPercent;
 
 
-    const startHeavy =
+    const endLight =
         goodPercent +
         lightPercent;
 
 
-    if ($("conditionDonut")) {
+    $("conditionDonut")
+        .style.background =
+        `
+            conic-gradient(
+                var(--green)
+                0% ${endGood}%,
 
-        $("conditionDonut").style.background =
-            `
+                var(--orange)
+                ${endGood}% ${endLight}%,
 
-                conic-gradient(
-
-                    var(--green)
-                    0%
-                    ${startLight}%,
-
-                    var(--orange)
-                    ${startLight}%
-                    ${startHeavy}%,
-
-                    var(--red)
-                    ${startHeavy}%
-                    100%
-
-                )
-
-            `;
-
-    }
-
-
-    const safe =
-        inventoryData.filter(
-            item =>
-                Number(
-                    item.jumlah
-                ) > 2
-        ).length;
-
-
-    const low =
-        inventoryData.filter(
-            item =>
-                Number(
-                    item.jumlah
-                ) <= 2
-        ).length;
-
-
-    if ($("safeStockCount")) {
-
-        $("safeStockCount")
-            .textContent =
-            safe;
-
-    }
-
-
-    if ($("lowStockStat")) {
-
-        $("lowStockStat")
-            .textContent =
-            low;
-
-    }
-
-
-    const safePercent =
-        total
-
-            ? Math.round(
-                safe /
-                total *
-                100
+                var(--red)
+                ${endLight}% 100%
             )
-
-            : 0;
-
-
-    const lowPercent =
-        total
-
-            ? Math.round(
-                low /
-                total *
-                100
-            )
-
-            : 0;
-
-
-    if ($("safeStockProgress")) {
-
-        $("safeStockProgress")
-            .style.width =
-            `${safePercent}%`;
-
-    }
-
-
-    if ($("lowStockProgress")) {
-
-        $("lowStockProgress")
-            .style.width =
-            `${lowPercent}%`;
-
-    }
+        `;
 
 
     renderCategories();
@@ -5581,38 +3613,21 @@ function renderCategories() {
         $("categoryStats");
 
 
-    if (!container) {
-
-        return;
-
-    }
-
-
-    const categories =
-        {};
+    const categories = {};
 
 
     inventoryData.forEach(
-        function (
-            item
-        ) {
+        item => {
 
             categories[
                 item.kategori
             ] =
-
                 (
                     categories[
                         item.kategori
-                    ]
-
-                    ||
-
+                    ] ||
                     0
-                )
-
-                +
-
+                ) +
                 Number(
                     item.jumlah ||
                     0
@@ -5627,28 +3642,24 @@ function renderCategories() {
             categories
         )
         .sort(
-            (a,b) =>
+            (
+                a,
+                b
+            ) =>
                 b[1] -
                 a[1]
-        )
-        .slice(
-            0,
-            8
         );
 
 
-    if (!list.length) {
+    if (
+        !list.length
+    ) {
 
         container.innerHTML = `
-
             <div class="empty-mini">
-
                 Belum ada kategori.
-
             </div>
-
         `;
-
 
         return;
 
@@ -5667,13 +3678,14 @@ function renderCategories() {
 
     container.innerHTML =
         list
+            .slice(
+                0,
+                8
+            )
             .map(
-                function (
-                    [
-                        name,
-                        count
-                    ]
-                ) {
+                (
+                    [name, count]
+                ) => {
 
                     const width =
                         Math.round(
@@ -5736,15 +3748,28 @@ function loadActivity() {
 
         activityData =
             saved
-
                 ? JSON.parse(
                     saved
                 )
-
                 : [];
 
 
-    } catch {
+        if (
+            !Array.isArray(
+                activityData
+            )
+        ) {
+
+            activityData =
+                [];
+
+        }
+
+    }
+
+    catch (
+        error
+    ) {
 
         activityData =
             [];
@@ -5813,7 +3838,9 @@ function renderActivity() {
         $("activityLog");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
@@ -5825,15 +3852,10 @@ function renderActivity() {
     ) {
 
         container.innerHTML = `
-
             <div class="empty-mini">
-
                 Belum ada aktivitas.
-
             </div>
-
         `;
-
 
         return;
 
@@ -5844,58 +3866,52 @@ function renderActivity() {
         activityData
             .slice(
                 0,
-                15
+                20
             )
             .map(
-                function (
-                    item
-                ) {
+                item => `
 
-                    return `
+                    <div class="activity-item">
 
-                        <div class="activity-item">
+                        <div class="activity-icon">
 
-                            <div class="activity-icon">
-
-                                <i class="fa-solid ${escapeHtml(
+                            <i
+                                class="fa-solid ${escapeHtml(
                                     item.icon
-                                )}"></i>
-
-                            </div>
-
-
-                            <div class="activity-text">
-
-                                <strong>
-
-                                    ${escapeHtml(
-                                        item.text
-                                    )}
-
-                                </strong>
-
-                                <span>
-
-                                    Sistem Inventaris
-
-                                </span>
-
-                            </div>
-
-
-                            <div class="activity-time">
-
-                                ${formatTime(
-                                    item.time
-                                )}
-
-                            </div>
+                                )}"
+                            ></i>
 
                         </div>
 
-                    `;
 
-                }
+                        <div class="activity-text">
+
+                            <strong>
+
+                                ${escapeHtml(
+                                    item.text
+                                )}
+
+                            </strong>
+
+                            <span>
+                                Sistem Inventaris
+                            </span>
+
+                        </div>
+
+
+                        <div class="activity-time">
+
+                            ${formatTime(
+                                item.time
+                            )}
+
+                        </div>
+
+                    </div>
+
+                `
             )
             .join("");
 
@@ -5927,112 +3943,71 @@ function updateStorage() {
 
         const percent =
             Math.min(
-
                 100,
-
                 Math.round(
-
                     bytes /
-
                     (
                         5 *
                         1024 *
                         1024
-                    )
-
-                    *
-
+                    ) *
                     100
-
                 )
-
             );
 
 
-        if ($("monitorStorage")) {
-
-            $("monitorStorage")
-                .textContent =
-                `${percent}%`;
-
-        }
+        $("monitorStorage").textContent =
+            `${percent}%`;
 
 
-        if ($("terminalStorage")) {
+        $("terminalStorage").textContent =
+            `${percent}%`;
 
-            $("terminalStorage")
-                .textContent =
-                `${percent}%`;
+    }
 
-        }
+    catch (
+        error
+    ) {
 
+        $("monitorStorage").textContent =
+            "0%";
 
-    } catch {
-
-        if ($("monitorStorage")) {
-
-            $("monitorStorage")
-                .textContent =
-                "0%";
-
-        }
-
-
-        if ($("terminalStorage")) {
-
-            $("terminalStorage")
-                .textContent =
-                "0%";
-
-        }
+        $("terminalStorage").textContent =
+            "0%";
 
     }
 
 }
 
-
-/* =========================================================
-   AUTO BACKUP
-========================================================= */
-
-function createAutoBackup() {
-
-    try {
-
-        localStorage.setItem(
-            AUTO_BACKUP_KEY,
-            JSON.stringify({
-
-                version:
-                    "5.3",
-
-                createdAt:
-                    new Date()
-                        .toISOString(),
-
-                inventory:
-                    inventoryData,
-
-                activities:
-                    activityData
-
-            })
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            error
-        );
-
-    }
-
-}
 
 /* =========================================================
    BACKUP
 ========================================================= */
+
+function createAutoBackup() {
+
+    localStorage.setItem(
+        AUTO_BACKUP_KEY,
+        JSON.stringify({
+
+            version:
+                "5.4",
+
+            createdAt:
+                new Date()
+                    .toISOString(),
+
+            inventory:
+                inventoryData,
+
+            activities:
+                activityData
+
+        })
+    );
+
+}
+
 
 function createBackup() {
 
@@ -6041,20 +4016,22 @@ function createBackup() {
     ) {
 
         showToast(
-            "Belum ada data untuk backup.",
+            "Belum ada data.",
             "info"
         );
-
 
         return;
 
     }
 
 
+    createAutoBackup();
+
+
     const backup = {
 
         version:
-            "5.3",
+            "5.4",
 
         createdAt:
             new Date()
@@ -6067,9 +4044,6 @@ function createBackup() {
             activityData
 
     };
-
-
-    createAutoBackup();
 
 
     downloadFile(
@@ -6109,7 +4083,9 @@ function handleRestore(
         event.target.files?.[0];
 
 
-    if (!file) {
+    if (
+        !file
+    ) {
 
         return;
 
@@ -6125,19 +4101,14 @@ function handleRestore(
         ) {
 
             if (
-
-                !data
-
-                ||
-
+                !data ||
                 !Array.isArray(
                     data.inventory
                 )
-
             ) {
 
                 throw new Error(
-                    "Backup tidak valid."
+                    "Invalid backup"
                 );
 
             }
@@ -6165,7 +4136,6 @@ function handleRestore(
 
                         activityData =
                             data.activities;
-
 
                         saveActivity();
 
@@ -6216,7 +4186,7 @@ function handleRestore(
 
 
 /* =========================================================
-   EXPORT CSV
+   CSV
 ========================================================= */
 
 function exportCSV() {
@@ -6229,7 +4199,6 @@ function exportCSV() {
             "Belum ada data.",
             "info"
         );
-
 
         return;
 
@@ -6259,56 +4228,51 @@ function exportCSV() {
 
     const rows =
         inventoryData.map(
-            function (
-                item
-            ) {
+            item => [
 
-                return [
+                item.kodeInventaris,
 
-                    item.kodeInventaris,
+                item.nama,
 
-                    item.nama,
+                item.kategori,
 
-                    item.kategori,
+                item.ruangan,
 
-                    item.ruangan,
+                item.jumlah,
 
-                    item.jumlah,
+                conditionLabel(
+                    item.kondisi
+                ),
 
-                    item.kondisi,
+                item.keterangan,
 
-                    item.keterangan,
+                formatDate(
+                    item.tanggal
+                )
 
-                    formatDate(
-                        item.tanggal
-                    )
-
-                ];
-
-            }
+            ]
         );
 
 
-    const csv = [
-
-        headers,
-
-        ...rows
-
-    ]
-    .map(
-        row =>
-            row
-                .map(
-                    csvEscape
-                )
-                .join(",")
-    )
-    .join("\n");
+    const csv =
+        [
+            headers,
+            ...rows
+        ]
+        .map(
+            row =>
+                row
+                    .map(
+                        csvEscape
+                    )
+                    .join(",")
+        )
+        .join("\n");
 
 
     downloadFile(
-        "\uFEFF" + csv,
+        "\uFEFF" +
+        csv,
         `inventaris-${fileDate()}.csv`,
         "text/csv;charset=utf-8;"
     );
@@ -6321,7 +4285,7 @@ function exportCSV() {
 
 
     showToast(
-        "Data berhasil diexport.",
+        "CSV berhasil dibuat.",
         "success"
     );
 
@@ -6329,41 +4293,22 @@ function exportCSV() {
 
 
 /* =========================================================
-   FILTER RESET
+   FILTER
 ========================================================= */
 
 function resetFilters() {
 
-    if ($("searchInput")) {
+    $("searchInput").value =
+        "";
 
-        $("searchInput").value =
-            "";
+    $("roomFilter").value =
+        "all";
 
-    }
+    $("conditionFilter").value =
+        "all";
 
-
-    if ($("roomFilter")) {
-
-        $("roomFilter").value =
-            "all";
-
-    }
-
-
-    if ($("conditionFilter")) {
-
-        $("conditionFilter").value =
-            "all";
-
-    }
-
-
-    if ($("sortFilter")) {
-
-        $("sortFilter").value =
-            "newest";
-
-    }
+    $("sortFilter").value =
+        "newest";
 
 
     renderInventory();
@@ -6381,20 +4326,14 @@ function openConfirmModal(
     callback
 ) {
 
-    if ($("confirmTitle")) {
-
-        $("confirmTitle").textContent =
-            title;
-
-    }
+    $("confirmTitle")
+        .textContent =
+        title;
 
 
-    if ($("confirmMessage")) {
-
-        $("confirmMessage").textContent =
-            message;
-
-    }
+    $("confirmMessage")
+        .textContent =
+        message;
 
 
     confirmCallback =
@@ -6406,6 +4345,11 @@ function openConfirmModal(
             "show"
         );
 
+
+    document.body.classList.add(
+        "modal-open"
+    );
+
 }
 
 
@@ -6415,6 +4359,11 @@ function closeConfirmModal() {
         ?.classList.remove(
             "show"
         );
+
+
+    document.body.classList.remove(
+        "modal-open"
+    );
 
 
     confirmCallback =
@@ -6500,7 +4449,7 @@ function updateThemeUI(
 
                     <i class="fa-solid fa-toggle-on"></i>
 
-                  `
+                `
 
                 : `
 
@@ -6514,7 +4463,7 @@ function updateThemeUI(
 
                     <i class="fa-solid fa-toggle-off"></i>
 
-                  `;
+                `;
 
     }
 
@@ -6523,7 +4472,8 @@ function updateThemeUI(
         $("mobileThemeButton")
     ) {
 
-        $("mobileThemeButton").innerHTML =
+        $("mobileThemeButton")
+            .innerHTML =
 
             dark
 
@@ -6537,86 +4487,131 @@ function updateThemeUI(
 
 
 /* =========================================================
-   CLOCK
+   GPS
 ========================================================= */
 
-function updateClock() {
-
-    const now =
-        new Date();
-
+function openGPS() {
 
     if (
-        $("liveClock")
+        !navigator.geolocation
     ) {
 
-        $("liveClock")
-            .textContent =
-            now.toLocaleTimeString(
-                "id-ID",
-                {
+        showToast(
+            "Browser tidak mendukung GPS.",
+            "error"
+        );
 
-                    hour:
-                        "2-digit",
+        return;
 
-                    minute:
-                        "2-digit",
+    }
 
-                    second:
-                        "2-digit"
 
-                }
+    showToast(
+        "Mengambil lokasi perangkat...",
+        "info"
+    );
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function (
+            position
+        ) {
+
+            const lat =
+                position.coords.latitude;
+
+
+            const lon =
+                position.coords.longitude;
+
+
+            const url =
+                `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+
+
+            addActivity(
+                "Membuka GPS",
+                "fa-location-dot"
             );
 
-    }
 
-
-    if (
-        $("liveDate")
-    ) {
-
-        $("liveDate")
-            .textContent =
-            now.toLocaleDateString(
-                "id-ID",
-                {
-
-                    weekday:
-                        "long",
-
-                    day:
-                        "numeric",
-
-                    month:
-                        "long",
-
-                    year:
-                        "numeric"
-
-                }
+            window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
             );
 
-    }
 
-}
+            showToast(
+                "Lokasi berhasil ditemukan.",
+                "success"
+            );
+
+        },
+
+        function (
+            error
+        ) {
+
+            let message =
+                "GPS gagal digunakan.";
 
 
-/* =========================================================
-   FOOTER YEAR
-========================================================= */
+            if (
+                error.code ===
+                1
+            ) {
 
-function updateFooterYear() {
+                message =
+                    "Izin lokasi ditolak. Izinkan akses lokasi pada browser.";
 
-    if (
-        $("footerYear")
-    ) {
+            }
 
-        $("footerYear")
-            .textContent =
-            new Date()
-                .getFullYear();
 
-    }
+            if (
+                error.code ===
+                2
+            ) {
+
+                message =
+                    "Lokasi perangkat tidak tersedia.";
+
+            }
+
+
+            if (
+                error.code ===
+                3
+            ) {
+
+                message =
+                    "Permintaan lokasi terlalu lama.";
+
+            }
+
+
+            showToast(
+                message,
+                "error"
+            );
+
+        },
+
+        {
+
+            enableHighAccuracy:
+                true,
+
+            timeout:
+                15000,
+
+            maximumAge:
+                0
+
+        }
+
+    );
 
 }
 
@@ -6625,10 +4620,61 @@ function updateFooterYear() {
    PWA
 ========================================================= */
 
+async function installPWA() {
+
+    if (
+        !deferredInstallPrompt
+    ) {
+
+        showToast(
+            "Install App belum tersedia.",
+            "info"
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        deferredInstallPrompt.prompt();
+
+
+        await deferredInstallPrompt.userChoice;
+
+    }
+
+    catch (
+        error
+    ) {
+
+        console.warn(
+            error
+        );
+
+    }
+
+
+    deferredInstallPrompt =
+        null;
+
+
+    $("installButton")
+        ?.classList.add(
+            "hidden"
+        );
+
+}
+
+
 async function registerServiceWorker() {
 
     if (
-        !("serviceWorker" in navigator)
+        !(
+            "serviceWorker"
+            in navigator
+        )
     ) {
 
         return;
@@ -6648,16 +4694,22 @@ async function registerServiceWorker() {
 
     try {
 
-        await navigator
-            .serviceWorker
-            .register(
-                "service-worker.js"
-            );
+        await navigator.serviceWorker.register(
+            "service-worker.js"
+        );
 
-    } catch (error) {
+        console.log(
+            "Service Worker aktif."
+        );
+
+    }
+
+    catch (
+        error
+    ) {
 
         console.warn(
-            "Service Worker error:",
+            "Service Worker:",
             error
         );
 
@@ -6666,53 +4718,8 @@ async function registerServiceWorker() {
 }
 
 
-async function installPWA() {
-
-    if (
-        !deferredInstallPrompt
-    ) {
-
-        showToast(
-            "Installasi belum tersedia di browser ini.",
-            "info"
-        );
-
-
-        return;
-
-    }
-
-
-    deferredInstallPrompt
-        .prompt();
-
-
-    try {
-
-        await deferredInstallPrompt
-            .userChoice;
-
-    } catch {
-
-        /* ignore */
-
-    }
-
-
-    deferredInstallPrompt =
-        null;
-
-
-    $("installButton")
-        ?.classList.add(
-            "hidden"
-        );
-
-}
-
-
 /* =========================================================
-   CLEAR ACTIVITY
+   ACTIVITY CLEAR
 ========================================================= */
 
 function clearActivities() {
@@ -6726,7 +4733,6 @@ function clearActivities() {
             "info"
         );
 
-
         return;
 
     }
@@ -6734,7 +4740,7 @@ function clearActivities() {
 
     openConfirmModal(
         "Bersihkan Aktivitas",
-        "Semua aktivitas akan dihapus.",
+        "Semua log aktivitas akan dihapus.",
         function () {
 
             activityData =
@@ -6747,7 +4753,7 @@ function clearActivities() {
 
 
             showToast(
-                "Aktivitas berhasil dibersihkan.",
+                "Aktivitas dibersihkan.",
                 "success"
             );
 
@@ -6758,19 +4764,111 @@ function clearActivities() {
 
 
 /* =========================================================
-   HELPERS
+   FOOTER
+========================================================= */
+
+function updateFooterYear() {
+
+    const year =
+        new Date()
+            .getFullYear();
+
+
+    if (
+        $("footerYear")
+    ) {
+
+        $("footerYear")
+            .textContent =
+            year;
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER ALL
+========================================================= */
+
+function renderAll() {
+
+    renderInventory();
+
+    updateDashboard();
+
+    updateMonitoring();
+
+    renderStatistics();
+
+    renderActivity();
+
+    updateRoomFilter();
+
+    updateStorage();
+
+    updateFooterYear();
+
+}
+
+
+/* =========================================================
+   SPLASH
+========================================================= */
+
+function hideSplash() {
+
+    const splash =
+        $("splashScreen");
+
+
+    if (
+        !splash
+    ) {
+
+        return;
+
+    }
+
+
+    const loadingText =
+        $("loadingText");
+
+
+    if (
+        loadingText
+    ) {
+
+        loadingText
+            .textContent =
+            "Sistem siap digunakan.";
+
+    }
+
+
+    setTimeout(
+        function () {
+
+            splash.classList.add(
+                "hide"
+            );
+
+        },
+        900
+    );
+
+}
+
+
+/* =========================================================
+   UTILITIES
 ========================================================= */
 
 function createId() {
 
     if (
-
-        window.crypto
-
-        &&
-
+        window.crypto &&
         crypto.randomUUID
-
     ) {
 
         return crypto.randomUUID();
@@ -6779,27 +4877,22 @@ function createId() {
 
 
     return (
-
         Date.now()
-            .toString(36)
-
-        +
-
+            .toString(36) +
         Math.random()
             .toString(36)
             .slice(2)
-
     );
 
 }
 
 
 function conditionLabel(
-    condition
+    value
 ) {
 
     if (
-        condition ===
+        value ===
         "Ringan"
     ) {
 
@@ -6809,7 +4902,7 @@ function conditionLabel(
 
 
     if (
-        condition ===
+        value ===
         "Berat"
     ) {
 
@@ -6873,17 +4966,6 @@ function formatTime(
         );
 
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "-";
-
-    }
-
-
     return date.toLocaleTimeString(
         "id-ID",
         {
@@ -6900,26 +4982,86 @@ function formatTime(
 }
 
 
+function updateClock() {
+
+    const now =
+        new Date();
+
+
+    if (
+        $("liveClock")
+    ) {
+
+        $("liveClock")
+            .textContent =
+            now.toLocaleTimeString(
+                "id-ID",
+                {
+
+                    hour:
+                        "2-digit",
+
+                    minute:
+                        "2-digit",
+
+                    second:
+                        "2-digit"
+
+                }
+            );
+
+    }
+
+
+    if (
+        $("liveDate")
+    ) {
+
+        $("liveDate")
+            .textContent =
+            now.toLocaleDateString(
+                "id-ID",
+                {
+
+                    weekday:
+                        "long",
+
+                    day:
+                        "numeric",
+
+                    month:
+                        "long",
+
+                    year:
+                        "numeric"
+
+                }
+            );
+
+    }
+
+}
+
+
 function fileDate() {
 
-    const date =
+    const now =
         new Date();
 
 
     return [
 
-        date.getFullYear(),
+        now.getFullYear(),
 
         String(
-            date.getMonth() +
-            1
+            now.getMonth() + 1
         ).padStart(
             2,
             "0"
         ),
 
         String(
-            date.getDate()
+            now.getDate()
         ).padStart(
             2,
             "0"
@@ -6942,21 +5084,19 @@ function csvEscape(
 
 
     if (
-
-        text.includes(",")
-        ||
-
-        text.includes('"')
-        ||
-
+        text.includes(",") ||
+        text.includes('"') ||
         text.includes("\n")
-
     ) {
 
-        return `"${text.replace(
-            /"/g,
-            '""'
-        )}"`;
+        return (
+            '"' +
+            text.replace(
+                /"/g,
+                '""'
+            ) +
+            '"'
+        );
 
     }
 
@@ -6965,10 +5105,6 @@ function csvEscape(
 
 }
 
-
-/* =========================================================
-   DOWNLOAD
-========================================================= */
 
 function downloadFile(
     content,
@@ -6993,29 +5129,29 @@ function downloadFile(
         );
 
 
-    const link =
+    const a =
         document.createElement(
             "a"
         );
 
 
-    link.href =
+    a.href =
         url;
 
 
-    link.download =
+    a.download =
         filename;
 
 
     document.body.appendChild(
-        link
+        a
     );
 
 
-    link.click();
+    a.click();
 
 
-    link.remove();
+    a.remove();
 
 
     setTimeout(
@@ -7026,15 +5162,11 @@ function downloadFile(
             );
 
         },
-        100
+        300
     );
 
 }
 
-
-/* =========================================================
-   READ JSON
-========================================================= */
 
 function readJSON(
     file
@@ -7061,8 +5193,11 @@ function readJSON(
                             )
                         );
 
+                    }
 
-                    } catch (error) {
+                    catch (
+                        error
+                    ) {
 
                         reject(
                             error
@@ -7074,7 +5209,13 @@ function readJSON(
 
 
             reader.onerror =
-                reject;
+                function () {
+
+                    reject(
+                        reader.error
+                    );
+
+                };
 
 
             reader.readAsText(
@@ -7086,10 +5227,6 @@ function readJSON(
 
 }
 
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
 
 function escapeHtml(
     value
@@ -7134,14 +5271,17 @@ function escapeHtml(
 
 function showToast(
     message,
-    type = "info"
+    type =
+        "info"
 ) {
 
     const container =
         $("toastContainer");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
@@ -7164,7 +5304,6 @@ function showToast(
         icon =
             "fa-circle-check";
 
-
         title =
             "Berhasil";
 
@@ -7178,7 +5317,6 @@ function showToast(
 
         icon =
             "fa-circle-xmark";
-
 
         title =
             "Error";
@@ -7198,22 +5336,20 @@ function showToast(
 
     toast.innerHTML = `
 
-        <i class="fa-solid ${icon}"></i>
+        <i
+            class="fa-solid ${icon}"
+        ></i>
 
         <div>
 
             <strong>
-
                 ${title}
-
             </strong>
 
             <span>
-
                 ${escapeHtml(
                     message
                 )}
-
             </span>
 
         </div>
@@ -7226,13 +5362,36 @@ function showToast(
     );
 
 
+    requestAnimationFrame(
+        function () {
+
+            toast.classList.add(
+                "show"
+            );
+
+        }
+    );
+
+
     setTimeout(
         function () {
 
-            toast.remove();
+            toast.classList.remove(
+                "show"
+            );
+
+
+            setTimeout(
+                function () {
+
+                    toast.remove();
+
+                },
+                250
+            );
 
         },
-        3000
+        3200
     );
 
 }
