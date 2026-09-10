@@ -1,31 +1,155 @@
 /* =========================================================
    SISTEM INVENTARIS RUANGAN
-   FULL JAVASCRIPT V5.4
+   JAVASCRIPT V5.5
+   FIREBASE GOOGLE LOGIN + ADMIN ACCESS
 ========================================================= */
 
-const STORAGE_KEY = "roomInventoryData_v53";
-const THEME_KEY = "roomInventoryTheme_v53";
-const ACTIVITY_KEY = "roomInventoryActivity_v53";
-const AUTO_BACKUP_KEY = "roomInventoryAutoBackup_v53";
 
-const AUTH_KEY = "roomInventoryAdminAuth_v53";
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "admin123";
+/* =========================================================
+   FIREBASE IMPORT
+========================================================= */
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+import {
+    getAuth,
+    GoogleAuthProvider,
+    browserLocalPersistence,
+    setPersistence,
+    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+/* =========================================================
+   FIREBASE CONFIG
+========================================================= */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyBnX15kPEoGJs5bpzSj4jFppDCjkT5qn7Q",
+
+    authDomain:
+        "sistem-inventaris-ruangan.firebaseapp.com",
+
+    projectId:
+        "sistem-inventaris-ruangan",
+
+    storageBucket:
+        "sistem-inventaris-ruangan.firebasestorage.app",
+
+    messagingSenderId:
+        "51229283718",
+
+    appId:
+        "1:51229283718:web:21183e33663997ce2c4807",
+
+    measurementId:
+        "G-X17NS2672Z"
+
+};
+
+
+/* =========================================================
+   FIREBASE INITIALIZE
+========================================================= */
+
+const firebaseApp =
+    initializeApp(
+        firebaseConfig
+    );
+
+const auth =
+    getAuth(
+        firebaseApp
+    );
+
+const googleProvider =
+    new GoogleAuthProvider();
+
+
+googleProvider.setCustomParameters({
+
+    prompt:
+        "select_account"
+
+});
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+const STORAGE_KEY =
+    "roomInventoryData_v55";
+
+const THEME_KEY =
+    "roomInventoryTheme_v55";
+
+const ACTIVITY_KEY =
+    "roomInventoryActivity_v55";
+
+const AUTO_BACKUP_KEY =
+    "roomInventoryAutoBackup_v55";
+
+const AUTH_KEY =
+    "roomInventoryAdminAuth_v55";
+
+const GOOGLE_USER_KEY =
+    "roomInventoryGoogleUser_v55";
+
 
 const OLD_STORAGE_KEYS = [
+
+    "roomInventoryData_v54",
+
+    "roomInventoryData_v53",
+
     "roomInventoryData_v5",
+
     "roomInventoryData_v4",
+
     "roomInventoryData_v3"
+
 ];
 
+
+/* =========================================================
+   LOCAL ADMIN
+========================================================= */
+
+const ADMIN_USERNAME =
+    "admin";
+
+const ADMIN_PASSWORD =
+    "admin123";
+
+
+/* =========================================================
+   GLOBAL VARIABLES
+========================================================= */
+
 let inventoryData = [];
+
 let activityData = [];
 
 let editingId = null;
+
 let confirmCallback = null;
 
 let deferredInstallPrompt = null;
+
 let isAdminLoggedIn = false;
+
+let currentGoogleUser = null;
+
+let googleLoginBusy = false;
 
 
 /* =========================================================
@@ -33,19 +157,30 @@ let isAdminLoggedIn = false;
 ========================================================= */
 
 function $(id) {
-    return document.getElementById(id);
+
+    return document.getElementById(
+        id
+    );
+
 }
+
+
+/* =========================================================
+   DOM READY
+========================================================= */
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    init
+
+);
 
 
 /* =========================================================
    INIT
 ========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    init
-);
-
 
 function init() {
 
@@ -57,7 +192,7 @@ function init() {
 
         loadActivity();
 
-        loadAuth();
+        loadLocalAuth();
 
         bindEvents();
 
@@ -68,23 +203,1936 @@ function init() {
         updateFooterYear();
 
         setInterval(
+
             updateClock,
+
             1000
+
         );
 
         registerServiceWorker();
 
-    } catch (error) {
+        setupFirebaseAuth();
+
+        hideSplash();
+
+    }
+
+    catch (error) {
 
         console.error(
+
             "Initialization error:",
+
             error
+
         );
 
         showToast(
+
             "Terjadi error saat memuat sistem.",
+
             "error"
+
         );
+
+        hideSplash();
+
+    }
+
+}
+
+
+/* =========================================================
+   FIREBASE AUTH SETUP
+========================================================= */
+
+async function setupFirebaseAuth() {
+
+    try {
+
+        await setPersistence(
+
+            auth,
+
+            browserLocalPersistence
+
+        );
+
+
+        onAuthStateChanged(
+
+            auth,
+
+            function (
+                user
+            ) {
+
+                if (
+                    user
+                ) {
+
+                    currentGoogleUser =
+                        user;
+
+                    isAdminLoggedIn =
+                        true;
+
+
+                    localStorage.setItem(
+
+                        AUTH_KEY,
+
+                        "google-admin"
+
+                    );
+
+
+                    localStorage.setItem(
+
+                        GOOGLE_USER_KEY,
+
+                        JSON.stringify({
+
+                            uid:
+                                user.uid,
+
+                            email:
+                                user.email ||
+                                "",
+
+                            displayName:
+                                user.displayName ||
+                                "Google Admin",
+
+                            photoURL:
+                                user.photoURL ||
+                                ""
+
+                        })
+
+                    );
+
+
+                    updateAuthUI();
+
+                }
+
+                else {
+
+                    currentGoogleUser =
+                        null;
+
+
+                    const localAuth =
+                        localStorage.getItem(
+                            AUTH_KEY
+                        );
+
+
+                    if (
+                        localAuth !==
+                        "local-admin"
+                    ) {
+
+                        isAdminLoggedIn =
+                            false;
+
+                        localStorage.removeItem(
+                            AUTH_KEY
+                        );
+
+                        localStorage.removeItem(
+                            GOOGLE_USER_KEY
+                        );
+
+                    }
+
+
+                    updateAuthUI();
+
+                }
+
+            }
+
+        );
+
+
+        try {
+
+            const redirectResult =
+                await getRedirectResult(
+                    auth
+                );
+
+
+            if (
+                redirectResult &&
+                redirectResult.user
+            ) {
+
+                const user =
+                    redirectResult.user;
+
+
+                isAdminLoggedIn =
+                    true;
+
+                currentGoogleUser =
+                    user;
+
+
+                localStorage.setItem(
+
+                    AUTH_KEY,
+
+                    "google-admin"
+
+                );
+
+
+                localStorage.setItem(
+
+                    GOOGLE_USER_KEY,
+
+                    JSON.stringify({
+
+                        uid:
+                            user.uid,
+
+                        email:
+                            user.email ||
+                            "",
+
+                        displayName:
+                            user.displayName ||
+                            "Google Admin",
+
+                        photoURL:
+                            user.photoURL ||
+                            ""
+
+                    })
+
+                );
+
+
+                updateAuthUI();
+
+
+                closeLoginModal();
+
+
+                addActivity(
+
+                    `Login Google: ${
+                        user.email ||
+                        "Google Admin"
+                    }`,
+
+                    "fa-google"
+
+                );
+
+
+                showToast(
+
+                    "Login Google berhasil. Anda sekarang Admin.",
+
+                    "success"
+
+                );
+
+            }
+
+        }
+
+        catch (error) {
+
+            if (
+                error &&
+                error.code !==
+                "auth/no-auth-event"
+            ) {
+
+                console.error(
+
+                    "Redirect result error:",
+
+                    error
+
+                );
+
+                showGoogleError(
+                    error
+                );
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+
+            "Firebase Auth initialization error:",
+
+            error
+
+        );
+
+        showGoogleError(
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOCAL AUTH
+========================================================= */
+
+function loadLocalAuth() {
+
+    const saved =
+        localStorage.getItem(
+            AUTH_KEY
+        );
+
+
+    if (
+        saved ===
+        "local-admin"
+    ) {
+
+        isAdminLoggedIn =
+            true;
+
+    }
+
+    else {
+
+        isAdminLoggedIn =
+            false;
+
+    }
+
+
+    updateAuthUI();
+
+}
+
+
+/* =========================================================
+   AUTH UI
+========================================================= */
+
+function updateAuthUI() {
+
+    const button =
+        $("loginButton");
+
+    const text =
+        $("loginButtonText");
+
+    const dot =
+        $("loginStatusDot");
+
+
+    if (
+        !button
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        isAdminLoggedIn
+    ) {
+
+        if (
+            text
+        ) {
+
+            text.textContent =
+                currentGoogleUser
+                    ? "Google Admin"
+                    : "Logout Admin";
+
+        }
+
+
+        if (
+            dot
+        ) {
+
+            dot.classList.add(
+                "logged-in"
+            );
+
+        }
+
+
+        button.title =
+            currentGoogleUser
+
+                ? "Google Admin - Klik untuk logout"
+
+                : "Logout Admin";
+
+    }
+
+    else {
+
+        if (
+            text
+        ) {
+
+            text.textContent =
+                "Login Admin";
+
+        }
+
+
+        if (
+            dot
+        ) {
+
+            dot.classList.remove(
+                "logged-in"
+            );
+
+        }
+
+
+        button.title =
+            "Login Admin";
+
+    }
+
+}
+
+
+/* =========================================================
+   OPEN LOGIN MODAL
+========================================================= */
+
+function openLoginModal() {
+
+    if (
+        isAdminLoggedIn
+    ) {
+
+        logoutAdmin();
+
+        return;
+
+    }
+
+
+    const modal =
+        $("loginModal");
+
+
+    if (
+        modal
+    ) {
+
+        modal.classList.add(
+            "show"
+        );
+
+    }
+
+
+    document.body.classList.add(
+        "modal-open"
+    );
+
+
+    if (
+        $("loginError")
+    ) {
+
+        $("loginError")
+            .textContent =
+            "";
+
+    }
+
+
+    if (
+        $("googleLoginStatus")
+    ) {
+
+        $("googleLoginStatus")
+            .textContent =
+            "";
+
+        $("googleLoginStatus")
+            .className =
+            "google-login-status";
+
+    }
+
+
+    if (
+        $("googleRedirectButton")
+    ) {
+
+        $("googleRedirectButton")
+            .classList.add(
+                "hidden"
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   CLOSE LOGIN MODAL
+========================================================= */
+
+function closeLoginModal() {
+
+    $("loginModal")
+        ?.classList.remove(
+            "show"
+        );
+
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+
+}
+
+
+/* =========================================================
+   LOCAL LOGIN
+========================================================= */
+
+function handleLocalLogin(
+    event
+) {
+
+    event.preventDefault();
+
+
+    const username =
+        $("loginUsername")
+            ?.value
+            .trim() ||
+        "";
+
+    const password =
+        $("loginPassword")
+            ?.value ||
+        "";
+
+
+    if (
+
+        username ===
+        ADMIN_USERNAME
+
+        &&
+
+        password ===
+        ADMIN_PASSWORD
+
+    ) {
+
+        isAdminLoggedIn =
+            true;
+
+        currentGoogleUser =
+            null;
+
+
+        localStorage.setItem(
+
+            AUTH_KEY,
+
+            "local-admin"
+
+        );
+
+
+        localStorage.removeItem(
+
+            GOOGLE_USER_KEY
+
+        );
+
+
+        updateAuthUI();
+
+        closeLoginModal();
+
+
+        addActivity(
+
+            "Login Admin lokal",
+
+            "fa-right-to-bracket"
+
+        );
+
+
+        showToast(
+
+            "Login Admin berhasil.",
+
+            "success"
+
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        $("loginError")
+    ) {
+
+        $("loginError")
+            .textContent =
+            "Username atau password salah.";
+
+    }
+
+
+    if (
+        $("loginPassword")
+    ) {
+
+        $("loginPassword")
+            .value =
+            "";
+
+        $("loginPassword")
+            .focus();
+
+    }
+
+}
+
+
+/* =========================================================
+   GOOGLE STATUS
+========================================================= */
+
+function showGoogleStatus(
+
+    message,
+
+    error = false
+
+) {
+
+    const element =
+        $("googleLoginStatus");
+
+
+    if (
+        !element
+    ) {
+
+        return;
+
+    }
+
+
+    element.className =
+        error
+
+            ? "google-login-status error"
+
+            : "google-login-status";
+
+
+    element.textContent =
+        message;
+
+}
+
+
+/* =========================================================
+   FIREBASE ERROR
+========================================================= */
+
+function showGoogleError(
+    error
+) {
+
+    if (
+        !error
+    ) {
+
+        return;
+
+    }
+
+
+    const code =
+        error.code ||
+        "";
+
+
+    console.error(
+        "================================"
+    );
+
+    console.error(
+        "GOOGLE FIREBASE ERROR"
+    );
+
+    console.error(
+        "CODE:",
+        code
+    );
+
+    console.error(
+        "MESSAGE:",
+        error.message
+    );
+
+    console.error(
+        "FULL:",
+        error
+    );
+
+    console.error(
+        "================================"
+    );
+
+
+    let message =
+        error.message ||
+        "Login Google gagal.";
+
+
+    switch (
+        code
+    ) {
+
+        case "auth/unauthorized-domain":
+
+            message =
+                "Domain website belum ditambahkan di Firebase Authorized Domains.";
+
+            break;
+
+
+        case "auth/popup-blocked":
+
+            message =
+                "Popup Google diblokir browser.";
+
+            break;
+
+
+        case "auth/popup-closed-by-user":
+
+            message =
+                "Jendela login Google ditutup.";
+
+            break;
+
+
+        case "auth/cancelled-popup-request":
+
+            message =
+                "Permintaan login Google dibatalkan.";
+
+            break;
+
+
+        case "auth/operation-not-allowed":
+
+            message =
+                "Google Sign-In belum diaktifkan di Firebase.";
+
+            break;
+
+
+        case "auth/network-request-failed":
+
+            message =
+                "Koneksi internet bermasalah.";
+
+            break;
+
+
+        case "auth/too-many-requests":
+
+            message =
+                "Terlalu banyak percobaan login.";
+
+            break;
+
+
+        case "auth/popup-timeout":
+
+            message =
+                "Popup Google tidak merespons.";
+
+            break;
+
+
+        case "auth/web-storage-unsupported":
+
+            message =
+                "Browser tidak mendukung storage Firebase.";
+
+            break;
+
+    }
+
+
+    showGoogleStatus(
+
+        message,
+
+        true
+
+    );
+
+}
+
+
+/* =========================================================
+   GOOGLE LOGIN
+========================================================= */
+
+async function loginWithGoogle() {
+
+    if (
+        googleLoginBusy
+    ) {
+
+        return;
+
+    }
+
+
+    googleLoginBusy =
+        true;
+
+
+    const button =
+        $("googleLoginButton");
+
+
+    if (
+        button
+    ) {
+
+        button.disabled =
+            true;
+
+    }
+
+
+    showGoogleStatus(
+
+        "Membuka login Google..."
+
+    );
+
+
+    console.log(
+        "[Google Auth] starting..."
+    );
+
+
+    try {
+
+        /*
+           POPUP
+        */
+
+        const result =
+            await signInWithPopup(
+
+                auth,
+
+                googleProvider
+
+            );
+
+
+        if (
+            !result ||
+            !result.user
+        ) {
+
+            throw new Error(
+                "Akun Google tidak ditemukan."
+            );
+
+        }
+
+
+        const user =
+            result.user;
+
+
+        /*
+           SEMUA GOOGLE USER =
+           ADMIN
+        */
+
+        isAdminLoggedIn =
+            true;
+
+        currentGoogleUser =
+            user;
+
+
+        localStorage.setItem(
+
+            AUTH_KEY,
+
+            "google-admin"
+
+        );
+
+
+        localStorage.setItem(
+
+            GOOGLE_USER_KEY,
+
+            JSON.stringify({
+
+                uid:
+                    user.uid,
+
+                email:
+                    user.email ||
+                    "",
+
+                displayName:
+                    user.displayName ||
+                    "Google Admin",
+
+                photoURL:
+                    user.photoURL ||
+                    ""
+
+            })
+
+        );
+
+
+        updateAuthUI();
+
+
+        closeLoginModal();
+
+
+        addActivity(
+
+            `Login Google: ${
+                user.email ||
+                "Google Admin"
+            }`,
+
+            "fa-google"
+
+        );
+
+
+        showToast(
+
+            `Login berhasil. ${
+                user.displayName ||
+                "Google Admin"
+            } sekarang menjadi Admin.`,
+
+            "success"
+
+        );
+
+
+        console.log(
+            "[Google Auth] SUCCESS:",
+            user.email
+        );
+
+    }
+
+    catch (error) {
+
+        showGoogleError(
+            error
+        );
+
+
+        /*
+           TAMPILKAN REDIRECT
+        */
+
+        if (
+
+            error.code ===
+            "auth/popup-blocked"
+
+            ||
+
+            error.code ===
+            "auth/popup-timeout"
+
+        ) {
+
+            showGoogleStatus(
+
+                "Popup gagal. Gunakan tombol Redirect Google.",
+
+                true
+
+            );
+
+
+            $("googleRedirectButton")
+                ?.classList.remove(
+                    "hidden"
+                );
+
+        }
+
+    }
+
+    finally {
+
+        googleLoginBusy =
+            false;
+
+
+        if (
+            button
+        ) {
+
+            button.disabled =
+                false;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   GOOGLE REDIRECT
+========================================================= */
+
+async function loginWithGoogleRedirect() {
+
+    try {
+
+        showGoogleStatus(
+
+            "Mengalihkan ke Google..."
+
+        );
+
+
+        await signInWithRedirect(
+
+            auth,
+
+            googleProvider
+
+        );
+
+    }
+
+    catch (error) {
+
+        showGoogleError(
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logoutAdmin() {
+
+    try {
+
+        if (
+            auth.currentUser
+        ) {
+
+            await signOut(
+                auth
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+
+            "Firebase logout error:",
+
+            error
+
+        );
+
+    }
+
+
+    isAdminLoggedIn =
+        false;
+
+    currentGoogleUser =
+        null;
+
+
+    localStorage.removeItem(
+        AUTH_KEY
+    );
+
+    localStorage.removeItem(
+        GOOGLE_USER_KEY
+    );
+
+
+    updateAuthUI();
+
+
+    closeLoginModal();
+
+    closeInventoryModal();
+
+    closeConfirmModal();
+
+
+    addActivity(
+        "Logout Admin",
+        "fa-right-from-bracket"
+    );
+
+
+    showToast(
+        "Logout berhasil.",
+        "info"
+    );
+
+}
+
+
+/* =========================================================
+   REQUIRE ADMIN
+========================================================= */
+
+function requireAdmin(
+    action =
+        "melakukan perubahan data"
+) {
+
+    if (
+        isAdminLoggedIn
+    ) {
+
+        return true;
+
+    }
+
+
+    showToast(
+
+        `Login Admin diperlukan untuk ${action}.`,
+
+        "error"
+
+    );
+
+
+    openLoginModal();
+
+
+    return false;
+
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+function bindEvents() {
+
+
+    /* =====================================================
+       LOGIN
+    ===================================================== */
+
+    $("loginButton")
+        ?.addEventListener(
+
+            "click",
+
+            openLoginModal
+
+        );
+
+
+    $("closeLoginButton")
+        ?.addEventListener(
+
+            "click",
+
+            closeLoginModal
+
+        );
+
+
+    $("cancelLoginButton")
+        ?.addEventListener(
+
+            "click",
+
+            closeLoginModal
+
+        );
+
+
+    $("loginForm")
+        ?.addEventListener(
+
+            "submit",
+
+            handleLocalLogin
+
+        );
+
+
+    $("googleLoginButton")
+        ?.addEventListener(
+
+            "click",
+
+            loginWithGoogle
+
+        );
+
+
+    $("googleRedirectButton")
+        ?.addEventListener(
+
+            "click",
+
+            loginWithGoogleRedirect
+
+        );
+
+
+    $("togglePasswordButton")
+        ?.addEventListener(
+
+            "click",
+
+            function () {
+
+                const input =
+                    $("loginPassword");
+
+
+                if (
+                    !input
+                ) {
+
+                    return;
+
+                }
+
+
+                if (
+                    input.type ===
+                    "password"
+                ) {
+
+                    input.type =
+                        "text";
+
+                }
+
+                else {
+
+                    input.type =
+                        "password";
+
+                }
+
+            }
+
+        );
+
+
+    $("loginModal")
+        ?.addEventListener(
+
+            "click",
+
+            function (
+                event
+            ) {
+
+                if (
+
+                    event.target ===
+                    $("loginModal")
+
+                ) {
+
+                    closeLoginModal();
+
+                }
+
+            }
+
+        );
+
+
+    /* =====================================================
+       NAVIGATION
+    ===================================================== */
+
+    document
+        .querySelectorAll(
+
+            ".menu-item[data-target], .text-button[data-target]"
+
+        )
+        .forEach(
+
+            function (
+                button
+            ) {
+
+                button.addEventListener(
+
+                    "click",
+
+                    function () {
+
+                        switchSection(
+
+                            button.dataset.target
+
+                        );
+
+                    }
+
+                );
+
+            }
+
+        );
+
+
+    /* =====================================================
+       MOBILE
+    ===================================================== */
+
+    $("mobileMenuButton")
+        ?.addEventListener(
+
+            "click",
+
+            function () {
+
+                $("sidebar")
+                    ?.classList.toggle(
+                        "open"
+                    );
+
+            }
+
+        );
+
+
+    /* =====================================================
+       THEME
+    ===================================================== */
+
+    $("themeButton")
+        ?.addEventListener(
+
+            "click",
+
+            toggleTheme
+
+        );
+
+
+    $("mobileThemeButton")
+        ?.addEventListener(
+
+            "click",
+
+            toggleTheme
+
+        );
+
+
+    /* =====================================================
+       ADD
+    ===================================================== */
+
+    $("quickAddButton")
+        ?.addEventListener(
+
+            "click",
+
+            openAddModal
+
+        );
+
+
+    $("heroAddButton")
+        ?.addEventListener(
+
+            "click",
+
+            openAddModal
+
+        );
+
+
+    $("inventoryAddButton")
+        ?.addEventListener(
+
+            "click",
+
+            openAddModal
+
+        );
+
+
+    $("emptyAddButton")
+        ?.addEventListener(
+
+            "click",
+
+            openAddModal
+
+        );
+
+
+    /* =====================================================
+       MONITOR
+    ===================================================== */
+
+    $("heroMonitorButton")
+        ?.addEventListener(
+
+            "click",
+
+            function () {
+
+                switchSection(
+                    "monitoring"
+                );
+
+            }
+
+        );
+
+
+    /* =====================================================
+       INVENTORY MODAL
+    ===================================================== */
+
+    $("closeModalButton")
+        ?.addEventListener(
+
+            "click",
+
+            closeInventoryModal
+
+        );
+
+
+    $("cancelModalButton")
+        ?.addEventListener(
+
+            "click",
+
+            closeInventoryModal
+
+        );
+
+
+    $("inventoryForm")
+        ?.addEventListener(
+
+            "submit",
+
+            handleFormSubmit
+
+        );
+
+
+    /* =====================================================
+       SEARCH
+    ===================================================== */
+
+    $("searchInput")
+        ?.addEventListener(
+
+            "input",
+
+            renderInventory
+
+        );
+
+
+    $("roomFilter")
+        ?.addEventListener(
+
+            "change",
+
+            renderInventory
+
+        );
+
+
+    $("conditionFilter")
+        ?.addEventListener(
+
+            "change",
+
+            renderInventory
+
+        );
+
+
+    $("sortFilter")
+        ?.addEventListener(
+
+            "change",
+
+            renderInventory
+
+        );
+
+
+    $("resetFilterButton")
+        ?.addEventListener(
+
+            "click",
+
+            resetFilters
+
+        );
+
+
+    /* =====================================================
+       CONFIRM
+    ===================================================== */
+
+    $("confirmCancel")
+        ?.addEventListener(
+
+            "click",
+
+            closeConfirmModal
+
+        );
+
+
+    $("confirmYes")
+        ?.addEventListener(
+
+            "click",
+
+            function () {
+
+                const callback =
+                    confirmCallback;
+
+
+                closeConfirmModal();
+
+
+                if (
+                    typeof callback ===
+                    "function"
+                ) {
+
+                    callback();
+
+                }
+
+            }
+
+        );
+
+
+    /* =====================================================
+       EXPORT
+    ===================================================== */
+
+    $("exportButton")
+        ?.addEventListener(
+
+            "click",
+
+            exportCSV
+
+        );
+
+
+    /* =====================================================
+       BACKUP
+    ===================================================== */
+
+    $("backupButton")
+        ?.addEventListener(
+
+            "click",
+
+            createBackup
+
+        );
+
+
+    /* =====================================================
+       RESTORE
+    ===================================================== */
+
+    $("restoreButton")
+        ?.addEventListener(
+
+            "click",
+
+            function () {
+
+                $("restoreFileInput")
+                    ?.click();
+
+            }
+
+        );
+
+
+    $("restoreFileInput")
+        ?.addEventListener(
+
+            "change",
+
+            handleRestore
+
+        );
+
+
+    /* =====================================================
+       PRINT
+    ===================================================== */
+
+    $("printButton")
+        ?.addEventListener(
+
+            "click",
+
+            function () {
+
+                window.print();
+
+            }
+
+        );
+
+
+    /* =====================================================
+       CLEAR ACTIVITY
+    ===================================================== */
+
+    $("clearActivityButton")
+        ?.addEventListener(
+
+            "click",
+
+            clearActivities
+
+        );
+
+
+    /* =====================================================
+       INSTALL
+    ===================================================== */
+
+    $("installButton")
+        ?.addEventListener(
+
+            "click",
+
+            installPWA
+
+        );
+
+
+    window.addEventListener(
+
+        "beforeinstallprompt",
+
+        function (
+            event
+        ) {
+
+            event.preventDefault();
+
+
+            deferredInstallPrompt =
+                event;
+
+
+            $("installButton")
+                ?.classList.remove(
+                    "hidden"
+                );
+
+        }
+
+    );
+
+
+    /* =====================================================
+       ESC
+    ===================================================== */
+
+    document.addEventListener(
+
+        "keydown",
+
+        function (
+            event
+        ) {
+
+            if (
+                event.key ===
+                "Escape"
+            ) {
+
+                closeLoginModal();
+
+                closeInventoryModal();
+
+                closeConfirmModal();
+
+            }
+
+
+            if (
+
+                (event.ctrlKey ||
+                 event.metaKey)
+
+                &&
+
+                event.key.toLowerCase() ===
+                "k"
+
+            ) {
+
+                event.preventDefault();
+
+
+                $("searchInput")
+                    ?.focus();
+
+            }
+
+        }
+
+    );
+
+
+    /* =====================================================
+       OUTSIDE INVENTORY MODAL
+    ===================================================== */
+
+    $("inventoryModal")
+        ?.addEventListener(
+
+            "click",
+
+            function (
+                event
+            ) {
+
+                if (
+
+                    event.target ===
+                    $("inventoryModal")
+
+                ) {
+
+                    closeInventoryModal();
+
+                }
+
+            }
+
+        );
+
+
+    /* =====================================================
+       OUTSIDE CONFIRM
+    ===================================================== */
+
+    $("confirmModal")
+        ?.addEventListener(
+
+            "click",
+
+            function (
+                event
+            ) {
+
+                if (
+
+                    event.target ===
+                    $("confirmModal")
+
+                ) {
+
+                    closeConfirmModal();
+
+                }
+
+            }
+
+        );
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function switchSection(
+    target
+) {
+
+    const section =
+        $(target);
+
+
+    if (
+        !section
+    ) {
+
+        return;
+
+    }
+
+
+    document
+        .querySelectorAll(
+            ".page-section"
+        )
+        .forEach(
+
+            function (
+                item
+            ) {
+
+                item.classList.remove(
+                    "active-section"
+                );
+
+            }
+
+        );
+
+
+    section.classList.add(
+        "active-section"
+    );
+
+
+    document
+        .querySelectorAll(
+            ".menu-item[data-target]"
+        )
+        .forEach(
+
+            function (
+                item
+            ) {
+
+                item.classList.toggle(
+
+                    "active",
+
+                    item.dataset.target ===
+                    target
+
+                );
+
+            }
+
+        );
+
+
+    $("sidebar")
+        ?.classList.remove(
+            "open"
+        );
+
+
+    if (
+        target ===
+        "inventory"
+    ) {
+
+        renderInventory();
+
+    }
+
+
+    if (
+        target ===
+        "monitoring"
+    ) {
+
+        updateMonitoring();
+
+        renderActivity();
+
+    }
+
+
+    if (
+        target ===
+        "statistics"
+    ) {
+
+        renderStatistics();
 
     }
 
@@ -105,23 +2153,37 @@ function loadData() {
             );
 
 
-        if (!saved) {
+        if (
+            !saved
+        ) {
 
             for (
-                const key of OLD_STORAGE_KEYS
+                const key
+                of OLD_STORAGE_KEYS
             ) {
 
                 const old =
-                    localStorage.getItem(key);
+                    localStorage.getItem(
+                        key
+                    );
 
-                if (old) {
 
-                    saved = old;
+                if (
+                    old
+                ) {
+
+                    saved =
+                        old;
+
 
                     localStorage.setItem(
+
                         STORAGE_KEY,
+
                         old
+
                     );
+
 
                     break;
 
@@ -134,34 +2196,61 @@ function loadData() {
 
         inventoryData =
             saved
+
                 ? normalizeData(
-                    JSON.parse(saved)
+                    JSON.parse(
+                        saved
+                    )
                 )
+
                 : [];
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
+
             "Load data error:",
+
             error
+
         );
 
-        inventoryData = [];
+
+        inventoryData =
+            [];
 
     }
 
 }
 
 
-function normalizeData(data) {
+/* =========================================================
+   NORMALIZE
+========================================================= */
 
-    if (!Array.isArray(data)) {
+function normalizeData(
+    data
+) {
+
+    if (
+        !Array.isArray(
+            data
+        )
+    ) {
+
         return [];
+
     }
 
 
     return data.map(
-        function (item, index) {
+
+        function (
+            item,
+            index
+        ) {
 
             return {
 
@@ -171,88 +2260,132 @@ function normalizeData(data) {
 
                 kodeInventaris:
                     String(
+
                         item.kodeInventaris ||
+
                         item.code ||
+
                         `INV-${String(
                             index + 1
                         ).padStart(
                             3,
                             "0"
                         )}`
+
                     ),
 
                 nama:
                     String(
+
                         item.nama ||
+
                         item.name ||
+
                         "Tanpa Nama"
+
                     ),
 
                 kategori:
                     String(
+
                         item.kategori ||
+
                         item.category ||
+
                         "Lainnya"
+
                     ),
 
                 ruangan:
                     String(
+
                         item.ruangan ||
+
                         item.room ||
+
                         "Umum"
+
                     ),
 
                 jumlah:
                     Math.max(
+
                         0,
+
                         Number(
+
                             item.jumlah ??
                             item.quantity ??
                             0
+
                         )
+
                     ),
 
                 kondisi:
                     normalizeCondition(
+
                         item.kondisi ||
+
                         item.condition
+
                     ),
 
                 keterangan:
                     String(
+
                         item.keterangan ||
+
                         item.notes ||
+
                         ""
+
                     ),
 
                 tanggal:
                     item.tanggal ||
-                    new Date().toISOString(),
+
+                    new Date()
+                        .toISOString(),
 
                 updatedAt:
                     item.updatedAt ||
-                    new Date().toISOString()
+
+                    new Date()
+                        .toISOString()
 
             };
 
         }
+
     );
 
 }
 
 
-function normalizeCondition(value) {
+/* =========================================================
+   CONDITION
+========================================================= */
 
-    const valueString =
+function normalizeCondition(
+    value
+) {
+
+    const text =
         String(
+
             value ||
             "Baik"
-        ).toLowerCase();
+
+        )
+
+            .toLowerCase();
 
 
     if (
-        valueString === "ringan" ||
-        valueString.includes("ringan")
+        text.includes(
+            "ringan"
+        )
     ) {
 
         return "Ringan";
@@ -261,8 +2394,9 @@ function normalizeCondition(value) {
 
 
     if (
-        valueString === "berat" ||
-        valueString.includes("berat")
+        text.includes(
+            "berat"
+        )
     ) {
 
         return "Berat";
@@ -276,7 +2410,7 @@ function normalizeCondition(value) {
 
 
 /* =========================================================
-   SAVE
+   SAVE DATA
 ========================================================= */
 
 function saveData() {
@@ -284,851 +2418,31 @@ function saveData() {
     try {
 
         localStorage.setItem(
+
             STORAGE_KEY,
+
             JSON.stringify(
                 inventoryData
             )
+
         );
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
             "Save data error:",
             error
         );
 
-        showToast(
-            "Data gagal disimpan ke browser.",
-            "error"
-        );
-
     }
 
 }
 
 
 /* =========================================================
-   AUTHENTICATION / ADMIN LOGIN
-========================================================= */
-
-function loadAuth() {
-
-    isAdminLoggedIn =
-        localStorage.getItem(
-            AUTH_KEY
-        ) === "logged-in";
-
-
-    updateAuthUI();
-
-}
-
-
-function updateAuthUI() {
-
-    document.body.classList.toggle(
-        "admin-logged-in",
-        isAdminLoggedIn
-    );
-
-
-    const buttonText =
-        $("loginButtonText");
-
-    const statusDot =
-        $("loginStatusDot");
-
-    const button =
-        $("loginButton");
-
-
-    if (isAdminLoggedIn) {
-
-        if (buttonText) {
-
-            buttonText.textContent =
-                "Logout Admin";
-
-        }
-
-
-        if (statusDot) {
-
-            statusDot.classList.add(
-                "logged-in"
-            );
-
-        }
-
-
-        if (button) {
-
-            button.title =
-                "Logout Admin";
-
-            button.setAttribute(
-                "aria-label",
-                "Logout Admin"
-            );
-
-        }
-
-    } else {
-
-        if (buttonText) {
-
-            buttonText.textContent =
-                "Login Admin";
-
-        }
-
-
-        if (statusDot) {
-
-            statusDot.classList.remove(
-                "logged-in"
-            );
-
-        }
-
-
-        if (button) {
-
-            button.title =
-                "Login Admin";
-
-            button.setAttribute(
-                "aria-label",
-                "Login Admin"
-            );
-
-        }
-
-    }
-
-}
-
-
-function openLoginModal() {
-
-    if (isAdminLoggedIn) {
-
-        logoutAdmin();
-
-        return;
-
-    }
-
-
-    if ($("loginError")) {
-
-        $("loginError").textContent =
-            "";
-
-    }
-
-
-    $("loginForm")?.reset();
-
-
-    $("loginModal")
-        ?.classList.add(
-            "show"
-        );
-
-
-    document.body.classList.add(
-        "modal-open"
-    );
-
-
-    setTimeout(
-        function () {
-
-            $("loginUsername")
-                ?.focus();
-
-        },
-        120
-    );
-
-}
-
-
-function closeLoginModal() {
-
-    $("loginModal")
-        ?.classList.remove(
-            "show"
-        );
-
-
-    document.body.classList.remove(
-        "modal-open"
-    );
-
-
-    if ($("loginError")) {
-
-        $("loginError").textContent =
-            "";
-
-    }
-
-}
-
-
-function handleLoginSubmit(event) {
-
-    event.preventDefault();
-
-
-    const username =
-        $("loginUsername")
-            ?.value
-            .trim() ||
-        "";
-
-
-    const password =
-        $("loginPassword")
-            ?.value ||
-        "";
-
-
-    if (
-        username === ADMIN_USERNAME &&
-        password === ADMIN_PASSWORD
-    ) {
-
-        isAdminLoggedIn =
-            true;
-
-
-        localStorage.setItem(
-            AUTH_KEY,
-            "logged-in"
-        );
-
-
-        updateAuthUI();
-
-        closeLoginModal();
-
-
-        showToast(
-            "Login admin berhasil. Mode pengelolaan data aktif.",
-            "success"
-        );
-
-
-        addActivity(
-            "Admin login",
-            "fa-right-to-bracket"
-        );
-
-
-        return;
-
-    }
-
-
-    if ($("loginError")) {
-
-        $("loginError").textContent =
-            "Username atau password salah.";
-
-    }
-
-
-    if ($("loginPassword")) {
-
-        $("loginPassword").value =
-            "";
-
-        $("loginPassword").focus();
-
-    }
-
-}
-
-
-function logoutAdmin() {
-
-    isAdminLoggedIn =
-        false;
-
-
-    localStorage.removeItem(
-        AUTH_KEY
-    );
-
-
-    updateAuthUI();
-
-
-    closeInventoryModal();
-
-    closeLoginModal();
-
-    closeConfirmModal();
-
-
-    showToast(
-        "Logout berhasil. Data kembali terkunci.",
-        "info"
-    );
-
-
-    addActivity(
-        "Admin logout",
-        "fa-right-from-bracket"
-    );
-
-}
-
-
-function requireAdmin(
-    action = "melakukan perubahan data"
-) {
-
-    if (isAdminLoggedIn) {
-
-        return true;
-
-    }
-
-
-    showToast(
-        `Silakan login admin untuk ${action}.`,
-        "error"
-    );
-
-
-    openLoginModal();
-
-
-    return false;
-
-}
-
-
-/* =========================================================
-   EVENTS
-========================================================= */
-
-function bindEvents() {
-
-    /* AUTH */
-
-    $("loginButton")
-        ?.addEventListener(
-            "click",
-            openLoginModal
-        );
-
-
-    $("closeLoginButton")
-        ?.addEventListener(
-            "click",
-            closeLoginModal
-        );
-
-
-    $("cancelLoginButton")
-        ?.addEventListener(
-            "click",
-            closeLoginModal
-        );
-
-
-    $("loginForm")
-        ?.addEventListener(
-            "submit",
-            handleLoginSubmit
-        );
-
-
-    $("loginModal")
-        ?.addEventListener(
-            "click",
-            function (event) {
-
-                if (
-                    event.target ===
-                    $("loginModal")
-                ) {
-
-                    closeLoginModal();
-
-                }
-
-            }
-        );
-
-
-    /* NAVIGATION */
-
-    document
-        .querySelectorAll(
-            ".menu-item[data-target], .text-button[data-target]"
-        )
-        .forEach(
-            function (button) {
-
-                button.addEventListener(
-                    "click",
-                    function () {
-
-                        switchSection(
-                            button.dataset.target
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-
-    /* MOBILE MENU */
-
-    $("mobileMenuButton")
-        ?.addEventListener(
-            "click",
-            function () {
-
-                $("sidebar")
-                    ?.classList.toggle(
-                        "open"
-                    );
-
-            }
-        );
-
-
-    /* THEME */
-
-    $("themeButton")
-        ?.addEventListener(
-            "click",
-            toggleTheme
-        );
-
-
-    $("mobileThemeButton")
-        ?.addEventListener(
-            "click",
-            toggleTheme
-        );
-
-
-    /* ADD */
-
-    $("quickAddButton")
-        ?.addEventListener(
-            "click",
-            openAddModal
-        );
-
-
-    $("heroAddButton")
-        ?.addEventListener(
-            "click",
-            openAddModal
-        );
-
-
-    $("inventoryAddButton")
-        ?.addEventListener(
-            "click",
-            openAddModal
-        );
-
-
-    $("emptyAddButton")
-        ?.addEventListener(
-            "click",
-            openAddModal
-        );
-
-
-    /* MONITOR */
-
-    $("heroMonitorButton")
-        ?.addEventListener(
-            "click",
-            function () {
-
-                switchSection(
-                    "monitoring"
-                );
-
-            }
-        );
-
-
-    /* INVENTORY MODAL */
-
-    $("closeModalButton")
-        ?.addEventListener(
-            "click",
-            closeInventoryModal
-        );
-
-
-    $("cancelModalButton")
-        ?.addEventListener(
-            "click",
-            closeInventoryModal
-        );
-
-
-    $("inventoryForm")
-        ?.addEventListener(
-            "submit",
-            handleFormSubmit
-        );
-
-
-    /* SEARCH */
-
-    $("searchInput")
-        ?.addEventListener(
-            "input",
-            renderInventory
-        );
-
-
-    $("roomFilter")
-        ?.addEventListener(
-            "change",
-            renderInventory
-        );
-
-
-    $("conditionFilter")
-        ?.addEventListener(
-            "change",
-            renderInventory
-        );
-
-
-    $("sortFilter")
-        ?.addEventListener(
-            "change",
-            renderInventory
-        );
-
-
-    $("resetFilterButton")
-        ?.addEventListener(
-            "click",
-            resetFilters
-        );
-
-
-    /* CONFIRM */
-
-    $("confirmCancel")
-        ?.addEventListener(
-            "click",
-            closeConfirmModal
-        );
-
-
-    $("confirmYes")
-        ?.addEventListener(
-            "click",
-            function () {
-
-                const callback =
-                    confirmCallback;
-
-
-                closeConfirmModal();
-
-
-                if (
-                    typeof callback ===
-                    "function"
-                ) {
-
-                    callback();
-
-                }
-
-            }
-        );
-
-
-    /* EXPORT */
-
-    $("exportButton")
-        ?.addEventListener(
-            "click",
-            exportCSV
-        );
-
-
-    /* BACKUP */
-
-    $("backupButton")
-        ?.addEventListener(
-            "click",
-            createBackup
-        );
-
-
-    /* RESTORE */
-
-    $("restoreButton")
-        ?.addEventListener(
-            "click",
-            function () {
-
-                $("restoreFileInput")
-                    ?.click();
-
-            }
-        );
-
-
-    $("restoreFileInput")
-        ?.addEventListener(
-            "change",
-            handleRestore
-        );
-
-
-    /* PRINT */
-
-    $("printButton")
-        ?.addEventListener(
-            "click",
-            function () {
-
-                window.print();
-
-            }
-        );
-
-
-    /* CLEAR ACTIVITY */
-
-    $("clearActivityButton")
-        ?.addEventListener(
-            "click",
-            clearActivities
-        );
-
-
-    /* INSTALL */
-
-    window.addEventListener(
-        "beforeinstallprompt",
-        function (event) {
-
-            event.preventDefault();
-
-            deferredInstallPrompt =
-                event;
-
-
-            $("installButton")
-                ?.classList.remove(
-                    "hidden"
-                );
-
-        }
-    );
-
-
-    $("installButton")
-        ?.addEventListener(
-            "click",
-            installPWA
-        );
-
-
-    /* ESC */
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (
-                event.key ===
-                "Escape"
-            ) {
-
-                closeLoginModal();
-
-                closeInventoryModal();
-
-                closeConfirmModal();
-
-            }
-
-
-            if (
-                (
-                    event.ctrlKey ||
-                    event.metaKey
-                ) &&
-                event.key.toLowerCase() ===
-                "k"
-            ) {
-
-                event.preventDefault();
-
-
-                $("searchInput")
-                    ?.focus();
-
-            }
-
-        }
-    );
-
-
-    /* INVENTORY MODAL OUTSIDE CLICK */
-
-    $("inventoryModal")
-        ?.addEventListener(
-            "click",
-            function (event) {
-
-                if (
-                    event.target ===
-                    $("inventoryModal")
-                ) {
-
-                    closeInventoryModal();
-
-                }
-
-            }
-        );
-
-
-    /* CONFIRM MODAL OUTSIDE CLICK */
-
-    $("confirmModal")
-        ?.addEventListener(
-            "click",
-            function (event) {
-
-                if (
-                    event.target ===
-                    $("confirmModal")
-                ) {
-
-                    closeConfirmModal();
-
-                }
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-function switchSection(target) {
-
-    const section =
-        $(target);
-
-
-    if (!section) {
-
-        return;
-
-    }
-
-
-    document
-        .querySelectorAll(
-            ".page-section"
-        )
-        .forEach(
-            function (item) {
-
-                item.classList.remove(
-                    "active-section"
-                );
-
-            }
-        );
-
-
-    section.classList.add(
-        "active-section"
-    );
-
-
-    document
-        .querySelectorAll(
-            ".menu-item[data-target]"
-        )
-        .forEach(
-            function (item) {
-
-                item.classList.toggle(
-                    "active",
-                    item.dataset.target ===
-                    target
-                );
-
-            }
-        );
-
-
-    $("sidebar")
-        ?.classList.remove(
-            "open"
-        );
-
-
-    if (target === "inventory") {
-
-        renderInventory();
-
-    }
-
-
-    if (target === "monitoring") {
-
-        updateMonitoring();
-
-        renderActivity();
-
-    }
-
-
-    if (target === "statistics") {
-
-        renderStatistics();
-
-    }
-
-
-    window.scrollTo(
-        {
-            top: 0,
-            behavior: "smooth"
-        }
-    );
-
-}
-
-
-/* =========================================================
-   MODAL
+   ADD MODAL
 ========================================================= */
 
 function openAddModal() {
@@ -1148,23 +2462,52 @@ function openAddModal() {
         null;
 
 
-    $("modalTitle").textContent =
-        "Tambah Inventaris";
+    if (
+        $("modalTitle")
+    ) {
+
+        $("modalTitle")
+            .textContent =
+            "Tambah Inventaris";
+
+    }
 
 
-    $("inventoryForm").reset();
+    $("inventoryForm")
+        ?.reset();
 
 
-    $("inventoryId").value =
-        "";
+    if (
+        $("inventoryId")
+    ) {
+
+        $("inventoryId")
+            .value =
+            "";
+
+    }
 
 
-    $("inventoryQuantity").value =
-        "1";
+    if (
+        $("inventoryQuantity")
+    ) {
+
+        $("inventoryQuantity")
+            .value =
+            "1";
+
+    }
 
 
-    $("inventoryCondition").value =
-        "Baik";
+    if (
+        $("inventoryCondition")
+    ) {
+
+        $("inventoryCondition")
+            .value =
+            "Baik";
+
+    }
 
 
     $("inventoryModal")
@@ -1179,19 +2522,28 @@ function openAddModal() {
 
 
     setTimeout(
+
         function () {
 
             $("inventoryCode")
                 ?.focus();
 
         },
+
         100
+
     );
 
 }
 
 
-function openEditModal(id) {
+/* =========================================================
+   EDIT MODAL
+========================================================= */
+
+function openEditModal(
+    id
+) {
 
     if (
         !requireAdmin(
@@ -1206,15 +2558,24 @@ function openEditModal(id) {
 
     const item =
         inventoryData.find(
-            function (entry) {
 
-                return entry.id === id;
+            function (
+                entry
+            ) {
+
+                return (
+                    entry.id ===
+                    id
+                );
 
             }
+
         );
 
 
-    if (!item) {
+    if (
+        !item
+    ) {
 
         showToast(
             "Data inventaris tidak ditemukan.",
@@ -1230,39 +2591,48 @@ function openEditModal(id) {
         id;
 
 
-    $("modalTitle").textContent =
+    $("modalTitle")
+        .textContent =
         "Edit Inventaris";
 
 
-    $("inventoryId").value =
+    $("inventoryId")
+        .value =
         item.id;
 
 
-    $("inventoryCode").value =
+    $("inventoryCode")
+        .value =
         item.kodeInventaris;
 
 
-    $("inventoryName").value =
+    $("inventoryName")
+        .value =
         item.nama;
 
 
-    $("inventoryCategory").value =
+    $("inventoryCategory")
+        .value =
         item.kategori;
 
 
-    $("inventoryRoom").value =
+    $("inventoryRoom")
+        .value =
         item.ruangan;
 
 
-    $("inventoryQuantity").value =
+    $("inventoryQuantity")
+        .value =
         item.jumlah;
 
 
-    $("inventoryCondition").value =
+    $("inventoryCondition")
+        .value =
         item.kondisi;
 
 
-    $("inventoryNotes").value =
+    $("inventoryNotes")
+        .value =
         item.keterangan;
 
 
@@ -1278,6 +2648,10 @@ function openEditModal(id) {
 
 }
 
+
+/* =========================================================
+   CLOSE INVENTORY
+========================================================= */
 
 function closeInventoryModal() {
 
@@ -1302,14 +2676,16 @@ function closeInventoryModal() {
    FORM SUBMIT
 ========================================================= */
 
-function handleFormSubmit(event) {
+function handleFormSubmit(
+    event
+) {
 
     event.preventDefault();
 
 
     if (
         !requireAdmin(
-            "menyimpan perubahan inventaris"
+            "menyimpan inventaris"
         )
     ) {
 
@@ -1367,15 +2743,23 @@ function handleFormSubmit(event) {
 
 
     if (
+
         !code ||
+
         !name ||
+
         !category ||
+
         !room
+
     ) {
 
         showToast(
+
             "Semua field wajib diisi.",
+
             "error"
+
         );
 
         return;
@@ -1384,13 +2768,23 @@ function handleFormSubmit(event) {
 
 
     if (
-        !Number.isFinite(quantity) ||
+
+        !Number.isFinite(
+            quantity
+        )
+
+        ||
+
         quantity < 0
+
     ) {
 
         showToast(
+
             "Jumlah tidak valid.",
+
             "error"
+
         );
 
         return;
@@ -1400,24 +2794,42 @@ function handleFormSubmit(event) {
 
     const duplicate =
         inventoryData.find(
-            function (item) {
+
+            function (
+                item
+            ) {
 
                 return (
+
                     item.kodeInventaris
-                        .toLowerCase() ===
-                    code.toLowerCase() &&
-                    item.id !== editingId
+                        .toLowerCase()
+
+                    ===
+
+                    code.toLowerCase()
+
+                    &&
+
+                    item.id !==
+                    editingId
+
                 );
 
             }
+
         );
 
 
-    if (duplicate) {
+    if (
+        duplicate
+    ) {
 
         showToast(
+
             "Kode inventaris sudah digunakan.",
+
             "error"
+
         );
 
         return;
@@ -1425,11 +2837,16 @@ function handleFormSubmit(event) {
     }
 
 
-    if (editingId) {
+    if (
+        editingId
+    ) {
 
         const index =
             inventoryData.findIndex(
-                function (item) {
+
+                function (
+                    item
+                ) {
 
                     return (
                         item.id ===
@@ -1437,24 +2854,27 @@ function handleFormSubmit(event) {
                     );
 
                 }
+
             );
 
 
-        if (index === -1) {
-
-            showToast(
-                "Data tidak ditemukan.",
-                "error"
-            );
+        if (
+            index ===
+            -1
+        ) {
 
             return;
 
         }
 
 
-        inventoryData[index] = {
+        inventoryData[
+            index
+        ] = {
 
-            ...inventoryData[index],
+            ...inventoryData[
+                index
+            ],
 
             kodeInventaris:
                 code,
@@ -1478,23 +2898,32 @@ function handleFormSubmit(event) {
                 notes,
 
             updatedAt:
-                new Date().toISOString()
+                new Date()
+                    .toISOString()
 
         };
 
 
         addActivity(
+
             `Mengubah "${name}"`,
+
             "fa-pen"
+
         );
 
 
         showToast(
+
             "Data berhasil diperbarui.",
+
             "success"
+
         );
 
-    } else {
+    }
+
+    else {
 
         inventoryData.unshift({
 
@@ -1523,23 +2952,31 @@ function handleFormSubmit(event) {
                 notes,
 
             tanggal:
-                new Date().toISOString(),
+                new Date()
+                    .toISOString(),
 
             updatedAt:
-                new Date().toISOString()
+                new Date()
+                    .toISOString()
 
         });
 
 
         addActivity(
+
             `Menambahkan "${name}"`,
+
             "fa-plus"
+
         );
 
 
         showToast(
+
             "Inventaris berhasil ditambahkan.",
+
             "success"
+
         );
 
     }
@@ -1547,7 +2984,9 @@ function handleFormSubmit(event) {
 
     saveData();
 
+
     closeInventoryModal();
+
 
     renderAll();
 
@@ -1555,32 +2994,107 @@ function handleFormSubmit(event) {
 
 
 /* =========================================================
-   RENDER ALL
+   DELETE
 ========================================================= */
 
-function renderAll() {
+function deleteInventory(
+    id
+) {
 
-    renderInventory();
+    if (
+        !requireAdmin(
+            "menghapus inventaris"
+        )
+    ) {
 
-    updateDashboard();
+        return;
 
-    updateMonitoring();
+    }
 
-    renderStatistics();
 
-    renderActivity();
+    const item =
+        inventoryData.find(
 
-    updateRoomFilter();
+            function (
+                entry
+            ) {
 
-    updateStorage();
+                return (
+                    entry.id ===
+                    id
+                );
 
-    updateFooterYear();
+            }
+
+        );
+
+
+    if (
+        !item
+    ) {
+
+        return;
+
+    }
+
+
+    openConfirmModal(
+
+        "Hapus Inventaris",
+
+        `Yakin ingin menghapus "${item.nama}"?`,
+
+        function () {
+
+            inventoryData =
+                inventoryData.filter(
+
+                    function (
+                        entry
+                    ) {
+
+                        return (
+                            entry.id !==
+                            id
+                        );
+
+                    }
+
+                );
+
+
+            saveData();
+
+
+            addActivity(
+
+                `Menghapus "${item.nama}"`,
+
+                "fa-trash"
+
+            );
+
+
+            renderAll();
+
+
+            showToast(
+
+                "Data berhasil dihapus.",
+
+                "success"
+
+            );
+
+        }
+
+    );
 
 }
 
 
 /* =========================================================
-   INVENTORY
+   RENDER INVENTORY
 ========================================================= */
 
 function renderInventory() {
@@ -1589,7 +3103,9 @@ function renderInventory() {
         $("inventoryTableBody");
 
 
-    if (!tbody) {
+    if (
+        !tbody
+    ) {
 
         return;
 
@@ -1602,8 +3118,9 @@ function renderInventory() {
                 ?.value ||
             ""
         )
-        .toLowerCase()
-        .trim();
+
+            .toLowerCase()
+            .trim();
 
 
     const room =
@@ -1626,25 +3143,40 @@ function renderInventory() {
 
     let result =
         inventoryData.filter(
-            function (item) {
+
+            function (
+                item
+            ) {
 
                 const searchMatch =
-                    !search ||
+                    !search
+
+                    ||
+
                     item.kodeInventaris
                         .toLowerCase()
                         .includes(
                             search
-                        ) ||
+                        )
+
+                    ||
+
                     item.nama
                         .toLowerCase()
                         .includes(
                             search
-                        ) ||
+                        )
+
+                    ||
+
                     item.kategori
                         .toLowerCase()
                         .includes(
                             search
-                        ) ||
+                        )
+
+                    ||
+
                     item.ruangan
                         .toLowerCase()
                         .includes(
@@ -1653,93 +3185,147 @@ function renderInventory() {
 
 
                 const roomMatch =
-                    room === "all" ||
-                    item.ruangan === room;
+                    room ===
+                    "all"
+
+                    ||
+
+                    item.ruangan ===
+                    room;
 
 
                 const conditionMatch =
-                    condition === "all" ||
+                    condition ===
+                    "all"
+
+                    ||
+
                     item.kondisi ===
                     condition;
 
 
                 return (
+
                     searchMatch &&
+
                     roomMatch &&
+
                     conditionMatch
+
                 );
 
             }
+
         );
 
 
     result.sort(
-        function (a, b) {
 
-            switch (sort) {
+        function (
+            a,
+            b
+        ) {
 
-                case "oldest":
+            if (
+                sort ===
+                "oldest"
+            ) {
 
-                    return (
-                        new Date(
-                            a.tanggal
-                        ) -
-                        new Date(
-                            b.tanggal
-                        )
-                    );
+                return (
 
+                    new Date(
+                        a.tanggal
+                    )
 
-                case "nameAsc":
+                    -
 
-                    return (
-                        a.nama.localeCompare(
-                            b.nama,
-                            "id"
-                        )
-                    );
+                    new Date(
+                        b.tanggal
+                    )
 
-
-                case "nameDesc":
-
-                    return (
-                        b.nama.localeCompare(
-                            a.nama,
-                            "id"
-                        )
-                    );
-
-
-                case "stockHigh":
-
-                    return (
-                        b.jumlah -
-                        a.jumlah
-                    );
-
-
-                case "stockLow":
-
-                    return (
-                        a.jumlah -
-                        b.jumlah
-                    );
-
-
-                default:
-
-                    return (
-                        new Date(
-                            b.tanggal
-                        ) -
-                        new Date(
-                            a.tanggal
-                        )
-                    );
+                );
 
             }
 
+
+            if (
+                sort ===
+                "nameAsc"
+            ) {
+
+                return a.nama.localeCompare(
+
+                    b.nama,
+
+                    "id"
+
+                );
+
+            }
+
+
+            if (
+                sort ===
+                "nameDesc"
+            ) {
+
+                return b.nama.localeCompare(
+
+                    a.nama,
+
+                    "id"
+
+                );
+
+            }
+
+
+            if (
+                sort ===
+                "stockHigh"
+            ) {
+
+                return (
+
+                    b.jumlah -
+                    a.jumlah
+
+                );
+
+            }
+
+
+            if (
+                sort ===
+                "stockLow"
+            ) {
+
+                return (
+
+                    a.jumlah -
+                    b.jumlah
+
+                );
+
+            }
+
+
+            return (
+
+                new Date(
+                    b.tanggal
+                )
+
+                -
+
+                new Date(
+                    a.tanggal
+                )
+
+            );
+
         }
+
     );
 
 
@@ -1748,7 +3334,10 @@ function renderInventory() {
 
 
     result.forEach(
-        function (item) {
+
+        function (
+            item
+        ) {
 
             const row =
                 document.createElement(
@@ -1756,15 +3345,13 @@ function renderInventory() {
                 );
 
 
-            const conditionClass =
-                item.kondisi.toLowerCase();
-
-
             row.innerHTML = `
 
                 <td>
 
-                    <span class="code-badge">
+                    <span
+                        class="code-badge"
+                    >
 
                         ${escapeHtml(
                             item.kodeInventaris
@@ -1778,37 +3365,48 @@ function renderInventory() {
                 <td>
 
                     <strong>
+
                         ${escapeHtml(
                             item.nama
                         )}
+
                     </strong>
 
                 </td>
 
 
                 <td>
+
                     ${escapeHtml(
                         item.kategori
                     )}
+
                 </td>
 
 
                 <td>
+
                     ${escapeHtml(
                         item.ruangan
                     )}
+
                 </td>
 
 
                 <td>
+
                     ${item.jumlah}
+
                 </td>
 
 
                 <td>
 
                     <span
-                        class="condition-badge ${conditionClass}"
+                        class="condition-badge ${
+                            item.kondisi
+                                .toLowerCase()
+                        }"
                     >
 
                         ${conditionLabel(
@@ -1821,21 +3419,24 @@ function renderInventory() {
 
 
                 <td>
+
                     ${formatDate(
                         item.tanggal
                     )}
+
                 </td>
 
 
                 <td>
 
-                    <div class="action-buttons">
+                    <div
+                        class="action-buttons"
+                    >
 
                         <button
                             class="icon-button edit-button"
                             type="button"
-                            title="Edit inventaris"
-                            aria-label="Edit inventaris"
+                            title="Edit"
                         >
 
                             <i
@@ -1848,8 +3449,7 @@ function renderInventory() {
                         <button
                             class="icon-button delete delete-button"
                             type="button"
-                            title="Hapus inventaris"
-                            aria-label="Hapus inventaris"
+                            title="Hapus"
                         >
 
                             <i
@@ -1868,7 +3468,9 @@ function renderInventory() {
             row.querySelector(
                 ".edit-button"
             )?.addEventListener(
+
                 "click",
+
                 function () {
 
                     openEditModal(
@@ -1876,13 +3478,16 @@ function renderInventory() {
                     );
 
                 }
+
             );
 
 
             row.querySelector(
                 ".delete-button"
             )?.addEventListener(
+
                 "click",
+
                 function () {
 
                     deleteInventory(
@@ -1890,6 +3495,7 @@ function renderInventory() {
                     );
 
                 }
+
             );
 
 
@@ -1898,117 +3504,36 @@ function renderInventory() {
             );
 
         }
+
     );
 
 
-    if ($("resultCount")) {
+    if (
+        $("resultCount")
+    ) {
 
-        $("resultCount").textContent =
+        $("resultCount")
+            .textContent =
             result.length;
 
     }
 
 
     if (
-        result.length === 0
+        $("emptyState")
     ) {
 
         $("emptyState")
-            ?.classList.remove(
-                "hidden"
-            );
+            .classList.toggle(
 
-    } else {
+                "hidden",
 
-        $("emptyState")
-            ?.classList.add(
-                "hidden"
+                result.length !==
+                0
+
             );
 
     }
-
-}
-
-
-/* =========================================================
-   DELETE
-========================================================= */
-
-function deleteInventory(id) {
-
-    if (
-        !requireAdmin(
-            "menghapus inventaris"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    const item =
-        inventoryData.find(
-            function (entry) {
-
-                return entry.id === id;
-
-            }
-        );
-
-
-    if (!item) {
-
-        showToast(
-            "Data inventaris tidak ditemukan.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    createAutoBackup();
-
-
-    openConfirmModal(
-        "Hapus Inventaris",
-        `Yakin ingin menghapus "${item.nama}"?`,
-        function () {
-
-            inventoryData =
-                inventoryData.filter(
-                    function (entry) {
-
-                        return (
-                            entry.id !==
-                            id
-                        );
-
-                    }
-                );
-
-
-            saveData();
-
-
-            addActivity(
-                `Menghapus "${item.nama}"`,
-                "fa-trash"
-            );
-
-
-            renderAll();
-
-
-            showToast(
-                "Data berhasil dihapus.",
-                "success"
-            );
-
-        }
-    );
 
 }
 
@@ -2025,136 +3550,95 @@ function updateDashboard() {
 
     const good =
         inventoryData.filter(
-            item =>
-                item.kondisi ===
-                "Baik"
+
+            function (
+                item
+            ) {
+
+                return (
+                    item.kondisi ===
+                    "Baik"
+                );
+
+            }
+
         ).length;
 
 
     const attention =
         inventoryData.filter(
-            item =>
-                item.kondisi !==
-                "Baik"
+
+            function (
+                item
+            ) {
+
+                return (
+                    item.kondisi !==
+                    "Baik"
+                );
+
+            }
+
         ).length;
 
 
     const totalStock =
         inventoryData.reduce(
+
             function (
                 sum,
                 item
             ) {
 
                 return (
+
                     sum +
+
                     Number(
                         item.jumlah ||
                         0
                     )
+
                 );
 
             },
+
             0
+
         );
 
 
-    const rooms =
-        new Set(
-            inventoryData.map(
-                item =>
-                    item.ruangan
-            )
-        ).size;
+    setText(
+        "totalItems",
+        total
+    );
 
+    setText(
+        "goodItems",
+        good
+    );
 
-    const categories =
-        new Set(
-            inventoryData.map(
-                item =>
-                    item.kategori
-            )
-        ).size;
+    setText(
+        "attentionItems",
+        attention
+    );
 
+    setText(
+        "totalStock",
+        totalStock
+    );
 
-    const lowStock =
-        inventoryData.filter(
-            item =>
-                Number(
-                    item.jumlah
-                ) <= 2
-        ).length;
-
-
-    if ($("totalItems")) {
-
-        $("totalItems").textContent =
-            total;
-
-    }
-
-
-    if ($("goodItems")) {
-
-        $("goodItems").textContent =
-            good;
-
-    }
-
-
-    if ($("attentionItems")) {
-
-        $("attentionItems").textContent =
-            attention;
-
-    }
-
-
-    if ($("totalStock")) {
-
-        $("totalStock").textContent =
-            totalStock;
-
-    }
-
-
-    if ($("totalRooms")) {
-
-        $("totalRooms").textContent =
-            rooms;
-
-    }
-
-
-    if ($("totalCategories")) {
-
-        $("totalCategories").textContent =
-            categories;
-
-    }
-
-
-    if ($("lowStockCount")) {
-
-        $("lowStockCount").textContent =
-            lowStock;
-
-    }
-
-
-    if ($("terminalTotal")) {
-
-        $("terminalTotal").textContent =
-            total;
-
-    }
+    setText(
+        "terminalTotal",
+        total
+    );
 
 
     updateHealth();
 
-    renderLowStock();
-
     renderRecent();
+
+    renderLowStock();
 
 }
 
@@ -2165,163 +3649,117 @@ function updateDashboard() {
 
 function updateHealth() {
 
-    if (!inventoryData.length) {
-
-        if ($("dataHealth")) {
-
-            $("dataHealth").textContent =
-                "0%";
-
-        }
+    const total =
+        inventoryData.length;
 
 
-        if ($("healthPercent")) {
+    if (
+        !total
+    ) {
 
-            $("healthPercent").textContent =
-                "0%";
-
-        }
-
-
-        if ($("healthProgress")) {
-
-            $("healthProgress").style.width =
-                "0%";
-
-        }
-
-        return;
-
-    }
-
-
-    const complete =
-        inventoryData.filter(
-            function (item) {
-
-                return (
-                    item.kodeInventaris &&
-                    item.nama &&
-                    item.kategori &&
-                    item.ruangan
-                );
-
-            }
-        ).length;
-
-
-    const percent =
-        Math.round(
-            complete /
-            inventoryData.length *
-            100
+        setText(
+            "dataHealth",
+            "0%"
         );
 
 
-    if ($("dataHealth")) {
-
-        $("dataHealth").textContent =
-            `${percent}%`;
-
-    }
+        setWidth(
+            "healthProgress",
+            "0%"
+        );
 
 
-    if ($("healthPercent")) {
-
-        $("healthPercent").textContent =
-            `${percent}%`;
-
-    }
+        setText(
+            "healthGoodCount",
+            "0"
+        );
 
 
-    if ($("healthProgress")) {
-
-        $("healthProgress").style.width =
-            `${percent}%`;
-
-    }
-
-}
+        setText(
+            "healthLightCount",
+            "0"
+        );
 
 
-/* =========================================================
-   LOW STOCK
-========================================================= */
+        setText(
+            "healthHeavyCount",
+            "0"
+        );
 
-function renderLowStock() {
-
-    const container =
-        $("lowStockPreview");
-
-
-    if (!container) {
 
         return;
 
     }
 
 
-    const items =
-        inventoryData
-            .filter(
-                item =>
-                    Number(
-                        item.jumlah
-                    ) <= 2
-            )
-            .slice(
-                0,
-                5
-            );
+    const good =
+        inventoryData.filter(
+
+            item =>
+                item.kondisi ===
+                "Baik"
+
+        ).length;
 
 
-    if (!items.length) {
+    const light =
+        inventoryData.filter(
 
-        container.innerHTML = `
-            <div class="empty-mini">
-                Tidak ada stok rendah.
-            </div>
-        `;
+            item =>
+                item.kondisi ===
+                "Ringan"
 
-        return;
-
-    }
+        ).length;
 
 
-    container.innerHTML =
-        items.map(
-            function (item) {
+    const heavy =
+        inventoryData.filter(
 
-                return `
+            item =>
+                item.kondisi ===
+                "Berat"
 
-                    <div class="mini-item">
+        ).length;
 
-                        <div class="mini-item-main">
 
-                            <strong>
-                                ${escapeHtml(
-                                    item.nama
-                                )}
-                            </strong>
+    const health =
+        Math.round(
 
-                            <span>
-                                ${escapeHtml(
-                                    item.ruangan
-                                )}
-                            </span>
+            good /
+            total *
+            100
 
-                        </div>
+        );
 
-                        <span class="mini-stock">
-                            ${item.jumlah}
-                        </span>
 
-                    </div>
+    setText(
+        "dataHealth",
+        `${health}%`
+    );
 
-                `;
 
-            }
-        ).join("");
+    setWidth(
+        "healthProgress",
+        `${health}%`
+    );
+
+
+    setText(
+        "healthGoodCount",
+        good
+    );
+
+
+    setText(
+        "healthLightCount",
+        light
+    );
+
+
+    setText(
+        "healthHeavyCount",
+        heavy
+    );
 
 }
 
@@ -2336,7 +3774,9 @@ function renderRecent() {
         $("recentItems");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
@@ -2344,28 +3784,53 @@ function renderRecent() {
 
 
     const items =
-        [...inventoryData]
+        [
+            ...inventoryData
+        ]
+
             .sort(
-                (a, b) =>
-                    new Date(
-                        b.tanggal
-                    ) -
-                    new Date(
-                        a.tanggal
-                    )
+
+                function (
+                    a,
+                    b
+                ) {
+
+                    return (
+
+                        new Date(
+                            b.tanggal
+                        )
+
+                        -
+
+                        new Date(
+                            a.tanggal
+                        )
+
+                    );
+
+                }
+
             )
+
             .slice(
                 0,
-                6
+                5
             );
 
 
-    if (!items.length) {
+    if (
+        !items.length
+    ) {
 
         container.innerHTML = `
+
             <div class="empty-mini">
+
                 Belum ada inventaris.
+
             </div>
+
         `;
 
         return;
@@ -2374,44 +3839,186 @@ function renderRecent() {
 
 
     container.innerHTML =
-        items.map(
-            function (item) {
 
-                return `
+        items
 
-                    <div class="recent-item">
+            .map(
 
-                        <div class="recent-item-main">
+                function (
+                    item
+                ) {
 
-                            <strong>
-                                ${escapeHtml(
-                                    item.nama
+                    return `
+
+                        <div
+                            class="recent-item"
+                        >
+
+                            <div
+                                class="recent-item-main"
+                            >
+
+                                <strong>
+
+                                    ${escapeHtml(
+                                        item.nama
+                                    )}
+
+                                </strong>
+
+                                <span>
+
+                                    ${escapeHtml(
+                                        item.ruangan
+                                    )}
+
+                                    ·
+
+                                    ${item.jumlah}
+                                    unit
+
+                                </span>
+
+                            </div>
+
+
+                            <span
+                                class="recent-date"
+                            >
+
+                                ${formatDate(
+                                    item.tanggal
                                 )}
-                            </strong>
 
-                            <span>
-                                ${escapeHtml(
-                                    item.ruangan
-                                )}
-                                ·
-                                ${item.jumlah}
-                                unit
                             </span>
 
                         </div>
 
-                        <span class="recent-date">
-                            ${formatDate(
-                                item.tanggal
-                            )}
-                        </span>
+                    `;
 
-                    </div>
+                }
 
-                `;
+            )
 
-            }
-        ).join("");
+            .join("");
+
+}
+
+
+/* =========================================================
+   LOW STOCK
+========================================================= */
+
+function renderLowStock() {
+
+    const container =
+        $("lowStockPreview");
+
+
+    if (
+        !container
+    ) {
+
+        return;
+
+    }
+
+
+    const items =
+        inventoryData
+
+            .filter(
+
+                item =>
+
+                    Number(
+                        item.jumlah
+                    ) <=
+                    2
+
+            )
+
+            .slice(
+                0,
+                5
+            );
+
+
+    if (
+        !items.length
+    ) {
+
+        container.innerHTML = `
+
+            <div class="empty-mini">
+
+                Tidak ada stok rendah.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+
+        items
+
+            .map(
+
+                function (
+                    item
+                ) {
+
+                    return `
+
+                        <div
+                            class="mini-item"
+                        >
+
+                            <div
+                                class="mini-item-main"
+                            >
+
+                                <strong>
+
+                                    ${escapeHtml(
+                                        item.nama
+                                    )}
+
+                                </strong>
+
+                                <span>
+
+                                    ${escapeHtml(
+                                        item.ruangan
+                                    )}
+
+                                </span>
+
+                            </div>
+
+
+                            <span
+                                class="mini-stock"
+                            >
+
+                                ${item.jumlah}
+
+                            </span>
+
+                        </div>
+
+                    `;
+
+                }
+
+            )
+
+            .join("");
 
 }
 
@@ -2426,7 +4033,9 @@ function updateRoomFilter() {
         $("roomFilter");
 
 
-    if (!select) {
+    if (
+        !select
+    ) {
 
         return;
 
@@ -2440,30 +4049,48 @@ function updateRoomFilter() {
     const rooms =
         [
             ...new Set(
+
                 inventoryData.map(
+
                     item =>
                         item.ruangan
+
                 )
+
             )
         ]
-        .sort(
-            (a, b) =>
-                a.localeCompare(
-                    b,
-                    "id"
-                )
-        );
+
+            .sort(
+
+                (
+                    a,
+                    b
+                ) =>
+
+                    a.localeCompare(
+                        b,
+                        "id"
+                    )
+
+            );
 
 
     select.innerHTML = `
+
         <option value="all">
+
             Semua Ruangan
+
         </option>
+
     `;
 
 
     rooms.forEach(
-        function (room) {
+
+        function (
+            room
+        ) {
 
             const option =
                 document.createElement(
@@ -2484,6 +4111,7 @@ function updateRoomFilter() {
             );
 
         }
+
     );
 
 
@@ -2513,92 +4141,87 @@ function updateMonitoring() {
 
     const good =
         inventoryData.filter(
+
             item =>
                 item.kondisi ===
                 "Baik"
+
         ).length;
 
 
     const light =
         inventoryData.filter(
+
             item =>
                 item.kondisi ===
                 "Ringan"
+
         ).length;
 
 
     const heavy =
         inventoryData.filter(
+
             item =>
                 item.kondisi ===
                 "Berat"
+
         ).length;
 
 
-    const low =
+    const lowStock =
         inventoryData.filter(
+
             item =>
+
                 Number(
                     item.jumlah
-                ) <= 2
+                ) <=
+                2
+
         ).length;
 
 
-    if ($("monitorTotal")) {
+    setText(
+        "monitorTotal",
+        total
+    );
 
-        $("monitorTotal").textContent =
-            total;
+    setText(
+        "monitorGood",
+        good
+    );
 
-    }
+    setText(
+        "monitorLowStock",
+        lowStock
+    );
 
+    setText(
+        "monitorHealthGood",
+        good
+    );
 
-    if ($("monitorGood")) {
+    setText(
+        "monitorHealthLight",
+        light
+    );
 
-        $("monitorGood").textContent =
-            good;
-
-    }
-
-
-    if ($("monitorLowStock")) {
-
-        $("monitorLowStock").textContent =
-            low;
-
-    }
-
-
-    if ($("healthGoodCount")) {
-
-        $("healthGoodCount").textContent =
-            good;
-
-    }
-
-
-    if ($("healthLightCount")) {
-
-        $("healthLightCount").textContent =
-            light;
-
-    }
-
-
-    if ($("healthHeavyCount")) {
-
-        $("healthHeavyCount").textContent =
-            heavy;
-
-    }
+    setText(
+        "monitorHealthHeavy",
+        heavy
+    );
 
 
     renderRooms();
+
+    updateStorage();
 
 }
 
 
 /* =========================================================
-   DISTRIBUSI RUANGAN
+   ROOMS
 ========================================================= */
 
 function renderRooms() {
@@ -2607,34 +4230,49 @@ function renderRooms() {
         $("roomOverview");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
     }
 
 
-    const roomData = {};
+    const roomData =
+        {};
 
 
     inventoryData.forEach(
-        function (item) {
+
+        function (
+            item
+        ) {
 
             roomData[
                 item.ruangan
             ] =
+
                 (
                     roomData[
                         item.ruangan
-                    ] ||
+                    ]
+
+                    ||
+
                     0
-                ) +
+
+                )
+
+                +
+
                 Number(
                     item.jumlah ||
                     0
                 );
 
         }
+
     );
 
 
@@ -2642,19 +4280,32 @@ function renderRooms() {
         Object.entries(
             roomData
         )
-        .sort(
-            (a, b) =>
-                b[1] -
-                a[1]
-        );
+
+            .sort(
+
+                (
+                    a,
+                    b
+                ) =>
+
+                    b[1] -
+                    a[1]
+
+            );
 
 
-    if (!rooms.length) {
+    if (
+        !rooms.length
+    ) {
 
         container.innerHTML = `
+
             <div class="empty-mini">
+
                 Belum ada data ruangan.
+
             </div>
+
         `;
 
         return;
@@ -2664,44 +4315,67 @@ function renderRooms() {
 
     const max =
         Math.max(
+
             ...rooms.map(
-                item =>
-                    item[1]
+                x => x[1]
             ),
+
             1
+
         );
 
 
     container.innerHTML =
+
         rooms
+
             .slice(
                 0,
                 8
             )
+
             .map(
+
                 function (
-                    [room, count]
+                    entry
                 ) {
+
+                    const room =
+                        entry[0];
+
+                    const count =
+                        entry[1];
 
                     const width =
                         Math.round(
+
                             count /
                             max *
                             100
+
                         );
 
 
                     return `
 
-                        <div class="room-row">
+                        <div
+                            class="room-row"
+                        >
 
-                            <div class="room-name">
+                            <div
+                                class="room-name"
+                            >
+
                                 ${escapeHtml(
                                     room
                                 )}
+
                             </div>
 
-                            <div class="room-bar">
+
+                            <div
+                                class="room-bar"
+                            >
 
                                 <div
                                     style="width:${width}%"
@@ -2709,8 +4383,11 @@ function renderRooms() {
 
                             </div>
 
+
                             <strong>
+
                                 ${count}
+
                             </strong>
 
                         </div>
@@ -2718,7 +4395,9 @@ function renderRooms() {
                     `;
 
                 }
+
             )
+
             .join("");
 
 }
@@ -2736,34 +4415,32 @@ function renderStatistics() {
 
     const good =
         inventoryData.filter(
+
             item =>
                 item.kondisi ===
                 "Baik"
+
         ).length;
 
 
     const light =
         inventoryData.filter(
+
             item =>
                 item.kondisi ===
                 "Ringan"
+
         ).length;
 
 
     const heavy =
         inventoryData.filter(
+
             item =>
                 item.kondisi ===
                 "Berat"
+
         ).length;
-
-
-    if ($("donutTotal")) {
-
-        $("donutTotal").textContent =
-            total;
-
-    }
 
 
     const goodPercent =
@@ -2796,124 +4473,61 @@ function renderStatistics() {
             : 0;
 
 
-    if ($("legendGood")) {
-
-        $("legendGood").textContent =
-            `${goodPercent}%`;
-
-    }
-
-
-    if ($("legendLight")) {
-
-        $("legendLight").textContent =
-            `${lightPercent}%`;
-
-    }
-
-
-    if ($("legendHeavy")) {
-
-        $("legendHeavy").textContent =
-            `${heavyPercent}%`;
-
-    }
-
-
-    const startLight =
-        goodPercent;
-
-
-    const startHeavy =
-        goodPercent +
-        lightPercent;
-
-
-    if ($("conditionDonut")) {
-
-        $("conditionDonut").style.background =
-            `
-                conic-gradient(
-                    var(--green)
-                    0% ${startLight}%,
-
-                    var(--orange)
-                    ${startLight}% ${startHeavy}%,
-
-                    var(--red)
-                    ${startHeavy}% 100%
-                )
-            `;
-
-    }
-
-
-    const safe =
-        inventoryData.filter(
-            item =>
-                Number(
-                    item.jumlah
-                ) > 2
-        ).length;
-
-
-    const low =
-        inventoryData.filter(
-            item =>
-                Number(
-                    item.jumlah
-                ) <= 2
-        ).length;
-
-
-    if ($("safeStockCount")) {
-
-        $("safeStockCount").textContent =
-            safe;
-
-    }
-
-
-    if ($("lowStockStat")) {
-
-        $("lowStockStat").textContent =
-            low;
-
-    }
-
-
-    const safePercent =
+    setText(
+        "donutTotal",
         total
-            ? Math.round(
-                safe /
-                total *
-                100
-            )
-            : 0;
+    );
 
 
-    const lowPercent =
-        total
-            ? Math.round(
-                low /
-                total *
-                100
-            )
-            : 0;
+    setText(
+        "legendGood",
+        `${goodPercent}%`
+    );
 
 
-    if ($("safeStockProgress")) {
-
-        $("safeStockProgress").style.width =
-            `${safePercent}%`;
-
-    }
+    setText(
+        "legendLight",
+        `${lightPercent}%`
+    );
 
 
-    if ($("lowStockProgress")) {
+    setText(
+        "legendHeavy",
+        `${heavyPercent}%`
+    );
 
-        $("lowStockProgress").style.width =
-            `${lowPercent}%`;
+
+    const donut =
+        $("conditionDonut");
+
+
+    if (
+        donut
+    ) {
+
+        const endGood =
+            goodPercent;
+
+
+        const endLight =
+            goodPercent +
+            lightPercent;
+
+
+        donut.style.background =
+
+            `conic-gradient(
+
+                var(--green)
+                0% ${endGood}%,
+
+                var(--orange)
+                ${endGood}% ${endLight}%,
+
+                var(--red)
+                ${endLight}% 100%
+
+            )`;
 
     }
 
@@ -2933,34 +4547,49 @@ function renderCategories() {
         $("categoryStats");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
     }
 
 
-    const categories = {};
+    const categories =
+        {};
 
 
     inventoryData.forEach(
-        function (item) {
+
+        function (
+            item
+        ) {
 
             categories[
                 item.kategori
             ] =
+
                 (
                     categories[
                         item.kategori
-                    ] ||
+                    ]
+
+                    ||
+
                     0
-                ) +
+
+                )
+
+                +
+
                 Number(
                     item.jumlah ||
                     0
                 );
 
         }
+
     );
 
 
@@ -2968,23 +4597,36 @@ function renderCategories() {
         Object.entries(
             categories
         )
-        .sort(
-            (a, b) =>
-                b[1] -
-                a[1]
-        )
-        .slice(
-            0,
-            8
-        );
+
+            .sort(
+
+                (
+                    a,
+                    b
+                ) =>
+                    b[1] -
+                    a[1]
+
+            )
+
+            .slice(
+                0,
+                8
+            );
 
 
-    if (!list.length) {
+    if (
+        !list.length
+    ) {
 
         container.innerHTML = `
+
             <div class="empty-mini">
+
                 Belum ada kategori.
+
             </div>
+
         `;
 
         return;
@@ -2994,40 +4636,62 @@ function renderCategories() {
 
     const max =
         Math.max(
+
             ...list.map(
-                item =>
-                    item[1]
+                x => x[1]
             ),
+
             1
+
         );
 
 
     container.innerHTML =
+
         list
+
             .map(
+
                 function (
-                    [name, count]
+                    entry
                 ) {
+
+                    const name =
+                        entry[0];
+
+                    const count =
+                        entry[1];
 
                     const width =
                         Math.round(
+
                             count /
                             max *
                             100
+
                         );
 
 
                     return `
 
-                        <div class="category-item">
+                        <div
+                            class="category-item"
+                        >
 
-                            <div class="category-name">
+                            <div
+                                class="category-name"
+                            >
+
                                 ${escapeHtml(
                                     name
                                 )}
+
                             </div>
 
-                            <div class="category-bar">
+
+                            <div
+                                class="category-bar"
+                            >
 
                                 <div
                                     style="width:${width}%"
@@ -3035,8 +4699,11 @@ function renderCategories() {
 
                             </div>
 
+
                             <strong>
+
                                 ${count}
+
                             </strong>
 
                         </div>
@@ -3044,7 +4711,9 @@ function renderCategories() {
                     `;
 
                 }
+
             )
+
             .join("");
 
 }
@@ -3066,25 +4735,26 @@ function loadActivity() {
 
         activityData =
             saved
-                ? JSON.parse(saved)
+                ? JSON.parse(
+                    saved
+                )
                 : [];
 
 
-        if (!Array.isArray(
-            activityData
-        )) {
+        if (
+            !Array.isArray(
+                activityData
+            )
+        ) {
 
             activityData =
                 [];
 
         }
 
-    } catch (error) {
+    }
 
-        console.warn(
-            "Load activity error:",
-            error
-        );
+    catch (error) {
 
         activityData =
             [];
@@ -3099,19 +4769,24 @@ function saveActivity() {
     try {
 
         localStorage.setItem(
+
             ACTIVITY_KEY,
+
             JSON.stringify(
                 activityData.slice(
                     0,
                     50
                 )
             )
+
         );
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
-            "Save activity error:",
+            "Activity save error:",
             error
         );
 
@@ -3138,7 +4813,8 @@ function addActivity(
             "fa-circle-info",
 
         time:
-            new Date().toISOString()
+            new Date()
+                .toISOString()
 
     });
 
@@ -3163,19 +4839,27 @@ function renderActivity() {
         $("activityLog");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
     }
 
 
-    if (!activityData.length) {
+    if (
+        !activityData.length
+    ) {
 
         container.innerHTML = `
+
             <div class="empty-mini">
+
                 Belum ada aktivitas.
+
             </div>
+
         `;
 
         return;
@@ -3184,19 +4868,29 @@ function renderActivity() {
 
 
     container.innerHTML =
+
         activityData
+
             .slice(
                 0,
-                15
+                20
             )
+
             .map(
-                function (item) {
+
+                function (
+                    item
+                ) {
 
                     return `
 
-                        <div class="activity-item">
+                        <div
+                            class="activity-item"
+                        >
 
-                            <div class="activity-icon">
+                            <div
+                                class="activity-icon"
+                            >
 
                                 <i
                                     class="fa-solid ${escapeHtml(
@@ -3206,24 +4900,37 @@ function renderActivity() {
 
                             </div>
 
-                            <div class="activity-text">
+
+                            <div
+                                class="activity-text"
+                            >
 
                                 <strong>
+
                                     ${escapeHtml(
                                         item.text
                                     )}
+
                                 </strong>
 
+
                                 <span>
+
                                     Sistem Inventaris
+
                                 </span>
 
                             </div>
 
-                            <div class="activity-time">
+
+                            <div
+                                class="activity-time"
+                            >
+
                                 ${formatTime(
                                     item.time
                                 )}
+
                             </div>
 
                         </div>
@@ -3231,14 +4938,16 @@ function renderActivity() {
                     `;
 
                 }
+
             )
+
             .join("");
 
 }
 
 
 /* =========================================================
-   STORAGE MONITORING
+   STORAGE MONITOR
 ========================================================= */
 
 function updateStorage() {
@@ -3248,105 +4957,65 @@ function updateStorage() {
         const data =
             localStorage.getItem(
                 STORAGE_KEY
-            ) || "";
+            ) ||
+            "";
 
 
         const bytes =
             new Blob(
-                [data]
+                [
+                    data
+                ]
             ).size;
 
 
-        const percent =
+        const percentage =
             Math.min(
+
                 100,
+
                 Math.round(
+
                     bytes /
                     (
                         5 *
                         1024 *
                         1024
-                    ) *
+                    )
+
+                    *
+
                     100
+
                 )
+
             );
 
 
-        if ($("monitorStorage")) {
-
-            $("monitorStorage").textContent =
-                `${percent}%`;
-
-        }
-
-
-        if ($("terminalStorage")) {
-
-            $("terminalStorage").textContent =
-                `${percent}%`;
-
-        }
-
-    } catch (error) {
-
-        console.warn(
-            "Storage monitor error:",
-            error
+        setText(
+            "monitorStorage",
+            `${percentage}%`
         );
 
 
-        if ($("monitorStorage")) {
-
-            $("monitorStorage").textContent =
-                "0%";
-
-        }
-
-
-        if ($("terminalStorage")) {
-
-            $("terminalStorage").textContent =
-                "0%";
-
-        }
+        setText(
+            "terminalStorage",
+            `${percentage}%`
+        );
 
     }
 
-}
+    catch (error) {
 
-
-/* =========================================================
-   AUTO BACKUP
-========================================================= */
-
-function createAutoBackup() {
-
-    try {
-
-        localStorage.setItem(
-            AUTO_BACKUP_KEY,
-            JSON.stringify({
-
-                version:
-                    "5.4",
-
-                createdAt:
-                    new Date().toISOString(),
-
-                inventory:
-                    inventoryData,
-
-                activities:
-                    activityData
-
-            })
+        setText(
+            "monitorStorage",
+            "0%"
         );
 
-    } catch (error) {
 
-        console.error(
-            "Auto backup error:",
-            error
+        setText(
+            "terminalStorage",
+            "0%"
         );
 
     }
@@ -3358,13 +5027,59 @@ function createAutoBackup() {
    BACKUP
 ========================================================= */
 
+function createAutoBackup() {
+
+    try {
+
+        localStorage.setItem(
+
+            AUTO_BACKUP_KEY,
+
+            JSON.stringify({
+
+                version:
+                    "5.5",
+
+                createdAt:
+                    new Date()
+                        .toISOString(),
+
+                inventory:
+                    inventoryData,
+
+                activities:
+                    activityData
+
+            })
+
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Auto backup error:",
+            error
+        );
+
+    }
+
+}
+
+
 function createBackup() {
 
-    if (!inventoryData.length) {
+    if (
+        !inventoryData.length
+    ) {
 
         showToast(
+
             "Belum ada data untuk backup.",
+
             "info"
+
         );
 
         return;
@@ -3375,10 +5090,11 @@ function createBackup() {
     const backup = {
 
         version:
-            "5.4",
+            "5.5",
 
         createdAt:
-            new Date().toISOString(),
+            new Date()
+                .toISOString(),
 
         inventory:
             inventoryData,
@@ -3393,25 +5109,35 @@ function createBackup() {
 
 
     downloadFile(
+
         JSON.stringify(
             backup,
             null,
             2
         ),
+
         `inventory-backup-${fileDate()}.json`,
+
         "application/json"
+
     );
 
 
     addActivity(
+
         "Membuat backup data",
+
         "fa-database"
+
     );
 
 
     showToast(
+
         "Backup berhasil dibuat.",
+
         "success"
+
     );
 
 }
@@ -3421,28 +5147,43 @@ function createBackup() {
    RESTORE
 ========================================================= */
 
-function handleRestore(event) {
+function handleRestore(
+    event
+) {
 
     const file =
         event.target.files?.[0];
 
 
-    if (!file) {
+    if (
+        !file
+    ) {
 
         return;
 
     }
 
 
-    readJSON(file)
+    readJSON(
+        file
+    )
+
         .then(
-            function (data) {
+
+            function (
+                data
+            ) {
 
                 if (
-                    !data ||
+
+                    !data
+
+                    ||
+
                     !Array.isArray(
                         data.inventory
                     )
+
                 ) {
 
                     throw new Error(
@@ -3453,8 +5194,11 @@ function handleRestore(event) {
 
 
                 openConfirmModal(
+
                     "Restore Backup",
+
                     "Data saat ini akan diganti dengan isi backup.",
+
                     function () {
 
                         createAutoBackup();
@@ -3482,27 +5226,40 @@ function handleRestore(event) {
 
                         saveData();
 
+
                         renderAll();
 
 
                         addActivity(
+
                             "Memulihkan backup",
+
                             "fa-clock-rotate-left"
+
                         );
 
 
                         showToast(
+
                             "Backup berhasil dipulihkan.",
+
                             "success"
+
                         );
 
                     }
+
                 );
 
             }
+
         )
+
         .catch(
-            function (error) {
+
+            function (
+                error
+            ) {
 
                 console.error(
                     "Restore error:",
@@ -3511,19 +5268,26 @@ function handleRestore(event) {
 
 
                 showToast(
+
                     "File backup tidak valid.",
+
                     "error"
+
                 );
 
             }
+
         )
+
         .finally(
+
             function () {
 
                 event.target.value =
                     "";
 
             }
+
         );
 
 }
@@ -3535,11 +5299,16 @@ function handleRestore(event) {
 
 function exportCSV() {
 
-    if (!inventoryData.length) {
+    if (
+        !inventoryData.length
+    ) {
 
         showToast(
+
             "Belum ada data.",
+
             "info"
+
         );
 
         return;
@@ -3550,12 +5319,19 @@ function exportCSV() {
     const headers = [
 
         "Kode Inventaris",
+
         "Nama Barang",
+
         "Kategori",
+
         "Ruangan",
+
         "Jumlah",
+
         "Kondisi",
+
         "Keterangan",
+
         "Tanggal"
 
     ];
@@ -3563,7 +5339,10 @@ function exportCSV() {
 
     const rows =
         inventoryData.map(
-            function (item) {
+
+            function (
+                item
+            ) {
 
                 return [
 
@@ -3590,84 +5369,118 @@ function exportCSV() {
                 ];
 
             }
+
         );
 
 
-    const csv = [
+    const csv =
 
-        headers,
+        [
 
-        ...rows
+            headers,
 
-    ]
-    .map(
-        function (row) {
+            ...rows
 
-            return row
-                .map(
-                    csvEscape
-                )
-                .join(",");
+        ]
 
-        }
-    )
-    .join("\n");
+            .map(
+
+                function (
+                    row
+                ) {
+
+                    return row
+
+                        .map(
+                            csvEscape
+                        )
+
+                        .join(",");
+
+                }
+
+            )
+
+            .join("\n");
 
 
     downloadFile(
-        "\uFEFF" + csv,
+
+        "\uFEFF" +
+        csv,
+
         `inventaris-${fileDate()}.csv`,
+
         "text/csv;charset=utf-8;"
+
     );
 
 
     addActivity(
+
         "Export data CSV",
+
         "fa-file-export"
+
     );
 
 
     showToast(
+
         "Data berhasil diexport.",
+
         "success"
+
     );
 
 }
 
 
 /* =========================================================
-   FILTER RESET
+   RESET FILTER
 ========================================================= */
 
 function resetFilters() {
 
-    if ($("searchInput")) {
+    if (
+        $("searchInput")
+    ) {
 
-        $("searchInput").value =
+        $("searchInput")
+            .value =
             "";
 
     }
 
 
-    if ($("roomFilter")) {
+    if (
+        $("roomFilter")
+    ) {
 
-        $("roomFilter").value =
+        $("roomFilter")
+            .value =
             "all";
 
     }
 
 
-    if ($("conditionFilter")) {
+    if (
+        $("conditionFilter")
+    ) {
 
-        $("conditionFilter").value =
+        $("conditionFilter")
+            .value =
             "all";
 
     }
 
 
-    if ($("sortFilter")) {
+    if (
+        $("sortFilter")
+    ) {
 
-        $("sortFilter").value =
+        $("sortFilter")
+            .value =
             "newest";
 
     }
@@ -3683,25 +5496,25 @@ function resetFilters() {
 ========================================================= */
 
 function openConfirmModal(
+
     title,
+
     message,
+
     callback
+
 ) {
 
-    if ($("confirmTitle")) {
-
-        $("confirmTitle").textContent =
-            title;
-
-    }
+    setText(
+        "confirmTitle",
+        title
+    );
 
 
-    if ($("confirmMessage")) {
-
-        $("confirmMessage").textContent =
-            message;
-
-    }
+    setText(
+        "confirmMessage",
+        message
+    );
 
 
     confirmCallback =
@@ -3753,7 +5566,8 @@ function loadTheme() {
 
 
     const dark =
-        saved === "dark";
+        saved ===
+        "dark";
 
 
     document.body.classList.toggle(
@@ -3778,10 +5592,13 @@ function toggleTheme() {
 
 
     localStorage.setItem(
+
         THEME_KEY,
+
         dark
             ? "dark"
             : "light"
+
     );
 
 
@@ -3792,61 +5609,83 @@ function toggleTheme() {
 }
 
 
-function updateThemeUI(dark) {
+function updateThemeUI(
+    dark
+) {
 
-    if ($("themeButton")) {
+    if (
+        $("themeButton")
+    ) {
 
         $("themeButton").innerHTML =
+
             dark
+
                 ? `
+
                     <span>
-                        <i class="fa-solid fa-sun"></i>
+
+                        <i
+                            class="fa-solid fa-sun"
+                        ></i>
+
                         Light Mode
+
                     </span>
 
                     <i
                         class="fa-solid fa-toggle-on"
                     ></i>
+
                   `
+
                 : `
+
                     <span>
-                        <i class="fa-solid fa-moon"></i>
+
+                        <i
+                            class="fa-solid fa-moon"
+                        ></i>
+
                         Dark Mode
+
                     </span>
 
                     <i
                         class="fa-solid fa-toggle-off"
                     ></i>
+
                   `;
 
     }
 
 
-    if ($("mobileThemeButton")) {
+    if (
+        $("mobileThemeButton")
+    ) {
 
-        $("mobileThemeButton").innerHTML =
+        $("mobileThemeButton")
+            .innerHTML =
+
             dark
+
                 ? `
+
                     <i
                         class="fa-solid fa-sun"
                     ></i>
+
                   `
+
                 : `
+
                     <i
                         class="fa-solid fa-moon"
                     ></i>
+
                   `;
 
     }
-
-
-    document.documentElement
-        .setAttribute(
-            "data-theme",
-            dark
-                ? "dark"
-                : "light"
-        );
 
 }
 
@@ -3861,12 +5700,19 @@ function updateClock() {
         new Date();
 
 
-    if ($("liveClock")) {
+    if (
+        $("liveClock")
+    ) {
 
-        $("liveClock").textContent =
+        $("liveClock")
+            .textContent =
+
             now.toLocaleTimeString(
+
                 "id-ID",
+
                 {
+
                     hour:
                         "2-digit",
 
@@ -3875,18 +5721,27 @@ function updateClock() {
 
                     second:
                         "2-digit"
+
                 }
+
             );
 
     }
 
 
-    if ($("liveDate")) {
+    if (
+        $("liveDate")
+    ) {
 
-        $("liveDate").textContent =
+        $("liveDate")
+            .textContent =
+
             now.toLocaleDateString(
+
                 "id-ID",
+
                 {
+
                     weekday:
                         "long",
 
@@ -3898,7 +5753,9 @@ function updateClock() {
 
                     year:
                         "numeric"
+
                 }
+
             );
 
     }
@@ -3912,25 +5769,99 @@ function updateClock() {
 
 function updateFooterYear() {
 
-    if ($("footerYear")) {
+    const year =
+        new Date()
+            .getFullYear();
 
-        $("footerYear").textContent =
-            new Date()
-                .getFullYear();
 
-    }
+    document
+        .querySelectorAll(
+            "#footerYear"
+        )
+        .forEach(
+
+            function (
+                element
+            ) {
+
+                element.textContent =
+                    year;
+
+            }
+
+        );
 
 }
 
 
 /* =========================================================
-   PWA - SERVICE WORKER
+   PWA INSTALL
+========================================================= */
+
+async function installPWA() {
+
+    if (
+        !deferredInstallPrompt
+    ) {
+
+        showToast(
+
+            "Installasi belum tersedia di browser ini.",
+
+            "info"
+
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        deferredInstallPrompt.prompt();
+
+
+        await deferredInstallPrompt.userChoice;
+
+    }
+
+    catch (error) {
+
+        console.warn(
+
+            "Install error:",
+
+            error
+
+        );
+
+    }
+
+
+    deferredInstallPrompt =
+        null;
+
+
+    $("installButton")
+        ?.classList.add(
+            "hidden"
+        );
+
+}
+
+
+/* =========================================================
+   SERVICE WORKER
 ========================================================= */
 
 async function registerServiceWorker() {
 
     if (
-        !("serviceWorker" in navigator)
+        !(
+            "serviceWorker"
+            in navigator
+        )
     ) {
 
         return;
@@ -3950,20 +5881,36 @@ async function registerServiceWorker() {
 
     try {
 
-        await navigator.serviceWorker.register(
-            "service-worker.js"
+        const registration =
+            await navigator.serviceWorker.register(
+
+                "service-worker.js",
+
+                {
+                    updateViaCache:
+                        "none"
+                }
+
+            );
+
+
+        registration.update();
+
+
+        console.log(
+            "Service Worker aktif."
         );
 
+    }
 
-        console.info(
-            "Service Worker registered."
-        );
-
-    } catch (error) {
+    catch (error) {
 
         console.warn(
+
             "Service Worker error:",
+
             error
+
         );
 
     }
@@ -3972,63 +5919,21 @@ async function registerServiceWorker() {
 
 
 /* =========================================================
-   PWA - INSTALL
-========================================================= */
-
-async function installPWA() {
-
-    if (!deferredInstallPrompt) {
-
-        showToast(
-            "Installasi belum tersedia di browser ini.",
-            "info"
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        deferredInstallPrompt.prompt();
-
-
-        await deferredInstallPrompt.userChoice;
-
-    } catch (error) {
-
-        console.warn(
-            "Install prompt error:",
-            error
-        );
-
-    }
-
-
-    deferredInstallPrompt =
-        null;
-
-
-    $("installButton")
-        ?.classList.add(
-            "hidden"
-        );
-
-}
-
-
-/* =========================================================
-   CLEAR ACTIVITY
+   ACTIVITY CLEAR
 ========================================================= */
 
 function clearActivities() {
 
-    if (!activityData.length) {
+    if (
+        !activityData.length
+    ) {
 
         showToast(
+
             "Aktivitas sudah kosong.",
+
             "info"
+
         );
 
         return;
@@ -4037,8 +5942,11 @@ function clearActivities() {
 
 
     openConfirmModal(
+
         "Bersihkan Aktivitas",
+
         "Semua aktivitas akan dihapus.",
+
         function () {
 
             activityData =
@@ -4047,29 +5955,147 @@ function clearActivities() {
 
             saveActivity();
 
+
             renderActivity();
 
 
             showToast(
+
                 "Aktivitas berhasil dibersihkan.",
+
                 "success"
+
             );
 
         }
+
     );
 
 }
 
 
 /* =========================================================
-   CREATE ID
+   RENDER ALL
 ========================================================= */
+
+function renderAll() {
+
+    renderInventory();
+
+    updateDashboard();
+
+    updateMonitoring();
+
+    renderStatistics();
+
+    renderActivity();
+
+    updateRoomFilter();
+
+    updateStorage();
+
+}
+
+
+/* =========================================================
+   SPLASH
+========================================================= */
+
+function hideSplash() {
+
+    const splash =
+        $("splashScreen");
+
+
+    if (
+        !splash
+    ) {
+
+        return;
+
+    }
+
+
+    setText(
+
+        "loadingText",
+
+        "Sistem siap!"
+
+    );
+
+
+    setTimeout(
+
+        function () {
+
+            splash.classList.add(
+                "hide"
+            );
+
+        },
+
+        500
+
+    );
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function setText(
+    id,
+    value
+) {
+
+    const element =
+        $(id);
+
+
+    if (
+        element
+    ) {
+
+        element.textContent =
+            value;
+
+    }
+
+}
+
+
+function setWidth(
+    id,
+    value
+) {
+
+    const element =
+        $(id);
+
+
+    if (
+        element
+    ) {
+
+        element.style.width =
+            value;
+
+    }
+
+}
+
 
 function createId() {
 
     if (
+
         window.crypto &&
+
         crypto.randomUUID
+
     ) {
 
         return crypto.randomUUID();
@@ -4078,26 +6104,27 @@ function createId() {
 
 
     return (
+
         Date.now()
-            .toString(36) +
+            .toString(36)
+
+        +
+
         Math.random()
             .toString(36)
             .slice(2)
+
     );
 
 }
 
 
-/* =========================================================
-   CONDITION LABEL
-========================================================= */
-
 function conditionLabel(
-    condition
+    value
 ) {
 
     if (
-        condition ===
+        value ===
         "Ringan"
     ) {
 
@@ -4107,7 +6134,7 @@ function conditionLabel(
 
 
     if (
-        condition ===
+        value ===
         "Berat"
     ) {
 
@@ -4121,14 +6148,14 @@ function conditionLabel(
 }
 
 
-/* =========================================================
-   FORMAT DATE
-========================================================= */
-
-function formatDate(value) {
+function formatDate(
+    value
+) {
 
     const date =
-        new Date(value);
+        new Date(
+            value
+        );
 
 
     if (
@@ -4143,8 +6170,11 @@ function formatDate(value) {
 
 
     return date.toLocaleDateString(
+
         "id-ID",
+
         {
+
             day:
                 "2-digit",
 
@@ -4153,20 +6183,22 @@ function formatDate(value) {
 
             year:
                 "numeric"
+
         }
+
     );
 
 }
 
 
-/* =========================================================
-   FORMAT TIME
-========================================================= */
-
-function formatTime(value) {
+function formatTime(
+    value
+) {
 
     const date =
-        new Date(value);
+        new Date(
+            value
+        );
 
 
     if (
@@ -4181,22 +6213,23 @@ function formatTime(value) {
 
 
     return date.toLocaleTimeString(
+
         "id-ID",
+
         {
+
             hour:
                 "2-digit",
 
             minute:
                 "2-digit"
+
         }
+
     );
 
 }
 
-
-/* =========================================================
-   FILE DATE
-========================================================= */
 
 function fileDate() {
 
@@ -4227,11 +6260,9 @@ function fileDate() {
 }
 
 
-/* =========================================================
-   CSV ESCAPE
-========================================================= */
-
-function csvEscape(value) {
+function csvEscape(
+    value
+) {
 
     const text =
         String(
@@ -4241,18 +6272,26 @@ function csvEscape(value) {
 
 
     if (
+
         text.includes(",") ||
+
         text.includes('"') ||
+
         text.includes("\n")
+
     ) {
 
         return (
+
             '"' +
+
             text.replace(
                 /"/g,
                 '""'
             ) +
+
             '"'
+
         );
 
     }
@@ -4263,25 +6302,28 @@ function csvEscape(value) {
 }
 
 
-/* =========================================================
-   DOWNLOAD FILE
-========================================================= */
-
 function downloadFile(
+
     content,
+
     filename,
+
     type
+
 ) {
 
     const blob =
         new Blob(
+
             [
                 content
             ],
+
             {
                 type:
                     type
             }
+
         );
 
 
@@ -4321,6 +6363,7 @@ function downloadFile(
 
 
     setTimeout(
+
         function () {
 
             URL.revokeObjectURL(
@@ -4328,19 +6371,20 @@ function downloadFile(
             );
 
         },
-        150
+
+        300
+
     );
 
 }
 
 
-/* =========================================================
-   READ JSON
-========================================================= */
-
-function readJSON(file) {
+function readJSON(
+    file
+) {
 
     return new Promise(
+
         function (
             resolve,
             reject
@@ -4356,12 +6400,18 @@ function readJSON(file) {
                     try {
 
                         resolve(
+
                             JSON.parse(
+
                                 reader.result
+
                             )
+
                         );
 
-                    } catch (error) {
+                    }
+
+                    catch (error) {
 
                         reject(
                             error
@@ -4387,41 +6437,47 @@ function readJSON(file) {
             );
 
         }
+
     );
 
 }
 
 
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHtml(value) {
+function escapeHtml(
+    value
+) {
 
     return String(
+
         value ??
         ""
+
     )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
 
@@ -4431,15 +6487,21 @@ function escapeHtml(value) {
 ========================================================= */
 
 function showToast(
+
     message,
-    type = "info"
+
+    type =
+        "info"
+
 ) {
 
     const container =
         $("toastContainer");
 
 
-    if (!container) {
+    if (
+        !container
+    ) {
 
         return;
 
@@ -4468,7 +6530,7 @@ function showToast(
     }
 
 
-    if (
+    else if (
         type ===
         "error"
     ) {
@@ -4478,6 +6540,20 @@ function showToast(
 
         title =
             "Error";
+
+    }
+
+
+    else if (
+        type ===
+        "warning"
+    ) {
+
+        icon =
+            "fa-triangle-exclamation";
+
+        title =
+            "Peringatan";
 
     }
 
@@ -4501,13 +6577,17 @@ function showToast(
         <div>
 
             <strong>
+
                 ${title}
+
             </strong>
 
             <span>
+
                 ${escapeHtml(
                     message
                 )}
+
             </span>
 
         </div>
@@ -4520,18 +6600,23 @@ function showToast(
     );
 
 
-    requestAnimationFrame(
+    setTimeout(
+
         function () {
 
             toast.classList.add(
                 "show"
             );
 
-        }
+        },
+
+        20
+
     );
 
 
     setTimeout(
+
         function () {
 
             toast.classList.remove(
@@ -4540,16 +6625,67 @@ function showToast(
 
 
             setTimeout(
+
                 function () {
 
                     toast.remove();
 
                 },
-                250
+
+                300
+
             );
 
         },
-        3000
+
+        3500
+
     );
 
 }
+
+
+/* =========================================================
+   GLOBAL DEBUG
+========================================================= */
+
+window.inventoryApp = {
+
+    auth:
+
+        auth,
+
+    googleLogin:
+
+        loginWithGoogle,
+
+    googleRedirect:
+
+        loginWithGoogleRedirect,
+
+    logout:
+
+        logoutAdmin,
+
+    getCurrentUser:
+
+        function () {
+
+            return (
+                auth.currentUser ||
+                null
+            );
+
+        },
+
+    isAdmin:
+
+        function () {
+
+            return (
+                isAdminLoggedIn
+            );
+
+        }
+
+};
