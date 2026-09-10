@@ -9,22 +9,24 @@
    FIREBASE IMPORT
 ========================================================= */
 
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+/* =========================================================
+   FIREBASE CONFIG BARU
+========================================================= */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 
 import {
     getAuth,
     GoogleAuthProvider,
-    signInWithPopup,
     browserLocalPersistence,
-    setPersistence
+    setPersistence,
+    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
+    onAuthStateChanged,
+    signOut
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
-
-/* =========================================================
-   FIREBASE CONFIG BARU
-========================================================= */
 
 const firebaseConfig = {
     apiKey: "AIzaSyCGYXZYJroOjIsBw0PD2h6KqoEyZKb-Gxw",
@@ -35,6 +37,24 @@ const firebaseConfig = {
     appId: "1:760181965978:web:a444ceb2d29676b9e30b23",
     measurementId: "G-W1Z7CFXX0M"
 };
+
+
+/* =========================================================
+   INITIALIZE FIREBASE
+========================================================= */
+
+const firebaseApp =
+    initializeApp(firebaseConfig);
+
+const auth =
+    getAuth(firebaseApp);
+
+const googleProvider =
+    new GoogleAuthProvider();
+
+googleProvider.setCustomParameters({
+    prompt: "select_account"
+});
 
 
 /* =========================================================
