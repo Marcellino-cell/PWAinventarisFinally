@@ -25,48 +25,29 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
-
-/* =========================================================
-   FIREBASE CONFIG
-========================================================= */
-
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBnX15kPEoGJs5bpzSj4jFppDCjk5Tqn7Q",
-  authDomain: "sistem-inventaris-ruangan.firebaseapp.com",
-  projectId: "sistem-inventaris-ruangan",
-  storageBucket: "sistem-inventaris-ruangan.firebasestorage.app",
-  messagingSenderId: "51229283718",
-  appId: "1:51229283718:web:71f83bfd9b48d73e2c4807",
-  measurementId: "G-WLSQCGDSJE"
+    apiKey: "AIzaSyCGYXZYJroOjIsBw0PD2h6KqoEyZKb-Gxw",
+    authDomain: "sistem-inventaris-ruangan-2026.firebaseapp.com",
+    projectId: "sistem-inventaris-ruangan-2026",
+    storageBucket: "sistem-inventaris-ruangan-2026.firebasestorage.app",
+    messagingSenderId: "760181965978",
+    appId: "1:760181965978:web:a444ceb2d29676b9e30b23",
+    measurementId: "G-W1Z7CFXX0M"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 
 const firebaseApp =
-    initializeApp(
-        firebaseConfig
-    );
-
+    initializeApp(firebaseConfig);
 
 const auth =
-    getAuth(
-        firebaseApp
-    );
-
+    getAuth(firebaseApp);
 
 const googleProvider =
     new GoogleAuthProvider();
+
+googleProvider.setCustomParameters({
+    prompt: "select_account"
+});
 
 
 /* =========================================================
