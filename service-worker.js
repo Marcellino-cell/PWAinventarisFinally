@@ -1,27 +1,29 @@
 const CACHE_NAME =
-    "sistem-inventaris-v5-4";
+    "inventaris-ruangan-v6-0";
 
 
 const APP_FILES = [
 
-    "index.html",
+    "./",
 
-    "style.css",
+    "./index.html",
 
-    "script.js",
+    "./style.css",
 
-    "manifest.json",
+    "./script.js",
 
-    "icon/logo 1.jpeg"
+    "./manifest.json"
 
 ];
 
 
+/* =========================================================
+   INSTALL
+========================================================= */
+
 self.addEventListener(
     "install",
-    function (
-        event
-    ) {
+    event => {
 
         event.waitUntil(
 
@@ -30,22 +32,14 @@ self.addEventListener(
                     CACHE_NAME
                 )
                 .then(
-                    function (
-                        cache
-                    ) {
-
-                        return cache.addAll(
+                    cache =>
+                        cache.addAll(
                             APP_FILES
-                        );
-
-                    }
+                        )
                 )
                 .then(
-                    function () {
-
-                        return self.skipWaiting();
-
-                    }
+                    () =>
+                        self.skipWaiting()
                 )
 
         );
@@ -53,59 +47,42 @@ self.addEventListener(
     }
 );
 
+
+/* =========================================================
+   ACTIVATE
+========================================================= */
 
 self.addEventListener(
     "activate",
-    function (
-        event
-    ) {
+    event => {
 
         event.waitUntil(
 
-            caches
-                .keys()
+            caches.keys()
                 .then(
-                    function (
-                        keys
-                    ) {
+                    keys =>
 
-                        return Promise.all(
+                        Promise.all(
 
                             keys
                                 .filter(
-                                    function (
-                                        key
-                                    ) {
-
-                                        return (
-                                            key !==
-                                            CACHE_NAME
-                                        );
-
-                                    }
+                                    key =>
+                                        key !==
+                                        CACHE_NAME
                                 )
                                 .map(
-                                    function (
-                                        key
-                                    ) {
-
-                                        return caches.delete(
+                                    key =>
+                                        caches.delete(
                                             key
-                                        );
-
-                                    }
+                                        )
                                 )
 
-                        );
+                        )
 
-                    }
                 )
                 .then(
-                    function () {
-
-                        return self.clients.claim();
-
-                    }
+                    () =>
+                        self.clients.claim()
                 )
 
         );
@@ -114,11 +91,13 @@ self.addEventListener(
 );
 
 
+/* =========================================================
+   FETCH
+========================================================= */
+
 self.addEventListener(
     "fetch",
-    function (
-        event
-    ) {
+    event => {
 
         if (
             event.request.method !==
@@ -130,20 +109,37 @@ self.addEventListener(
         }
 
 
+        const url =
+            new URL(
+                event.request.url
+            );
+
+
+        /*
+           Jangan cache Firebase,
+           Google API, atau resource
+           eksternal.
+        */
+
+        if (
+            url.origin !==
+            self.location.origin
+        ) {
+
+            return;
+
+        }
+
+
         event.respondWith(
 
-            caches
-                .match(
-                    event.request
-                )
+            caches.match(
+                event.request
+            )
                 .then(
-                    function (
-                        cached
-                    ) {
+                    cached => {
 
-                        if (
-                            cached
-                        ) {
+                        if (cached) {
 
                             return cached;
 
@@ -153,72 +149,63 @@ self.addEventListener(
                         return fetch(
                             event.request
                         )
-                        .then(
-                            function (
-                                response
-                            ) {
+                            .then(
+                                response => {
 
-                                if (
-                                    response &&
-                                    response.status ===
-                                    200 &&
-                                    response.type !==
-                                    "opaque"
-                                ) {
+                                    if (
+                                        response &&
+                                        response.ok
+                                    ) {
 
-                                    const copy =
-                                        response.clone();
+                                        const copy =
+                                            response.clone();
 
 
-                                    caches
-                                        .open(
-                                            CACHE_NAME
-                                        )
-                                        .then(
-                                            function (
-                                                cache
-                                            ) {
+                                        caches
+                                            .open(
+                                                CACHE_NAME
+                                            )
+                                            .then(
+                                                cache =>
+                                                    cache.put(
+                                                        event.request,
+                                                        copy
+                                                    )
+                                            );
 
-                                                cache.put(
-                                                    event.request,
-                                                    copy
-                                                );
+                                    }
 
-                                            }
-                                        );
+
+                                    return response;
 
                                 }
+                            )
+                            .catch(
+                                () => {
+
+                                    if (
+                                        event.request
+                                            .mode ===
+                                        "navigate"
+                                    ) {
+
+                                        return caches.match(
+                                            "./index.html"
+                                        );
+
+                                    }
 
 
-                                return response;
-
-                            }
-                        )
-                        .catch(
-                            function () {
-
-                                if (
-                                    event.request.mode ===
-                                    "navigate"
-                                ) {
-
-                                    return caches.match(
-                                        "index.html"
+                                    return new Response(
+                                        "",
+                                        {
+                                            status:
+                                                503
+                                        }
                                     );
 
                                 }
-
-
-                                return new Response(
-                                    "",
-                                    {
-                                        status:
-                                            503
-                                    }
-                                );
-
-                            }
-                        );
+                            );
 
                     }
                 )
