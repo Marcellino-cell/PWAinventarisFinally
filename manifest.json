@@ -1,26 +1,32 @@
 {
     "name": "Sistem Inventaris Ruangan",
     "short_name": "Inventaris",
-    "description": "Sistem Inventaris Ruangan berbasis PWA",
+    "description": "Sistem Inventaris Ruangan berbasis Progressive Web App",
     "lang": "id-ID",
-    "start_url": "index.html",
+    "id": "/index.html",
+    "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
     "orientation": "portrait-primary",
     "background_color": "#020617",
     "theme_color": "#0f172a",
+    "categories": [
+        "business",
+        "productivity",
+        "utilities"
+    ],
     "icons": [
         {
             "src": "icon/logo 1.jpeg",
             "sizes": "192x192",
             "type": "image/jpeg",
-            "purpose": "any"
+            "purpose": "any maskable"
         },
         {
             "src": "icon/logo 1.jpeg",
             "sizes": "512x512",
             "type": "image/jpeg",
-            "purpose": "any"
+            "purpose": "any maskable"
         }
     ]
 }
