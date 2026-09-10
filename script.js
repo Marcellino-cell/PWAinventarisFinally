@@ -4803,3 +4803,2436 @@ window.inventoryApp = {
             inventoryData
 
 };
+
+/* =========================================================
+   LOW STOCK
+========================================================= */
+
+function renderLowStock() {
+
+    const container =
+        $("lowStockPreview");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const items =
+        inventoryData
+            .filter(
+                item =>
+                    Number(
+                        item.jumlah
+                    ) <= 2
+            )
+            .slice(
+                0,
+                5
+            );
+
+
+    if (!items.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-mini">
+
+                Tidak ada stok rendah.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        items.map(
+            function (
+                item
+            ) {
+
+                return `
+
+                    <div class="mini-item">
+
+                        <div class="mini-item-main">
+
+                            <strong>
+
+                                ${escapeHtml(
+                                    item.nama
+                                )}
+
+                            </strong>
+
+                            <span>
+
+                                ${escapeHtml(
+                                    item.ruangan
+                                )}
+
+                            </span>
+
+                        </div>
+
+                        <span class="mini-stock">
+
+                            ${item.jumlah}
+
+                        </span>
+
+                    </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+/* =========================================================
+   RECENT
+========================================================= */
+
+function renderRecent() {
+
+    const container =
+        $("recentItems");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const items =
+        [
+            ...inventoryData
+        ]
+        .sort(
+            (a,b) =>
+                new Date(
+                    b.tanggal
+                )
+                -
+                new Date(
+                    a.tanggal
+                )
+        )
+        .slice(
+            0,
+            6
+        );
+
+
+    if (!items.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-mini">
+
+                Belum ada inventaris.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        items.map(
+            function (
+                item
+            ) {
+
+                return `
+
+                    <div class="recent-item">
+
+                        <div class="recent-item-main">
+
+                            <strong>
+
+                                ${escapeHtml(
+                                    item.nama
+                                )}
+
+                            </strong>
+
+                            <span>
+
+                                ${escapeHtml(
+                                    item.ruangan
+                                )}
+
+                                ·
+
+                                ${item.jumlah}
+                                unit
+
+                            </span>
+
+                        </div>
+
+                        <span class="recent-date">
+
+                            ${formatDate(
+                                item.tanggal
+                            )}
+
+                        </span>
+
+                    </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+/* =========================================================
+   ROOM FILTER
+========================================================= */
+
+function updateRoomFilter() {
+
+    const select =
+        $("roomFilter");
+
+
+    if (!select) {
+
+        return;
+
+    }
+
+
+    const current =
+        select.value;
+
+
+    const rooms =
+        [
+            ...new Set(
+                inventoryData.map(
+                    item =>
+                        item.ruangan
+                )
+            )
+        ]
+        .sort(
+            (a,b) =>
+                a.localeCompare(
+                    b,
+                    "id"
+                )
+        );
+
+
+    select.innerHTML = `
+
+        <option value="all">
+
+            Semua Ruangan
+
+        </option>
+
+    `;
+
+
+    rooms.forEach(
+        function (
+            room
+        ) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                room;
+
+
+            option.textContent =
+                room;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    if (
+        rooms.includes(
+            current
+        )
+    ) {
+
+        select.value =
+            current;
+
+    }
+
+}
+
+
+/* =========================================================
+   MONITORING
+========================================================= */
+
+function updateMonitoring() {
+
+    const total =
+        inventoryData.length;
+
+
+    const good =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Baik"
+        ).length;
+
+
+    const light =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Ringan"
+        ).length;
+
+
+    const heavy =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Berat"
+        ).length;
+
+
+    const low =
+        inventoryData.filter(
+            item =>
+                Number(
+                    item.jumlah
+                ) <= 2
+        ).length;
+
+
+    if ($("monitorTotal")) {
+
+        $("monitorTotal")
+            .textContent =
+            total;
+
+    }
+
+
+    if ($("monitorGood")) {
+
+        $("monitorGood")
+            .textContent =
+            good;
+
+    }
+
+
+    if ($("monitorLowStock")) {
+
+        $("monitorLowStock")
+            .textContent =
+            low;
+
+    }
+
+
+    if ($("healthGoodCount")) {
+
+        $("healthGoodCount")
+            .textContent =
+            good;
+
+    }
+
+
+    if ($("healthLightCount")) {
+
+        $("healthLightCount")
+            .textContent =
+            light;
+
+    }
+
+
+    if ($("healthHeavyCount")) {
+
+        $("healthHeavyCount")
+            .textContent =
+            heavy;
+
+    }
+
+
+    renderRooms();
+
+}
+
+
+/* =========================================================
+   ROOM OVERVIEW
+========================================================= */
+
+function renderRooms() {
+
+    const container =
+        $("roomOverview");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const roomData =
+        {};
+
+
+    inventoryData.forEach(
+        function (
+            item
+        ) {
+
+            roomData[
+                item.ruangan
+            ] =
+
+                (
+                    roomData[
+                        item.ruangan
+                    ]
+                    ||
+                    0
+                )
+
+                +
+
+                Number(
+                    item.jumlah ||
+                    0
+                );
+
+        }
+    );
+
+
+    const rooms =
+        Object.entries(
+            roomData
+        )
+        .sort(
+            (a,b) =>
+                b[1] -
+                a[1]
+        );
+
+
+    if (!rooms.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-mini">
+
+                Belum ada data ruangan.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    const max =
+        Math.max(
+            ...rooms.map(
+                item =>
+                    item[1]
+            ),
+            1
+        );
+
+
+    container.innerHTML =
+        rooms
+            .slice(
+                0,
+                8
+            )
+            .map(
+                function (
+                    [
+                        room,
+                        count
+                    ]
+                ) {
+
+                    const width =
+                        Math.round(
+                            count /
+                            max *
+                            100
+                        );
+
+
+                    return `
+
+                        <div class="room-row">
+
+                            <div class="room-name">
+
+                                ${escapeHtml(
+                                    room
+                                )}
+
+                            </div>
+
+                            <div class="room-bar">
+
+                                <div
+                                    style="width:${width}%"
+                                ></div>
+
+                            </div>
+
+                            <strong>
+
+                                ${count}
+
+                            </strong>
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+function renderStatistics() {
+
+    const total =
+        inventoryData.length;
+
+
+    const good =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Baik"
+        ).length;
+
+
+    const light =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Ringan"
+        ).length;
+
+
+    const heavy =
+        inventoryData.filter(
+            item =>
+                item.kondisi ===
+                "Berat"
+        ).length;
+
+
+    if ($("donutTotal")) {
+
+        $("donutTotal")
+            .textContent =
+            total;
+
+    }
+
+
+    const goodPercent =
+        total
+
+            ? Math.round(
+                good /
+                total *
+                100
+            )
+
+            : 0;
+
+
+    const lightPercent =
+        total
+
+            ? Math.round(
+                light /
+                total *
+                100
+            )
+
+            : 0;
+
+
+    const heavyPercent =
+        total
+
+            ? Math.round(
+                heavy /
+                total *
+                100
+            )
+
+            : 0;
+
+
+    if ($("legendGood")) {
+
+        $("legendGood")
+            .textContent =
+            `${goodPercent}%`;
+
+    }
+
+
+    if ($("legendLight")) {
+
+        $("legendLight")
+            .textContent =
+            `${lightPercent}%`;
+
+    }
+
+
+    if ($("legendHeavy")) {
+
+        $("legendHeavy")
+            .textContent =
+            `${heavyPercent}%`;
+
+    }
+
+
+    const startLight =
+        goodPercent;
+
+
+    const startHeavy =
+        goodPercent +
+        lightPercent;
+
+
+    if ($("conditionDonut")) {
+
+        $("conditionDonut").style.background =
+            `
+
+                conic-gradient(
+
+                    var(--green)
+                    0%
+                    ${startLight}%,
+
+                    var(--orange)
+                    ${startLight}%
+                    ${startHeavy}%,
+
+                    var(--red)
+                    ${startHeavy}%
+                    100%
+
+                )
+
+            `;
+
+    }
+
+
+    const safe =
+        inventoryData.filter(
+            item =>
+                Number(
+                    item.jumlah
+                ) > 2
+        ).length;
+
+
+    const low =
+        inventoryData.filter(
+            item =>
+                Number(
+                    item.jumlah
+                ) <= 2
+        ).length;
+
+
+    if ($("safeStockCount")) {
+
+        $("safeStockCount")
+            .textContent =
+            safe;
+
+    }
+
+
+    if ($("lowStockStat")) {
+
+        $("lowStockStat")
+            .textContent =
+            low;
+
+    }
+
+
+    const safePercent =
+        total
+
+            ? Math.round(
+                safe /
+                total *
+                100
+            )
+
+            : 0;
+
+
+    const lowPercent =
+        total
+
+            ? Math.round(
+                low /
+                total *
+                100
+            )
+
+            : 0;
+
+
+    if ($("safeStockProgress")) {
+
+        $("safeStockProgress")
+            .style.width =
+            `${safePercent}%`;
+
+    }
+
+
+    if ($("lowStockProgress")) {
+
+        $("lowStockProgress")
+            .style.width =
+            `${lowPercent}%`;
+
+    }
+
+
+    renderCategories();
+
+}
+
+
+/* =========================================================
+   CATEGORY
+========================================================= */
+
+function renderCategories() {
+
+    const container =
+        $("categoryStats");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const categories =
+        {};
+
+
+    inventoryData.forEach(
+        function (
+            item
+        ) {
+
+            categories[
+                item.kategori
+            ] =
+
+                (
+                    categories[
+                        item.kategori
+                    ]
+
+                    ||
+
+                    0
+                )
+
+                +
+
+                Number(
+                    item.jumlah ||
+                    0
+                );
+
+        }
+    );
+
+
+    const list =
+        Object.entries(
+            categories
+        )
+        .sort(
+            (a,b) =>
+                b[1] -
+                a[1]
+        )
+        .slice(
+            0,
+            8
+        );
+
+
+    if (!list.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-mini">
+
+                Belum ada kategori.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    const max =
+        Math.max(
+            ...list.map(
+                item =>
+                    item[1]
+            ),
+            1
+        );
+
+
+    container.innerHTML =
+        list
+            .map(
+                function (
+                    [
+                        name,
+                        count
+                    ]
+                ) {
+
+                    const width =
+                        Math.round(
+                            count /
+                            max *
+                            100
+                        );
+
+
+                    return `
+
+                        <div class="category-item">
+
+                            <div class="category-name">
+
+                                ${escapeHtml(
+                                    name
+                                )}
+
+                            </div>
+
+                            <div class="category-bar">
+
+                                <div
+                                    style="width:${width}%"
+                                ></div>
+
+                            </div>
+
+                            <strong>
+
+                                ${count}
+
+                            </strong>
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+function loadActivity() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                ACTIVITY_KEY
+            );
+
+
+        activityData =
+            saved
+
+                ? JSON.parse(
+                    saved
+                )
+
+                : [];
+
+
+    } catch {
+
+        activityData =
+            [];
+
+    }
+
+}
+
+
+function saveActivity() {
+
+    localStorage.setItem(
+        ACTIVITY_KEY,
+        JSON.stringify(
+            activityData.slice(
+                0,
+                50
+            )
+        )
+    );
+
+}
+
+
+function addActivity(
+    text,
+    icon
+) {
+
+    activityData.unshift({
+
+        id:
+            createId(),
+
+        text:
+            text,
+
+        icon:
+            icon ||
+            "fa-circle-info",
+
+        time:
+            new Date()
+                .toISOString()
+
+    });
+
+
+    activityData =
+        activityData.slice(
+            0,
+            50
+        );
+
+
+    saveActivity();
+
+    renderActivity();
+
+}
+
+
+function renderActivity() {
+
+    const container =
+        $("activityLog");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    if (
+        !activityData.length
+    ) {
+
+        container.innerHTML = `
+
+            <div class="empty-mini">
+
+                Belum ada aktivitas.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        activityData
+            .slice(
+                0,
+                15
+            )
+            .map(
+                function (
+                    item
+                ) {
+
+                    return `
+
+                        <div class="activity-item">
+
+                            <div class="activity-icon">
+
+                                <i class="fa-solid ${escapeHtml(
+                                    item.icon
+                                )}"></i>
+
+                            </div>
+
+
+                            <div class="activity-text">
+
+                                <strong>
+
+                                    ${escapeHtml(
+                                        item.text
+                                    )}
+
+                                </strong>
+
+                                <span>
+
+                                    Sistem Inventaris
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="activity-time">
+
+                                ${formatTime(
+                                    item.time
+                                )}
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function updateStorage() {
+
+    try {
+
+        const data =
+            localStorage.getItem(
+                STORAGE_KEY
+            ) ||
+            "";
+
+
+        const bytes =
+            new Blob(
+                [
+                    data
+                ]
+            ).size;
+
+
+        const percent =
+            Math.min(
+
+                100,
+
+                Math.round(
+
+                    bytes /
+
+                    (
+                        5 *
+                        1024 *
+                        1024
+                    )
+
+                    *
+
+                    100
+
+                )
+
+            );
+
+
+        if ($("monitorStorage")) {
+
+            $("monitorStorage")
+                .textContent =
+                `${percent}%`;
+
+        }
+
+
+        if ($("terminalStorage")) {
+
+            $("terminalStorage")
+                .textContent =
+                `${percent}%`;
+
+        }
+
+
+    } catch {
+
+        if ($("monitorStorage")) {
+
+            $("monitorStorage")
+                .textContent =
+                "0%";
+
+        }
+
+
+        if ($("terminalStorage")) {
+
+            $("terminalStorage")
+                .textContent =
+                "0%";
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   AUTO BACKUP
+========================================================= */
+
+function createAutoBackup() {
+
+    try {
+
+        localStorage.setItem(
+            AUTO_BACKUP_KEY,
+            JSON.stringify({
+
+                version:
+                    "5.3",
+
+                createdAt:
+                    new Date()
+                        .toISOString(),
+
+                inventory:
+                    inventoryData,
+
+                activities:
+                    activityData
+
+            })
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+/* =========================================================
+   BACKUP
+========================================================= */
+
+function createBackup() {
+
+    if (
+        !inventoryData.length
+    ) {
+
+        showToast(
+            "Belum ada data untuk backup.",
+            "info"
+        );
+
+
+        return;
+
+    }
+
+
+    const backup = {
+
+        version:
+            "5.3",
+
+        createdAt:
+            new Date()
+                .toISOString(),
+
+        inventory:
+            inventoryData,
+
+        activities:
+            activityData
+
+    };
+
+
+    createAutoBackup();
+
+
+    downloadFile(
+        JSON.stringify(
+            backup,
+            null,
+            2
+        ),
+        `inventory-backup-${fileDate()}.json`,
+        "application/json"
+    );
+
+
+    addActivity(
+        "Membuat backup data",
+        "fa-database"
+    );
+
+
+    showToast(
+        "Backup berhasil dibuat.",
+        "success"
+    );
+
+}
+
+
+/* =========================================================
+   RESTORE
+========================================================= */
+
+function handleRestore(
+    event
+) {
+
+    const file =
+        event.target.files?.[0];
+
+
+    if (!file) {
+
+        return;
+
+    }
+
+
+    readJSON(
+        file
+    )
+    .then(
+        function (
+            data
+        ) {
+
+            if (
+
+                !data
+
+                ||
+
+                !Array.isArray(
+                    data.inventory
+                )
+
+            ) {
+
+                throw new Error(
+                    "Backup tidak valid."
+                );
+
+            }
+
+
+            openConfirmModal(
+                "Restore Backup",
+                "Data saat ini akan diganti dengan isi backup.",
+                function () {
+
+                    createAutoBackup();
+
+
+                    inventoryData =
+                        normalizeData(
+                            data.inventory
+                        );
+
+
+                    if (
+                        Array.isArray(
+                            data.activities
+                        )
+                    ) {
+
+                        activityData =
+                            data.activities;
+
+
+                        saveActivity();
+
+                    }
+
+
+                    saveData();
+
+                    renderAll();
+
+
+                    addActivity(
+                        "Memulihkan backup",
+                        "fa-clock-rotate-left"
+                    );
+
+
+                    showToast(
+                        "Backup berhasil dipulihkan.",
+                        "success"
+                    );
+
+                }
+            );
+
+        }
+    )
+    .catch(
+        function () {
+
+            showToast(
+                "File backup tidak valid.",
+                "error"
+            );
+
+        }
+    )
+    .finally(
+        function () {
+
+            event.target.value =
+                "";
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   EXPORT CSV
+========================================================= */
+
+function exportCSV() {
+
+    if (
+        !inventoryData.length
+    ) {
+
+        showToast(
+            "Belum ada data.",
+            "info"
+        );
+
+
+        return;
+
+    }
+
+
+    const headers = [
+
+        "Kode Inventaris",
+
+        "Nama Barang",
+
+        "Kategori",
+
+        "Ruangan",
+
+        "Jumlah",
+
+        "Kondisi",
+
+        "Keterangan",
+
+        "Tanggal"
+
+    ];
+
+
+    const rows =
+        inventoryData.map(
+            function (
+                item
+            ) {
+
+                return [
+
+                    item.kodeInventaris,
+
+                    item.nama,
+
+                    item.kategori,
+
+                    item.ruangan,
+
+                    item.jumlah,
+
+                    item.kondisi,
+
+                    item.keterangan,
+
+                    formatDate(
+                        item.tanggal
+                    )
+
+                ];
+
+            }
+        );
+
+
+    const csv = [
+
+        headers,
+
+        ...rows
+
+    ]
+    .map(
+        row =>
+            row
+                .map(
+                    csvEscape
+                )
+                .join(",")
+    )
+    .join("\n");
+
+
+    downloadFile(
+        "\uFEFF" + csv,
+        `inventaris-${fileDate()}.csv`,
+        "text/csv;charset=utf-8;"
+    );
+
+
+    addActivity(
+        "Export data CSV",
+        "fa-file-export"
+    );
+
+
+    showToast(
+        "Data berhasil diexport.",
+        "success"
+    );
+
+}
+
+
+/* =========================================================
+   FILTER RESET
+========================================================= */
+
+function resetFilters() {
+
+    if ($("searchInput")) {
+
+        $("searchInput").value =
+            "";
+
+    }
+
+
+    if ($("roomFilter")) {
+
+        $("roomFilter").value =
+            "all";
+
+    }
+
+
+    if ($("conditionFilter")) {
+
+        $("conditionFilter").value =
+            "all";
+
+    }
+
+
+    if ($("sortFilter")) {
+
+        $("sortFilter").value =
+            "newest";
+
+    }
+
+
+    renderInventory();
+
+}
+
+
+/* =========================================================
+   CONFIRM
+========================================================= */
+
+function openConfirmModal(
+    title,
+    message,
+    callback
+) {
+
+    if ($("confirmTitle")) {
+
+        $("confirmTitle").textContent =
+            title;
+
+    }
+
+
+    if ($("confirmMessage")) {
+
+        $("confirmMessage").textContent =
+            message;
+
+    }
+
+
+    confirmCallback =
+        callback;
+
+
+    $("confirmModal")
+        ?.classList.add(
+            "show"
+        );
+
+}
+
+
+function closeConfirmModal() {
+
+    $("confirmModal")
+        ?.classList.remove(
+            "show"
+        );
+
+
+    confirmCallback =
+        null;
+
+}
+
+
+/* =========================================================
+   THEME
+========================================================= */
+
+function loadTheme() {
+
+    const saved =
+        localStorage.getItem(
+            THEME_KEY
+        );
+
+
+    const dark =
+        saved ===
+        "dark";
+
+
+    document.body.classList.toggle(
+        "dark",
+        dark
+    );
+
+
+    updateThemeUI(
+        dark
+    );
+
+}
+
+
+function toggleTheme() {
+
+    const dark =
+        document.body.classList.toggle(
+            "dark"
+        );
+
+
+    localStorage.setItem(
+        THEME_KEY,
+        dark
+            ? "dark"
+            : "light"
+    );
+
+
+    updateThemeUI(
+        dark
+    );
+
+}
+
+
+function updateThemeUI(
+    dark
+) {
+
+    if (
+        $("themeButton")
+    ) {
+
+        $("themeButton").innerHTML =
+
+            dark
+
+                ? `
+
+                    <span>
+
+                        <i class="fa-solid fa-sun"></i>
+
+                        Light Mode
+
+                    </span>
+
+                    <i class="fa-solid fa-toggle-on"></i>
+
+                  `
+
+                : `
+
+                    <span>
+
+                        <i class="fa-solid fa-moon"></i>
+
+                        Dark Mode
+
+                    </span>
+
+                    <i class="fa-solid fa-toggle-off"></i>
+
+                  `;
+
+    }
+
+
+    if (
+        $("mobileThemeButton")
+    ) {
+
+        $("mobileThemeButton").innerHTML =
+
+            dark
+
+                ? `<i class="fa-solid fa-sun"></i>`
+
+                : `<i class="fa-solid fa-moon"></i>`;
+
+    }
+
+}
+
+
+/* =========================================================
+   CLOCK
+========================================================= */
+
+function updateClock() {
+
+    const now =
+        new Date();
+
+
+    if (
+        $("liveClock")
+    ) {
+
+        $("liveClock")
+            .textContent =
+            now.toLocaleTimeString(
+                "id-ID",
+                {
+
+                    hour:
+                        "2-digit",
+
+                    minute:
+                        "2-digit",
+
+                    second:
+                        "2-digit"
+
+                }
+            );
+
+    }
+
+
+    if (
+        $("liveDate")
+    ) {
+
+        $("liveDate")
+            .textContent =
+            now.toLocaleDateString(
+                "id-ID",
+                {
+
+                    weekday:
+                        "long",
+
+                    day:
+                        "numeric",
+
+                    month:
+                        "long",
+
+                    year:
+                        "numeric"
+
+                }
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   FOOTER YEAR
+========================================================= */
+
+function updateFooterYear() {
+
+    if (
+        $("footerYear")
+    ) {
+
+        $("footerYear")
+            .textContent =
+            new Date()
+                .getFullYear();
+
+    }
+
+}
+
+
+/* =========================================================
+   PWA
+========================================================= */
+
+async function registerServiceWorker() {
+
+    if (
+        !("serviceWorker" in navigator)
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        location.protocol ===
+        "file:"
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await navigator
+            .serviceWorker
+            .register(
+                "service-worker.js"
+            );
+
+    } catch (error) {
+
+        console.warn(
+            "Service Worker error:",
+            error
+        );
+
+    }
+
+}
+
+
+async function installPWA() {
+
+    if (
+        !deferredInstallPrompt
+    ) {
+
+        showToast(
+            "Installasi belum tersedia di browser ini.",
+            "info"
+        );
+
+
+        return;
+
+    }
+
+
+    deferredInstallPrompt
+        .prompt();
+
+
+    try {
+
+        await deferredInstallPrompt
+            .userChoice;
+
+    } catch {
+
+        /* ignore */
+
+    }
+
+
+    deferredInstallPrompt =
+        null;
+
+
+    $("installButton")
+        ?.classList.add(
+            "hidden"
+        );
+
+}
+
+
+/* =========================================================
+   CLEAR ACTIVITY
+========================================================= */
+
+function clearActivities() {
+
+    if (
+        !activityData.length
+    ) {
+
+        showToast(
+            "Aktivitas sudah kosong.",
+            "info"
+        );
+
+
+        return;
+
+    }
+
+
+    openConfirmModal(
+        "Bersihkan Aktivitas",
+        "Semua aktivitas akan dihapus.",
+        function () {
+
+            activityData =
+                [];
+
+
+            saveActivity();
+
+            renderActivity();
+
+
+            showToast(
+                "Aktivitas berhasil dibersihkan.",
+                "success"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function createId() {
+
+    if (
+
+        window.crypto
+
+        &&
+
+        crypto.randomUUID
+
+    ) {
+
+        return crypto.randomUUID();
+
+    }
+
+
+    return (
+
+        Date.now()
+            .toString(36)
+
+        +
+
+        Math.random()
+            .toString(36)
+            .slice(2)
+
+    );
+
+}
+
+
+function conditionLabel(
+    condition
+) {
+
+    if (
+        condition ===
+        "Ringan"
+    ) {
+
+        return "Rusak Ringan";
+
+    }
+
+
+    if (
+        condition ===
+        "Berat"
+    ) {
+
+        return "Rusak Berat";
+
+    }
+
+
+    return "Baik";
+
+}
+
+
+function formatDate(
+    value
+) {
+
+    const date =
+        new Date(
+            value
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "-";
+
+    }
+
+
+    return date.toLocaleDateString(
+        "id-ID",
+        {
+
+            day:
+                "2-digit",
+
+            month:
+                "short",
+
+            year:
+                "numeric"
+
+        }
+    );
+
+}
+
+
+function formatTime(
+    value
+) {
+
+    const date =
+        new Date(
+            value
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "-";
+
+    }
+
+
+    return date.toLocaleTimeString(
+        "id-ID",
+        {
+
+            hour:
+                "2-digit",
+
+            minute:
+                "2-digit"
+
+        }
+    );
+
+}
+
+
+function fileDate() {
+
+    const date =
+        new Date();
+
+
+    return [
+
+        date.getFullYear(),
+
+        String(
+            date.getMonth() +
+            1
+        ).padStart(
+            2,
+            "0"
+        ),
+
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        )
+
+    ].join("-");
+
+}
+
+
+function csvEscape(
+    value
+) {
+
+    const text =
+        String(
+            value ??
+            ""
+        );
+
+
+    if (
+
+        text.includes(",")
+        ||
+
+        text.includes('"')
+        ||
+
+        text.includes("\n")
+
+    ) {
+
+        return `"${text.replace(
+            /"/g,
+            '""'
+        )}"`;
+
+    }
+
+
+    return text;
+
+}
+
+
+/* =========================================================
+   DOWNLOAD
+========================================================= */
+
+function downloadFile(
+    content,
+    filename,
+    type
+) {
+
+    const blob =
+        new Blob(
+            [
+                content
+            ],
+            {
+                type
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        filename;
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    setTimeout(
+        function () {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+        100
+    );
+
+}
+
+
+/* =========================================================
+   READ JSON
+========================================================= */
+
+function readJSON(
+    file
+) {
+
+    return new Promise(
+        function (
+            resolve,
+            reject
+        ) {
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function () {
+
+                    try {
+
+                        resolve(
+                            JSON.parse(
+                                reader.result
+                            )
+                        );
+
+
+                    } catch (error) {
+
+                        reject(
+                            error
+                        );
+
+                    }
+
+                };
+
+
+            reader.onerror =
+                reject;
+
+
+            reader.readAsText(
+                file
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(
+    value
+) {
+
+    return String(
+        value ??
+        ""
+    )
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(
+    message,
+    type = "info"
+) {
+
+    const container =
+        $("toastContainer");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    let icon =
+        "fa-circle-info";
+
+
+    let title =
+        "Informasi";
+
+
+    if (
+        type ===
+        "success"
+    ) {
+
+        icon =
+            "fa-circle-check";
+
+
+        title =
+            "Berhasil";
+
+    }
+
+
+    if (
+        type ===
+        "error"
+    ) {
+
+        icon =
+            "fa-circle-xmark";
+
+
+        title =
+            "Error";
+
+    }
+
+
+    const toast =
+        document.createElement(
+            "div"
+        );
+
+
+    toast.className =
+        `toast ${type}`;
+
+
+    toast.innerHTML = `
+
+        <i class="fa-solid ${icon}"></i>
+
+        <div>
+
+            <strong>
+
+                ${title}
+
+            </strong>
+
+            <span>
+
+                ${escapeHtml(
+                    message
+                )}
+
+            </span>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(
+        toast
+    );
+
+
+    setTimeout(
+        function () {
+
+            toast.remove();
+
+        },
+        3000
+    );
+
+}
