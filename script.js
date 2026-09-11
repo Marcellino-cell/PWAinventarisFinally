@@ -715,16 +715,16 @@ function requireFirebaseAdmin(
 const FOOTER_LINKS = {
 
   github:
-    "ISI_LINK_GITHUB_KAMU",
+    "https://github.com/Marcellino-cell",
 
   linkedin:
-    "ISI_LINK_LINKEDIN_KAMU",
+    "https://www.linkedin.com/feed/",
 
   gps:
-    "ISI_LINK_GPS_KAMU",
+    "https://maps.app.goo.gl/LF7XkcsbJNuz49Hg7?g_st=aw",
 
   phone:
-    "ISI_LINK_TELEPON_KAMU"
+    "https://wa.me/qr/UEMXPUCB4JO3L1"
 
 };
 
