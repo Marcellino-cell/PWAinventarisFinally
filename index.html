@@ -783,25 +783,39 @@
           </button>
 
 
-          <div class="admin-profile">
+          <button
+            id="loginButton"
+            class="admin-profile"
+            type="button"
+            title="Login Admin"
+            aria-label="Login Admin"
+          >
 
-            <div class="admin-avatar">
-              MZ
+            <div class="admin-avatar" id="adminAvatar">
+              <svg aria-hidden="true">
+                <use href="#icon-shield"></use>
+              </svg>
             </div>
 
             <div>
 
-              <strong>
+              <strong id="adminName">
                 MarcelZuhdan
               </strong>
 
-              <small>
-                Administrator
+              <small id="adminRole">
+                Login Admin
               </small>
 
             </div>
 
-          </div>
+            <span
+              id="loginStatusDot"
+              class="login-status-dot"
+              aria-hidden="true"
+            ></span>
+
+          </button>
 
         </div>
 
@@ -2333,6 +2347,161 @@
         </section>
 
       </main>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOGIN ADMIN
+  ====================================================== -->
+
+  <div
+    id="loginModal"
+    class="login-modal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="login-modal-box"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="loginModalTitle"
+    >
+
+      <div class="login-modal-head">
+
+        <div class="login-modal-icon">
+          <svg aria-hidden="true">
+            <use href="#icon-shield"></use>
+          </svg>
+        </div>
+
+        <div>
+          <span class="section-kicker">
+            ADMIN ACCESS
+          </span>
+
+          <h3 id="loginModalTitle">
+            Login Admin
+          </h3>
+
+          <p>
+            Login untuk mengelola data inventaris.
+          </p>
+        </div>
+
+        <button
+          id="closeLoginButton"
+          class="modal-close"
+          type="button"
+          aria-label="Tutup login"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="loginForm">
+
+        <div class="login-field">
+
+          <label for="loginEmail">
+            EMAIL ADMIN
+          </label>
+
+          <input
+            id="loginEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="Masukkan email admin"
+            required
+          >
+
+        </div>
+
+
+        <div class="login-field">
+
+          <label for="loginPassword">
+            PASSWORD
+          </label>
+
+          <div class="login-password-wrap">
+
+            <input
+              id="loginPassword"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Masukkan password"
+              required
+            >
+
+            <button
+              id="toggleLoginPassword"
+              class="password-toggle"
+              type="button"
+              aria-label="Tampilkan password"
+            >
+              <svg aria-hidden="true">
+                <use href="#icon-search"></use>
+              </svg>
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="loginError"
+          class="login-error"
+          role="alert"
+        ></div>
+
+
+        <button
+          class="login-submit"
+          type="submit"
+        >
+          <svg aria-hidden="true">
+            <use href="#icon-shield"></use>
+          </svg>
+          Masuk sebagai Admin
+        </button>
+
+      </form>
+
+
+      <div class="login-divider">
+        <span>ATAU</span>
+      </div>
+
+
+      <button
+        id="googleLoginButton"
+        class="google-login-button"
+        type="button"
+      >
+        <span class="google-mark">G</span>
+        <span>Login dengan Google</span>
+      </button>
+
+
+      <div
+        id="googleLoginStatus"
+        class="google-login-status"
+      ></div>
+
+
+      <div class="login-note">
+        <svg aria-hidden="true">
+          <use href="#icon-shield"></use>
+        </svg>
+        <span>Akses pengelolaan hanya tersedia setelah login.</span>
+      </div>
 
     </div>
 
