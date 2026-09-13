@@ -715,16 +715,16 @@ function requireFirebaseAdmin(
 const FOOTER_LINKS = {
 
   github:
-    "ISI_LINK_GITHUB_KAMU",
+    "https://github.com/Marcellino-cell",
 
   linkedin:
-    "ISI_LINK_LINKEDIN_KAMU",
+    "https://www.linkedin.com/feed/",
 
   gps:
-    "ISI_LINK_GPS_KAMU",
+    "https://maps.app.goo.gl/LF7XkcsbJNuz49Hg7?g_st=aw",
 
   phone:
-    "ISI_LINK_TELEPON_KAMU"
+    "https://wa.me/qr/UEMXPUCB4JO3L1"
 
 };
 
@@ -2054,6 +2054,8 @@ function renderRecentInventory() {
       )
       .join("");
 
+}
+
 
 /* =========================================================
    INVENTORY
@@ -2954,164 +2956,155 @@ function renderStatistics() {
 }
 
 
-/* =========================================================
-   DONUT CHART - FIX
-========================================================= */
-
 function renderDonutChart(
   totals
 ) {
 
-  if (!els.donutChart) {
+  if (
+    !els.donutChart
+  ) {
     return;
   }
 
 
   const total =
-    Math.max(
-      0,
-      Number(
-        totals.total
-      ) || 0
-    );
+    totals.total;
 
 
   const good =
     total
-      ? (
-          Math.max(
-            0,
-            Number(
-              totals.good
-            ) || 0
-          ) /
-          total
-        ) *
+      ? totals.good /
+        total *
         100
       : 0;
 
 
   const minor =
     total
-      ? (
-          Math.max(
-            0,
-            Number(
-              totals.minor
-            ) || 0
-          ) /
-          total
-        ) *
+      ? totals.minor /
+        total *
         100
       : 0;
 
 
   const major =
     total
-      ? (
-          Math.max(
-            0,
-            Number(
-              totals.major
-            ) || 0
-          ) /
-          total
-        ) *
+      ? totals.major /
+        total *
         100
       : 0;
 
 
-  const goodEnd =
-    good;
+  const radius =
+    42;
 
 
-  const minorEnd =
-    good +
-    minor;
+  const circumference =
+    2 *
+    Math.PI *
+    radius;
 
 
-  const majorEnd =
-    100;
+  const segments = [
+
+    {
+
+      value:
+        good,
+
+      className:
+        "good"
+
+    },
+
+    {
+
+      value:
+        minor,
+
+      className:
+        "minor"
+
+    },
+
+    {
+
+      value:
+        major,
+
+      className:
+        "major"
+
+    }
+
+  ];
 
 
-  if (!total) {
-
-    els.donutChart.style.background =
-      "conic-gradient(rgba(255,255,255,.05) 0 100%)";
-
-  }
-
-  else {
-
-    els.donutChart.style.background =
-      `conic-gradient(
-        var(--green) 0% ${goodEnd}%,
-        var(--orange) ${goodEnd}% ${minorEnd}%,
-        var(--red) ${minorEnd}% ${majorEnd}%
-      )`;
-
-  }
+  let offset =
+    0;
 
 
-  let hole =
-    els.donutChart.querySelector(
-      ".donut-hole"
-    );
+  const circles =
+    segments
+      .map(
+        (segment) => {
+
+          const length =
+            circumference *
+            (
+              segment.value /
+              100
+            );
 
 
-  if (!hole) {
+          const html = `
 
-    hole =
-      document.createElement(
-        "div"
-      );
+            <circle
+              class="donut-segment ${segment.className}"
+              cx="50"
+              cy="50"
+              r="${radius}"
+              stroke-dasharray="${length} ${circumference - length}"
+              stroke-dashoffset="${-offset}"
+            ></circle>
 
-
-    hole.className =
-      "donut-hole";
-
-
-    hole.innerHTML = `
-
-      <strong id="chartTotal">
-        0
-      </strong>
-
-      <span>
-        TOTAL UNIT
-      </span>
-
-    `;
+          `;
 
 
-    els.donutChart.appendChild(
-      hole
-    );
-
-  }
+          offset +=
+            length;
 
 
-  const totalEl =
-    hole.querySelector(
-      "#chartTotal"
-    );
+          return html;
+
+        }
+      )
+      .join("");
 
 
-  if (totalEl) {
+  els.donutChart.innerHTML = `
 
-    totalEl.textContent =
-      formatNumber(
-        total
-      );
+    <svg
+      viewBox="0 0 100 100"
+      class="donut-svg"
+      aria-label="Statistik kondisi inventaris"
+    >
 
-  }
+      <circle
+        class="donut-background"
+        cx="50"
+        cy="50"
+        r="${radius}"
+      ></circle>
+
+      ${circles}
+
+    </svg>
+
+  `;
 
 }
 
-
-/* =========================================================
-   ROOM STATISTICS - FIX
-========================================================= */
 
 function renderRoomStatistics() {
 
@@ -3122,28 +3115,16 @@ function renderRoomStatistics() {
   }
 
 
-  const rooms = {};
+  const rooms =
+    {};
 
 
   inventory.forEach(
     (item) => {
 
       const room =
-        String(
-          item.room ||
-          "Tidak diketahui"
-        )
-          .trim() ||
+        item.room ||
         "Tidak diketahui";
-
-
-      const quantity =
-        Math.max(
-          0,
-          Number(
-            item.quantity
-          ) || 0
-        );
 
 
       if (!rooms[room]) {
@@ -3165,6 +3146,12 @@ function renderRoomStatistics() {
         };
 
       }
+
+
+      const quantity =
+        Number(
+          item.quantity
+        ) || 0;
 
 
       rooms[room].total +=
@@ -3223,23 +3210,15 @@ function renderRoomStatistics() {
 
         <div class="empty-icon">
 
-          <svg
-            aria-hidden="true"
-          >
-
-            <use
-              href="#icon-location"
-            ></use>
-
+          <svg>
+            <use href="#icon-location"></use>
           </svg>
 
         </div>
 
-
         <strong>
           Belum ada statistik
         </strong>
-
 
         <p>
           Tambahkan inventaris untuk melihat statistik ruangan.
@@ -3254,87 +3233,69 @@ function renderRoomStatistics() {
   }
 
 
-  const grandTotal =
-    Math.max(
-      0,
-      Number(
-        getTotals().total
-      ) || 0
-    );
-
-
   els.roomStatistics.innerHTML =
     entries
       .map(
-        (
-          [
-            room,
-            data
-          ]
-        ) => {
+        ([room, data]) => {
 
           const percent =
             percentage(
               data.total,
-              grandTotal
+              getTotals().total
             );
-
-
-          const safePercent =
-            Math.max(
-              0,
-              Math.min(
-                100,
-                percent
-              )
-            );
-
-
-          const title =
-            `Baik: ${formatNumber(
-              data.good
-            )} | Rusak Ringan: ${formatNumber(
-              data.minor
-            )} | Rusak Berat: ${formatNumber(
-              data.major
-            )}`;
 
 
           return `
 
-            <div
-              class="room-row"
-              title="${escapeHTML(
-                title
-              )}"
-            >
+            <div class="room-stat-item">
 
-              <span>
-                ${escapeHTML(
-                  room
-                )}
-              </span>
+              <div class="room-stat-head">
 
+                <strong>
+                  ${escapeHTML(
+                    room
+                  )}
+                </strong>
 
-              <div
-                class="room-bar"
-                aria-label="${escapeHTML(
-                  room
-                )} ${safePercent}%"
-              >
-
-                <i
-                  style="width:${safePercent}%"
-                ></i>
+                <span>
+                  ${formatNumber(
+                    data.total
+                  )} unit
+                </span>
 
               </div>
 
 
-              <strong>
-                ${formatNumber(
-                  data.total
-                )}
-              </strong>
+              <div class="room-stat-bar">
+
+                <span
+                  style="width:${percent}%"
+                ></span>
+
+              </div>
+
+
+              <div class="room-stat-meta">
+
+                <span>
+                  Baik ${formatNumber(
+                    data.good
+                  )}
+                </span>
+
+                <span>
+                  Ringan ${formatNumber(
+                    data.minor
+                  )}
+                </span>
+
+                <span>
+                  Berat ${formatNumber(
+                    data.major
+                  )}
+                </span>
+
+              </div>
 
             </div>
 
@@ -3405,6 +3366,7 @@ function setTheme(
   }
 
 }
+
 
 /* =========================================================
    EXPORT
@@ -4826,5 +4788,36 @@ document.addEventListener(
   boot
 );
 
-   
+/* =========================================================
+   BOOT
+========================================================= */
+
+function boot() {
+
+  initTheme();
+
+  loadInventory();
+
+  setupEvents();
+
+  setupFirebaseAuth();
+
+  updateAdminLoginUI();
+
+  renderPageFooters();
+
+  applyCustomLogo();
+
+  registerPWA();
+
+  renderAll();
+
+  runBootSequence();
+
 }
+
+
+document.addEventListener(
+  "DOMContentLoaded",
+  boot
+);
