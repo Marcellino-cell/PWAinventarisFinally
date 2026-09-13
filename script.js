@@ -5,7 +5,7 @@
 ========================================================= */
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCGYXZYJroOjIsBw0PD2h6KqoEyZb-Gxw",
+  apiKey: "AIzaSyCGYXZYJroOjIsBw0PD2h6KqoEyZKb-Gxw",
   authDomain: "sistem-inventaris-ruangan-2026.firebaseapp.com",
   projectId: "sistem-inventaris-ruangan-2026",
   storageBucket: "sistem-inventaris-ruangan-2026.firebasestorage.app",
@@ -22,14 +22,8 @@ let firebaseAuthReady = false;
 let firebaseLoading = null;
 
 function loadFirebaseAuth() {
-
-  if (firebaseFns) {
-    return Promise.resolve(firebaseFns);
-  }
-
-  if (firebaseLoading) {
-    return firebaseLoading;
-  }
+  if (firebaseFns) return Promise.resolve(firebaseFns);
+  if (firebaseLoading) return firebaseLoading;
 
   firebaseLoading = Promise.all([
     import(
@@ -39,45 +33,40 @@ function loadFirebaseAuth() {
       "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js"
     )
   ])
-    .then(
-      ([appModule, authModule]) => {
+    .then(([appModule, authModule]) => {
 
-        firebaseApp =
-          appModule.initializeApp(
-            FIREBASE_CONFIG
-          );
+      firebaseApp =
+        appModule.initializeApp(
+          FIREBASE_CONFIG
+        );
 
-        firebaseFns =
-          authModule;
+      firebaseFns =
+        authModule;
 
-        firebaseAuth =
-          authModule.getAuth(
-            firebaseApp
-          );
+      firebaseAuth =
+        authModule.getAuth(
+          firebaseApp
+        );
 
-        return authModule
-          .setPersistence(
-            firebaseAuth,
-            authModule.browserLocalPersistence
-          )
-          .then(
-            () => firebaseFns
-          );
+      return authModule
+        .setPersistence(
+          firebaseAuth,
+          authModule.browserLocalPersistence
+        )
+        .then(
+          () => firebaseFns
+        );
 
-      }
-    )
-    .catch(
-      (error) => {
+    })
+    .catch((error) => {
 
-        firebaseLoading = null;
+      firebaseLoading = null;
 
-        throw error;
+      throw error;
 
-      }
-    );
+    });
 
   return firebaseLoading;
-
 }
 
 
@@ -824,6 +813,7 @@ const els = {
   breadcrumbText:
     $("breadcrumbText"),
 
+
   totalItems:
     $("totalItems"),
 
@@ -839,6 +829,7 @@ const els = {
   heroTotal:
     $("heroTotal"),
 
+
   goodPercent:
     $("goodPercent"),
 
@@ -847,6 +838,7 @@ const els = {
 
   majorPercent:
     $("majorPercent"),
+
 
   goodProgress:
     $("goodProgress"),
@@ -857,6 +849,7 @@ const els = {
   majorProgress:
     $("majorProgress"),
 
+
   goodProgressText:
     $("goodProgressText"),
 
@@ -866,8 +859,10 @@ const els = {
   majorProgressText:
     $("majorProgressText"),
 
+
   recentInventory:
     $("recentInventory"),
+
 
   searchInput:
     $("searchInput"),
@@ -881,11 +876,13 @@ const els = {
   resetFilters:
     $("resetFilters"),
 
+
   inventoryGrid:
     $("inventoryGrid"),
 
   inventoryCount:
     $("inventoryCount"),
+
 
   form:
     $("inventoryForm"),
@@ -905,6 +902,7 @@ const els = {
   itemQuantity:
     $("itemQuantity"),
 
+
   formTitle:
     $("formTitle"),
 
@@ -916,6 +914,7 @@ const els = {
 
   resetForm:
     $("resetForm"),
+
 
   donutChart:
     $("donutChart"),
@@ -935,6 +934,7 @@ const els = {
   roomStatistics:
     $("roomStatistics"),
 
+
   exportButton:
     $("exportButton"),
 
@@ -943,6 +943,7 @@ const els = {
 
   importInput:
     $("importInput"),
+
 
   backupButton:
     $("backupButton"),
@@ -953,8 +954,10 @@ const els = {
   restoreInput:
     $("restoreInput"),
 
+
   clearDataButton:
     $("clearDataButton"),
+
 
   toast:
     $("toast"),
@@ -968,6 +971,7 @@ const els = {
   toastClose:
     $("toastClose"),
 
+
   confirmModal:
     $("confirmModal"),
 
@@ -976,6 +980,7 @@ const els = {
 
   confirmDelete:
     $("confirmDelete"),
+
 
   bootProgressBar:
     $("bootProgressBar"),
@@ -1201,7 +1206,6 @@ function createFooterHTML() {
             >
 
           </div>
-
 
           <div>
 
@@ -1715,6 +1719,9 @@ function navigate(
 
   }
 
+}
+
+
 /* =========================================================
    TOTALS
 ========================================================= */
@@ -1794,10 +1801,6 @@ function getTotals() {
 }
 
 
-/* =========================================================
-   PERCENTAGE
-========================================================= */
-
 function percentage(
   value,
   total
@@ -1847,126 +1850,70 @@ function renderDashboard() {
     );
 
 
-  if (els.totalItems) {
-
-    els.totalItems.textContent =
-      formatNumber(
-        totals.total
-      );
-
-  }
+  els.totalItems.textContent =
+    formatNumber(
+      totals.total
+    );
 
 
-  if (els.goodItems) {
-
-    els.goodItems.textContent =
-      formatNumber(
-        totals.good
-      );
-
-  }
+  els.goodItems.textContent =
+    formatNumber(
+      totals.good
+    );
 
 
-  if (els.minorItems) {
-
-    els.minorItems.textContent =
-      formatNumber(
-        totals.minor
-      );
-
-  }
+  els.minorItems.textContent =
+    formatNumber(
+      totals.minor
+    );
 
 
-  if (els.majorItems) {
-
-    els.majorItems.textContent =
-      formatNumber(
-        totals.major
-      );
-
-  }
+  els.majorItems.textContent =
+    formatNumber(
+      totals.major
+    );
 
 
-  if (els.heroTotal) {
-
-    els.heroTotal.textContent =
-      formatNumber(
-        totals.total
-      );
-
-  }
+  els.heroTotal.textContent =
+    formatNumber(
+      totals.total
+    );
 
 
-  if (els.goodPercent) {
-
-    els.goodPercent.textContent =
-      `${goodPercent}%`;
-
-  }
+  els.goodPercent.textContent =
+    `${goodPercent}%`;
 
 
-  if (els.minorPercent) {
-
-    els.minorPercent.textContent =
-      `${minorPercent}%`;
-
-  }
+  els.minorPercent.textContent =
+    `${minorPercent}%`;
 
 
-  if (els.majorPercent) {
-
-    els.majorPercent.textContent =
-      `${majorPercent}%`;
-
-  }
+  els.majorPercent.textContent =
+    `${majorPercent}%`;
 
 
-  if (els.goodProgress) {
-
-    els.goodProgress.style.width =
-      `${goodPercent}%`;
-
-  }
+  els.goodProgress.style.width =
+    `${goodPercent}%`;
 
 
-  if (els.minorProgress) {
-
-    els.minorProgress.style.width =
-      `${minorPercent}%`;
-
-  }
+  els.minorProgress.style.width =
+    `${minorPercent}%`;
 
 
-  if (els.majorProgress) {
-
-    els.majorProgress.style.width =
-      `${majorPercent}%`;
-
-  }
+  els.majorProgress.style.width =
+    `${majorPercent}%`;
 
 
-  if (els.goodProgressText) {
-
-    els.goodProgressText.textContent =
-      `${goodPercent}%`;
-
-  }
+  els.goodProgressText.textContent =
+    `${goodPercent}%`;
 
 
-  if (els.minorProgressText) {
-
-    els.minorProgressText.textContent =
-      `${minorPercent}%`;
-
-  }
+  els.minorProgressText.textContent =
+    `${minorPercent}%`;
 
 
-  if (els.majorProgressText) {
-
-    els.majorProgressText.textContent =
-      `${majorPercent}%`;
-
-  }
+  els.majorProgressText.textContent =
+    `${majorPercent}%`;
 
 
   renderRecentInventory();
@@ -1980,12 +1927,8 @@ function renderDashboard() {
 
 function renderRecentInventory() {
 
-  if (
-    !els.recentInventory
-  ) {
-
+  if (!els.recentInventory) {
     return;
-
   }
 
 
@@ -1995,25 +1938,17 @@ function renderRecentInventory() {
         (
           a,
           b
-        ) => {
-
-          return (
-
-            new Date(
-              b.updatedAt ||
-              b.createdAt ||
-              0
-            ) -
-
-            new Date(
-              a.updatedAt ||
-              a.createdAt ||
-              0
-            )
-
-          );
-
-        }
+        ) =>
+          new Date(
+            b.createdAt ||
+            b.updatedAt ||
+            0
+          ) -
+          new Date(
+            a.createdAt ||
+            a.updatedAt ||
+            0
+          )
       )
       .slice(
         0,
@@ -2030,20 +1965,14 @@ function renderRecentInventory() {
         <div class="empty-icon">
 
           <svg>
-
-            <use
-              href="#icon-box"
-            ></use>
-
+            <use href="#icon-box"></use>
           </svg>
 
         </div>
 
-
         <strong>
           Belum ada data
         </strong>
-
 
         <p>
           Data inventaris akan muncul di sini.
@@ -2076,11 +2005,7 @@ function renderRecentInventory() {
               <div class="recent-item-icon">
 
                 <svg>
-
-                  <use
-                    href="#icon-box"
-                  ></use>
-
+                  <use href="#icon-box"></use>
                 </svg>
 
               </div>
@@ -2094,7 +2019,6 @@ function renderRecentInventory() {
                   )}
                 </strong>
 
-
                 <small>
                   ${escapeHTML(
                     item.room ||
@@ -2107,15 +2031,12 @@ function renderRecentInventory() {
 
               <div class="recent-item-meta">
 
-                <span
-                  class="condition-badge ${conditionClass}"
-                >
+                <span class="condition-badge ${conditionClass}">
                   ${escapeHTML(
                     item.condition ||
                     "Baik"
                   )}
                 </span>
-
 
                 <small>
                   ${formatNumber(
@@ -2137,7 +2058,7 @@ function renderRecentInventory() {
 
 
 /* =========================================================
-   FILTER INVENTORY
+   INVENTORY
 ========================================================= */
 
 function getFilteredInventory() {
@@ -2164,50 +2085,43 @@ function getFilteredInventory() {
   return inventory.filter(
     (item) => {
 
-      const searchableText = [
-
-        item.name,
-
-        item.code,
-
-        item.room,
-
-        item.condition
-
-      ]
-        .map(
-          value =>
-            String(
-              value ?? ""
-            )
-        )
-        .join(" ")
-        .toLowerCase();
-
-
       const matchesSearch =
         !search ||
-        searchableText.includes(
-          search
-        );
+
+        [
+
+          item.name,
+
+          item.code,
+
+          item.room,
+
+          item.condition
+
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(
+            search
+          );
 
 
       const matchesRoom =
         !room ||
-        item.room === room;
+        item.room ===
+          room;
 
 
       const matchesCondition =
         !condition ||
-        item.condition === condition;
+        item.condition ===
+          condition;
 
 
       return (
-
         matchesSearch &&
         matchesRoom &&
         matchesCondition
-
       );
 
     }
@@ -2216,18 +2130,12 @@ function getFilteredInventory() {
 }
 
 
-/* =========================================================
-   RENDER INVENTORY
-========================================================= */
-
 function renderInventory() {
 
   if (
     !els.inventoryGrid
   ) {
-
     return;
-
   }
 
 
@@ -2235,10 +2143,12 @@ function renderInventory() {
     getFilteredInventory();
 
 
-  if (els.inventoryCount) {
+  if (
+    els.inventoryCount
+  ) {
 
     els.inventoryCount.textContent =
-      `${filtered.length} DATA / ${inventory.length} TOTAL`;
+      `${filtered.length} data`;
 
   }
 
@@ -2247,43 +2157,22 @@ function renderInventory() {
 
     els.inventoryGrid.innerHTML = `
 
-      <div
-        class="empty-state"
-        style="grid-column:1/-1"
-      >
+      <div class="empty-state inventory-empty">
 
         <div class="empty-icon">
 
           <svg>
-
-            <use
-              href="#icon-box"
-            ></use>
-
+            <use href="#icon-box"></use>
           </svg>
 
         </div>
 
-
         <strong>
-
-          ${
-            inventory.length
-              ? "Data tidak ditemukan"
-              : "Belum ada inventaris"
-          }
-
+          Data tidak ditemukan
         </strong>
 
-
         <p>
-
-          ${
-            inventory.length
-              ? "Coba ubah pencarian atau filter."
-              : "Tambahkan inventaris pertama."
-          }
-
+          Coba ubah pencarian atau filter.
         </p>
 
       </div>
@@ -2308,10 +2197,6 @@ function renderInventory() {
 }
 
 
-/* =========================================================
-   INVENTORY CARD
-========================================================= */
-
 function createInventoryCard(
   item
 ) {
@@ -2323,12 +2208,9 @@ function createInventoryCard(
 
 
   const quantity =
-    Math.max(
-      0,
-      Number(
-        item.quantity
-      ) || 0
-    );
+    Number(
+      item.quantity
+    ) || 0;
 
 
   return `
@@ -2340,122 +2222,26 @@ function createInventoryCard(
       )}"
     >
 
-      <div class="inventory-top">
+      <div class="inventory-card-head">
 
-        <div class="inventory-title">
+        <div class="inventory-card-icon">
 
-          <div class="card-avatar">
-
+          <span>
             ${escapeHTML(
               getInitials(
                 item.name
               )
             )}
-
-          </div>
-
-
-          <div>
-
-            <strong>
-
-              ${escapeHTML(
-                item.name
-              )}
-
-            </strong>
-
-
-            <small>
-
-              ${escapeHTML(
-                item.code ||
-                "-"
-              )}
-
-            </small>
-
-          </div>
-
-        </div>
-
-
-        <span
-          class="condition-pill ${conditionClass}"
-        >
-
-          ${escapeHTML(
-            item.condition ||
-            "Baik"
-          )}
-
-        </span>
-
-      </div>
-
-
-      <div class="inventory-detail">
-
-        <div class="detail-cell">
-
-          <span>
-            RUANGAN
           </span>
 
-
-          <strong>
-
-            ${escapeHTML(
-              item.room ||
-              "-"
-            )}
-
-          </strong>
-
         </div>
 
 
-        <div class="detail-cell">
-
-          <span>
-            JUMLAH
-          </span>
-
-
-          <strong>
-
-            ${formatNumber(
-              quantity
-            )}
-            UNIT
-
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <div class="card-footer">
-
-        <span class="room-pill">
-
-          UPDATE
-          ${escapeHTML(
-            formatDate(
-              item.updatedAt ||
-              item.createdAt
-            )
-          )}
-
-        </span>
-
-
-        <div class="card-actions">
+        <div class="inventory-card-actions">
 
           <button
             type="button"
-            class="card-action"
+            class="icon-btn small"
             data-action="edit"
             data-id="${escapeHTML(
               item.id
@@ -2464,11 +2250,7 @@ function createInventoryCard(
           >
 
             <svg>
-
-              <use
-                href="#icon-edit"
-              ></use>
-
+              <use href="#icon-edit"></use>
             </svg>
 
           </button>
@@ -2476,7 +2258,7 @@ function createInventoryCard(
 
           <button
             type="button"
-            class="card-action delete"
+            class="icon-btn small danger"
             data-action="delete"
             data-id="${escapeHTML(
               item.id
@@ -2485,16 +2267,84 @@ function createInventoryCard(
           >
 
             <svg>
-
-              <use
-                href="#icon-trash"
-              ></use>
-
+              <use href="#icon-trash"></use>
             </svg>
 
           </button>
 
         </div>
+
+      </div>
+
+
+      <div class="inventory-card-body">
+
+        <span class="inventory-code">
+          ${escapeHTML(
+            item.code ||
+            "-"
+          )}
+        </span>
+
+
+        <h3>
+          ${escapeHTML(
+            item.name
+          )}
+        </h3>
+
+
+        <div class="inventory-detail">
+
+          <span>
+
+            <svg>
+              <use href="#icon-location"></use>
+            </svg>
+
+            ${escapeHTML(
+              item.room ||
+              "-"
+            )}
+
+          </span>
+
+
+          <span>
+
+            <svg>
+              <use href="#icon-box"></use>
+            </svg>
+
+            ${formatNumber(
+              quantity
+            )} unit
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="inventory-card-footer">
+
+        <span
+          class="condition-badge ${conditionClass}"
+        >
+          ${escapeHTML(
+            item.condition ||
+            "Baik"
+          )}
+        </span>
+
+
+        <small>
+          ${formatDate(
+            item.createdAt ||
+            item.updatedAt
+          )}
+        </small>
 
       </div>
 
@@ -2506,27 +2356,21 @@ function createInventoryCard(
 
 
 /* =========================================================
-   FORM RESET
+   FORM
 ========================================================= */
 
 function resetFormToAdd() {
 
   if (!els.form) {
-
     return;
-
   }
 
 
   els.form.reset();
 
 
-  if (els.editId) {
-
-    els.editId.value =
-      "";
-
-  }
+  els.editId.value =
+    "";
 
 
   if (els.formTitle) {
@@ -2553,12 +2397,13 @@ function resetFormToAdd() {
 
   }
 
+
+  navigate(
+    "add"
+  );
+
 }
 
-
-/* =========================================================
-   EDIT RECORD
-========================================================= */
 
 function editRecord(
   id
@@ -2569,9 +2414,7 @@ function editRecord(
       "mengedit inventaris"
     )
   ) {
-
     return;
-
   }
 
 
@@ -2596,48 +2439,28 @@ function editRecord(
   }
 
 
-  if (els.editId) {
-
-    els.editId.value =
-      item.id;
-
-  }
+  els.editId.value =
+    item.id;
 
 
-  if (els.itemName) {
-
-    els.itemName.value =
-      item.name ||
-      "";
-
-  }
+  els.itemName.value =
+    item.name ||
+    "";
 
 
-  if (els.itemCode) {
-
-    els.itemCode.value =
-      item.code ||
-      "";
-
-  }
+  els.itemCode.value =
+    item.code ||
+    "";
 
 
-  if (els.itemRoom) {
-
-    els.itemRoom.value =
-      item.room ||
-      "";
-
-  }
+  els.itemRoom.value =
+    item.room ||
+    "";
 
 
-  if (els.itemQuantity) {
-
-    els.itemQuantity.value =
-      item.quantity ??
-      "";
-
-  }
+  els.itemQuantity.value =
+    item.quantity ??
+    "";
 
 
   const conditionInput =
@@ -2718,9 +2541,7 @@ function handleFormSubmit(
       "menyimpan inventaris"
     )
   ) {
-
     return;
-
   }
 
 
@@ -2772,21 +2593,14 @@ function handleFormSubmit(
       "warning"
     );
 
-
     els.itemName.focus();
-
 
     return;
 
   }
 
 
-  if (
-    !Number.isFinite(
-      quantity
-    ) ||
-    quantity < 0
-  ) {
+  if (!Number.isFinite(quantity) || quantity < 0) {
 
     showToast(
       "Jumlah Tidak Valid",
@@ -2794,9 +2608,7 @@ function handleFormSubmit(
       "warning"
     );
 
-
     els.itemQuantity.focus();
-
 
     return;
 
@@ -2926,6 +2738,7 @@ function handleFormSubmit(
 
 }
 
+
 /* =========================================================
    DELETE
 ========================================================= */
@@ -2939,9 +2752,7 @@ function askDelete(
       "menghapus inventaris"
     )
   ) {
-
     return;
-
   }
 
 
@@ -2984,38 +2795,23 @@ function askDelete(
   }
 
 
-  if (els.confirmModal) {
-
-    els.confirmModal.classList.add(
-      "show"
-    );
+  els.confirmModal.classList.add(
+    "show"
+  );
 
 
-    els.confirmModal.setAttribute(
-      "aria-hidden",
-      "false"
-    );
-
-  }
+  els.confirmModal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
 
 }
 
-
-/* =========================================================
-   CLOSE DELETE MODAL
-========================================================= */
 
 function closeDeleteModal() {
 
   pendingDeleteId =
     null;
-
-
-  if (!els.confirmModal) {
-
-    return;
-
-  }
 
 
   els.confirmModal.classList.remove(
@@ -3031,10 +2827,6 @@ function closeDeleteModal() {
 }
 
 
-/* =========================================================
-   CONFIRM DELETE
-========================================================= */
-
 function confirmDeleteRecord() {
 
   if (
@@ -3042,9 +2834,7 @@ function confirmDeleteRecord() {
       "menghapus inventaris"
     )
   ) {
-
     return;
-
   }
 
 
@@ -3072,13 +2862,11 @@ function confirmDeleteRecord() {
 
     closeDeleteModal();
 
-
     showToast(
       "Data Tidak Ditemukan",
       "Data inventaris tidak ditemukan.",
       "warning"
     );
-
 
     return;
 
@@ -3118,38 +2906,7 @@ function renderStatistics() {
     getTotals();
 
 
-  /*
-   * Statistik kartu
-   */
-
-  const goodPercent =
-    percentage(
-      totals.good,
-      totals.total
-    );
-
-
-  const minorPercent =
-    percentage(
-      totals.minor,
-      totals.total
-    );
-
-
-  const majorPercent =
-    percentage(
-      totals.major,
-      totals.total
-    );
-
-
-  /*
-   * Total donut
-   */
-
-  if (
-    els.chartTotal
-  ) {
+  if (els.chartTotal) {
 
     els.chartTotal.textContent =
       formatNumber(
@@ -3159,13 +2916,7 @@ function renderStatistics() {
   }
 
 
-  /*
-   * Legend
-   */
-
-  if (
-    els.legendGood
-  ) {
+  if (els.legendGood) {
 
     els.legendGood.textContent =
       formatNumber(
@@ -3175,9 +2926,7 @@ function renderStatistics() {
   }
 
 
-  if (
-    els.legendMinor
-  ) {
+  if (els.legendMinor) {
 
     els.legendMinor.textContent =
       formatNumber(
@@ -3187,9 +2936,7 @@ function renderStatistics() {
   }
 
 
-  if (
-    els.legendMajor
-  ) {
+  if (els.legendMajor) {
 
     els.legendMajor.textContent =
       formatNumber(
@@ -3199,27 +2946,15 @@ function renderStatistics() {
   }
 
 
-  /*
-   * Render donut
-   */
-
   renderDonutChart(
     totals
   );
 
 
-  /*
-   * Render distribusi ruangan
-   */
-
   renderRoomStatistics();
 
 }
 
-
-/* =========================================================
-   DONUT CHART
-========================================================= */
 
 function renderDonutChart(
   totals
@@ -3228,236 +2963,171 @@ function renderDonutChart(
   if (
     !els.donutChart
   ) {
-
     return;
-
   }
 
 
   const total =
-    Math.max(
-      0,
-      Number(
-        totals?.total
-      ) || 0
-    );
+    totals.total;
 
 
   const good =
-    Math.max(
-      0,
-      Number(
-        totals?.good
-      ) || 0
-    );
+    total
+      ? totals.good /
+        total *
+        100
+      : 0;
 
 
   const minor =
-    Math.max(
-      0,
-      Number(
-        totals?.minor
-      ) || 0
-    );
+    total
+      ? totals.minor /
+        total *
+        100
+      : 0;
 
 
   const major =
-    Math.max(
-      0,
-      Number(
-        totals?.major
-      ) || 0
-    );
-
-
-  /*
-   * Persentase kondisi
-   */
-
-  const goodPercent =
-    total > 0
-      ? (
-          good /
-          total
-        ) * 100
+    total
+      ? totals.major /
+        total *
+        100
       : 0;
 
 
-  const minorPercent =
-    total > 0
-      ? (
-          minor /
-          total
-        ) * 100
-      : 0;
+  const radius =
+    42;
 
 
-  const minorEnd =
-    goodPercent +
-    minorPercent;
+  const circumference =
+    2 *
+    Math.PI *
+    radius;
 
 
-  /*
-   * Donut menggunakan
-   * conic-gradient.
-   *
-   * Jangan mengganti innerHTML
-   * donut karena CSS asli memakai
-   * ::before untuk bagian tengah.
-   */
+  const segments = [
 
-  if (
-    total > 0
-  ) {
+    {
 
-    els.donutChart.style.background =
-      `conic-gradient(
-        var(--green)
-        0% ${goodPercent}%,
+      value:
+        good,
 
-        var(--orange)
-        ${goodPercent}% ${minorEnd}%,
+      className:
+        "good"
 
-        var(--red)
-        ${minorEnd}% 100%
-      )`;
+    },
 
-  }
+    {
 
-  else {
+      value:
+        minor,
 
-    els.donutChart.style.background =
-      `
-      conic-gradient(
-        rgba(255,255,255,.05)
-        0% 100%
+      className:
+        "minor"
+
+    },
+
+    {
+
+      value:
+        major,
+
+      className:
+        "major"
+
+    }
+
+  ];
+
+
+  let offset =
+    0;
+
+
+  const circles =
+    segments
+      .map(
+        (segment) => {
+
+          const length =
+            circumference *
+            (
+              segment.value /
+              100
+            );
+
+
+          const html = `
+
+            <circle
+              class="donut-segment ${segment.className}"
+              cx="50"
+              cy="50"
+              r="${radius}"
+              stroke-dasharray="${length} ${circumference - length}"
+              stroke-dashoffset="${-offset}"
+            ></circle>
+
+          `;
+
+
+          offset +=
+            length;
+
+
+          return html;
+
+        }
       )
-      `;
-
-  }
+      .join("");
 
 
-  /*
-   * Buat teks tengah donut
-   * hanya jika belum tersedia.
-   */
+  els.donutChart.innerHTML = `
 
-  let hole =
-    els.donutChart.querySelector(
-      ".donut-hole"
-    );
+    <svg
+      viewBox="0 0 100 100"
+      class="donut-svg"
+      aria-label="Statistik kondisi inventaris"
+    >
 
+      <circle
+        class="donut-background"
+        cx="50"
+        cy="50"
+        r="${radius}"
+      ></circle>
 
-  if (!hole) {
+      ${circles}
 
-    hole =
-      document.createElement(
-        "div"
-      );
+    </svg>
 
-
-    hole.className =
-      "donut-hole";
-
-
-    hole.innerHTML = `
-      <strong id="chartTotal">
-        0
-      </strong>
-
-      <span>
-        TOTAL UNIT
-      </span>
-    `;
-
-
-    els.donutChart.appendChild(
-      hole
-    );
-
-  }
-
-
-  /*
-   * Update jumlah total
-   */
-
-  const totalEl =
-    hole.querySelector(
-      "#chartTotal"
-    );
-
-
-  if (
-    totalEl
-  ) {
-
-    totalEl.textContent =
-      formatNumber(
-        total
-      );
-
-
-    /*
-     * Sinkronkan referensi
-     * chartTotal agar tidak
-     * mengarah ke elemen lama.
-     */
-
-    els.chartTotal =
-      totalEl;
-
-  }
+  `;
 
 }
 
-
-/* =========================================================
-   ROOM DISTRIBUTION
-========================================================= */
 
 function renderRoomStatistics() {
 
   if (
     !els.roomStatistics
   ) {
-
     return;
-
   }
 
 
-  const rooms = {};
+  const rooms =
+    {};
 
-
-  /*
-   * Kelompokkan inventaris
-   * berdasarkan ruangan.
-   */
 
   inventory.forEach(
     (item) => {
 
       const room =
-        String(
-          item.room ||
-          "Tidak diketahui"
-        ).trim() ||
+        item.room ||
         "Tidak diketahui";
 
 
-      const quantity =
-        Math.max(
-          0,
-          Number(
-            item.quantity
-          ) || 0
-        );
-
-
-      if (
-        !rooms[room]
-      ) {
+      if (!rooms[room]) {
 
         rooms[room] = {
 
@@ -3478,13 +3148,19 @@ function renderRoomStatistics() {
       }
 
 
+      const quantity =
+        Number(
+          item.quantity
+        ) || 0;
+
+
       rooms[room].total +=
         quantity;
 
 
       if (
         item.condition ===
-        "Rusak Ringan"
+          "Rusak Ringan"
       ) {
 
         rooms[room].minor +=
@@ -3494,7 +3170,7 @@ function renderRoomStatistics() {
 
       else if (
         item.condition ===
-        "Rusak Berat"
+          "Rusak Berat"
       ) {
 
         rooms[room].major +=
@@ -3513,28 +3189,20 @@ function renderRoomStatistics() {
   );
 
 
-  /*
-   * Urutkan dari jumlah unit
-   * terbanyak.
-   */
-
   const entries =
     Object.entries(
       rooms
     ).sort(
-      (a, b) =>
+      (
+        a,
+        b
+      ) =>
         b[1].total -
         a[1].total
     );
 
 
-  /*
-   * Belum ada data
-   */
-
-  if (
-    !entries.length
-  ) {
+  if (!entries.length) {
 
     els.roomStatistics.innerHTML = `
 
@@ -3542,57 +3210,28 @@ function renderRoomStatistics() {
 
         <div class="empty-icon">
 
-          <svg
-            aria-hidden="true"
-          >
-
-            <use
-              href="#icon-location"
-            ></use>
-
+          <svg>
+            <use href="#icon-location"></use>
           </svg>
 
         </div>
-
 
         <strong>
           Belum ada statistik
         </strong>
 
-
         <p>
-          Tambahkan inventaris
-          untuk melihat distribusi ruangan.
+          Tambahkan inventaris untuk melihat statistik ruangan.
         </p>
 
       </div>
 
     `;
 
-
     return;
 
   }
 
-
-  const grandTotal =
-    Math.max(
-      0,
-      Number(
-        getTotals().total
-      ) || 0
-    );
-
-
-  /*
-   * Render sesuai CSS asli:
-   *
-   * .room-row
-   * .room-row span
-   * .room-bar
-   * .room-bar i
-   * .room-row strong
-   */
 
   els.roomStatistics.innerHTML =
     entries
@@ -3600,83 +3239,63 @@ function renderRoomStatistics() {
         ([room, data]) => {
 
           const percent =
-            grandTotal > 0
-
-              ? (
-                  data.total /
-                  grandTotal
-                ) * 100
-
-              : 0;
-
-
-          const safePercent =
-            Math.max(
-              0,
-              Math.min(
-                100,
-                percent
-              )
+            percentage(
+              data.total,
+              getTotals().total
             );
-
-
-          const tooltip =
-            `Baik: ${formatNumber(
-              data.good
-            )} | Rusak Ringan: ${formatNumber(
-              data.minor
-            )} | Rusak Berat: ${formatNumber(
-              data.major
-            )}`;
 
 
           return `
 
-            <div
-              class="room-row"
-              title="${escapeHTML(
-                tooltip
-              )}"
-            >
+            <div class="room-stat-item">
 
-              <span
-                title="${escapeHTML(
-                  room
-                )}"
-              >
+              <div class="room-stat-head">
 
-                ${escapeHTML(
-                  room
-                )}
+                <strong>
+                  ${escapeHTML(
+                    room
+                  )}
+                </strong>
 
-              </span>
-
-
-              <div
-                class="room-bar"
-                aria-label="${escapeHTML(
-                  room
-                )} ${safePercent.toFixed(
-                  1
-                )}%"
-              >
-
-                <i
-                  style="
-                    width:${safePercent}%;
-                  "
-                ></i>
+                <span>
+                  ${formatNumber(
+                    data.total
+                  )} unit
+                </span>
 
               </div>
 
 
-              <strong>
+              <div class="room-stat-bar">
 
-                ${formatNumber(
-                  data.total
-                )}
+                <span
+                  style="width:${percent}%"
+                ></span>
 
-              </strong>
+              </div>
+
+
+              <div class="room-stat-meta">
+
+                <span>
+                  Baik ${formatNumber(
+                    data.good
+                  )}
+                </span>
+
+                <span>
+                  Ringan ${formatNumber(
+                    data.minor
+                  )}
+                </span>
+
+                <span>
+                  Berat ${formatNumber(
+                    data.major
+                  )}
+                </span>
+
+              </div>
 
             </div>
 
@@ -3702,8 +3321,7 @@ function initTheme() {
 
 
   const theme =
-    saved ===
-      "light"
+    saved === "light"
       ? "light"
       : "dark";
 
@@ -3737,8 +3355,7 @@ function setTheme(
 
       <use
         href="${
-          theme ===
-          "dark"
+          theme === "dark"
             ? "#icon-sun"
             : "#icon-moon"
         }"
@@ -3752,7 +3369,7 @@ function setTheme(
 
 
 /* =========================================================
-   EXPORT INVENTORY
+   EXPORT
 ========================================================= */
 
 function exportInventory() {
@@ -3762,9 +3379,7 @@ function exportInventory() {
       "mengekspor data"
     )
   ) {
-
     return;
-
   }
 
 
@@ -3851,11 +3466,11 @@ function exportInventory() {
 
 
 /* =========================================================
-   IMPORT INVENTORY
+   IMPORT
 ========================================================= */
 
-function importInventoryFile(
-  event
+function handleImport(
+  file
 ) {
 
   if (
@@ -3863,23 +3478,12 @@ function importInventoryFile(
       "mengimpor data"
     )
   ) {
-
-    event.target.value =
-      "";
-
     return;
-
   }
 
 
-  const file =
-    event.target.files?.[0];
-
-
   if (!file) {
-
     return;
-
   }
 
 
@@ -3903,7 +3507,7 @@ function importInventoryFile(
             parsed
           )
             ? parsed
-            : parsed?.data;
+            : parsed.data;
 
 
         if (
@@ -3913,7 +3517,7 @@ function importInventoryFile(
         ) {
 
           throw new Error(
-            "Format file tidak valid."
+            "Format data tidak valid."
           );
 
         }
@@ -3925,10 +3529,7 @@ function importInventoryFile(
           );
 
 
-        if (
-          !valid.length &&
-          imported.length
-        ) {
+        if (!valid.length) {
 
           throw new Error(
             "Tidak ada data inventaris yang valid."
@@ -3949,9 +3550,7 @@ function importInventoryFile(
 
         showToast(
           "Import Berhasil",
-          `${formatNumber(
-            valid.length
-          )} data inventaris berhasil diimpor.`
+          `${valid.length} data inventaris berhasil diimpor.`
         );
 
       }
@@ -3966,7 +3565,7 @@ function importInventoryFile(
         showToast(
           "Import Gagal",
           error.message ||
-          "File tidak dapat dibaca.",
+            "File tidak dapat dibaca.",
           "warning"
         );
 
@@ -3974,10 +3573,25 @@ function importInventoryFile(
 
       finally {
 
-        event.target.value =
+        els.importInput.value =
           "";
 
       }
+
+    };
+
+
+  reader.onerror =
+    () => {
+
+      showToast(
+        "Import Gagal",
+        "File tidak dapat dibaca.",
+        "warning"
+      );
+
+      els.importInput.value =
+        "";
 
     };
 
@@ -3990,23 +3604,122 @@ function importInventoryFile(
 
 
 /* =========================================================
-   BACKUP
+   BACKUP LOCAL STORAGE
 ========================================================= */
 
-function backupInventory() {
+function backupLocalStorage() {
 
   if (
     !requireFirebaseAdmin(
       "membuat backup"
     )
   ) {
-
     return;
+  }
+
+
+  const backup = {
+
+    app:
+      "InventarisIT",
+
+    version:
+      APP_VERSION,
+
+    createdAt:
+      new Date().toISOString(),
+
+    localStorage: {}
+
+  };
+
+
+  for (
+    let index = 0;
+    index <
+      localStorage.length;
+    index++
+  ) {
+
+    const key =
+      localStorage.key(
+        index
+      );
+
+
+    if (key) {
+
+      backup.localStorage[key] =
+        localStorage.getItem(
+          key
+        );
+
+    }
 
   }
 
 
-  exportInventory();
+  const blob =
+    new Blob(
+      [
+        JSON.stringify(
+          backup,
+          null,
+          2
+        )
+      ],
+      {
+        type:
+          "application/json"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const anchor =
+    document.createElement(
+      "a"
+    );
+
+
+  anchor.href =
+    url;
+
+
+  anchor.download =
+    `inventarisIT-backup-${new Date()
+      .toISOString()
+      .slice(
+        0,
+        10
+      )}.json`;
+
+
+  document.body.appendChild(
+    anchor
+  );
+
+
+  anchor.click();
+
+
+  anchor.remove();
+
+
+  URL.revokeObjectURL(
+    url
+  );
+
+
+  showToast(
+    "Backup Berhasil",
+    "Backup LocalStorage berhasil dibuat."
+  );
 
 }
 
@@ -4015,26 +3728,146 @@ function backupInventory() {
    RESTORE
 ========================================================= */
 
-function restoreInventoryFile(
-  event
+function handleRestore(
+  file
 ) {
 
   if (
     !requireFirebaseAdmin(
-      "melakukan restore"
+      "merestore data"
     )
   ) {
-
-    event.target.value =
-      "";
-
     return;
-
   }
 
 
-  importInventoryFile(
-    event
+  if (!file) {
+    return;
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    () => {
+
+      try {
+
+        const parsed =
+          JSON.parse(
+            reader.result
+          );
+
+
+        if (
+          !parsed ||
+          typeof parsed !==
+            "object" ||
+          !parsed.localStorage
+        ) {
+
+          throw new Error(
+            "File backup tidak valid."
+          );
+
+        }
+
+
+        const confirmed =
+          window.confirm(
+            "Restore akan mengganti data LocalStorage saat ini. Lanjutkan?"
+          );
+
+
+        if (!confirmed) {
+
+          els.restoreInput.value =
+            "";
+
+          return;
+
+        }
+
+
+        Object.entries(
+          parsed.localStorage
+        ).forEach(
+          (
+            [
+              key,
+              value
+            ]
+          ) => {
+
+            localStorage.setItem(
+              key,
+              String(
+                value
+              )
+            );
+
+          }
+        );
+
+
+        loadInventory();
+
+
+        renderAll();
+
+
+        showToast(
+          "Restore Berhasil",
+          "Backup LocalStorage berhasil dipulihkan."
+        );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        showToast(
+          "Restore Gagal",
+          error.message ||
+            "Backup tidak dapat dipulihkan.",
+          "warning"
+        );
+
+      }
+
+      finally {
+
+        els.restoreInput.value =
+          "";
+
+      }
+
+    };
+
+
+  reader.onerror =
+    () => {
+
+      showToast(
+        "Restore Gagal",
+        "File backup tidak dapat dibaca.",
+        "warning"
+      );
+
+      els.restoreInput.value =
+        "";
+
+    };
+
+
+  reader.readAsText(
+    file
   );
 
 }
@@ -4044,50 +3877,30 @@ function restoreInventoryFile(
    CLEAR DATA
 ========================================================= */
 
-function clearAllInventory() {
+function clearAllData() {
 
   if (
     !requireFirebaseAdmin(
       "menghapus seluruh data"
     )
   ) {
-
     return;
-
-  }
-
-
-  if (
-    !inventory.length
-  ) {
-
-    showToast(
-      "Data Kosong",
-      "Belum ada data inventaris untuk dihapus.",
-      "warning"
-    );
-
-    return;
-
   }
 
 
   const confirmed =
     window.confirm(
-      "Apakah Anda yakin ingin menghapus seluruh data inventaris?"
+      "Yakin ingin menghapus seluruh data inventaris? Tindakan ini tidak dapat dibatalkan."
     );
 
 
-  if (
-    !confirmed
-  ) {
-
+  if (!confirmed) {
     return;
-
   }
 
 
-  inventory = [];
+  inventory =
+    [];
 
 
   saveInventory();
@@ -4096,27 +3909,16 @@ function clearAllInventory() {
   renderAll();
 
 
+  resetFormToAdd();
+
+
   showToast(
-    "Data Dihapus",
-    "Seluruh data inventaris berhasil dihapus."
+    "Data Dibersihkan",
+    "Seluruh data inventaris telah dihapus."
   );
 
 }
 
-
-/* =========================================================
-   RENDER ALL
-========================================================= */
-
-function renderAll() {
-
-  renderDashboard();
-
-  renderInventory();
-
-  renderStatistics();
-
-}
 
 /* =========================================================
    PWA
@@ -4124,13 +3926,12 @@ function renderAll() {
 
 function registerPWA() {
 
-  /*
-   * Service Worker
-   */
-
   if (
-    "serviceWorker" in navigator &&
-    location.protocol !== "file:"
+    "serviceWorker" in
+      navigator &&
+
+    location.protocol !==
+      "file:"
   ) {
 
     window.addEventListener(
@@ -4140,16 +3941,6 @@ function registerPWA() {
         navigator.serviceWorker
           .register(
             "service-worker.js"
-          )
-          .then(
-            (registration) => {
-
-              console.log(
-                "Service Worker aktif:",
-                registration.scope
-              );
-
-            }
           )
           .catch(
             (error) => {
@@ -4162,18 +3953,11 @@ function registerPWA() {
             }
           );
 
-      },
-      {
-        once: true
       }
     );
 
   }
 
-
-  /*
-   * Install PWA
-   */
 
   window.addEventListener(
     "beforeinstallprompt",
@@ -4186,26 +3970,13 @@ function registerPWA() {
         event;
 
 
-      if (
-        els.installButton
-      ) {
+      els.installButton.classList.remove(
+        "hidden"
+      );
 
-        els.installButton.classList.remove(
-          "hidden"
-        );
-
-      }
-
-    },
-    {
-      once: false
     }
   );
 
-
-  /*
-   * Setelah aplikasi terpasang
-   */
 
   window.addEventListener(
     "appinstalled",
@@ -4215,15 +3986,9 @@ function registerPWA() {
         null;
 
 
-      if (
-        els.installButton
-      ) {
-
-        els.installButton.classList.add(
-          "hidden"
-        );
-
-      }
+      els.installButton.classList.add(
+        "hidden"
+      );
 
 
       showToast(
@@ -4247,35 +4012,20 @@ function setupNavigation() {
     "click",
     (event) => {
 
-      /*
-       * Navigasi halaman
-       */
-
       const pageButton =
         event.target.closest(
           "[data-page]"
         );
 
 
-      if (
-        pageButton
-      ) {
+      if (pageButton) {
 
         event.preventDefault();
 
 
-        const targetPage =
-          pageButton.dataset.page;
-
-
-        /*
-         * Halaman tambah harus
-         * membutuhkan login Admin.
-         */
-
         if (
-          targetPage ===
-          "add"
+          pageButton.dataset.page ===
+            "add"
         ) {
 
           if (
@@ -4295,7 +4045,7 @@ function setupNavigation() {
 
 
         navigate(
-          targetPage
+          pageButton.dataset.page
         );
 
 
@@ -4304,22 +4054,13 @@ function setupNavigation() {
       }
 
 
-      /*
-       * Tombol action pada kartu
-       */
-
       const actionButton =
         event.target.closest(
           "[data-action]"
         );
 
 
-      if (
-        actionButton
-      ) {
-
-        event.preventDefault();
-
+      if (actionButton) {
 
         const action =
           actionButton.dataset.action;
@@ -4331,39 +4072,54 @@ function setupNavigation() {
 
         if (
           action ===
-          "edit"
+            "edit"
         ) {
+
+          if (
+            !requireFirebaseAdmin(
+              "mengedit inventaris"
+            )
+          ) {
+
+            return;
+
+          }
+
 
           editRecord(
             id
           );
-
-
-          return;
 
         }
 
 
         if (
           action ===
-          "delete"
+            "delete"
         ) {
+
+          if (
+            !requireFirebaseAdmin(
+              "menghapus inventaris"
+            )
+          ) {
+
+            return;
+
+          }
+
 
           askDelete(
             id
           );
 
-
-          return;
-
         }
+
+
+        return;
 
       }
 
-
-      /*
-       * Footer link yang belum diisi
-       */
 
       const emptyLink =
         event.target.closest(
@@ -4371,9 +4127,7 @@ function setupNavigation() {
         );
 
 
-      if (
-        emptyLink
-      ) {
+      if (emptyLink) {
 
         event.preventDefault();
 
@@ -4398,16 +4152,10 @@ function setupNavigation() {
 
 function setupEvents() {
 
-  /*
-   * Navigation
-   */
-
   setupNavigation();
 
 
-  /*
-   * MOBILE MENU
-   */
+  /* MOBILE */
 
   els.mobileMenu?.addEventListener(
     "click",
@@ -4433,9 +4181,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * LOGIN ADMIN
-   */
+  /* LOGIN ADMIN */
 
   document
     .getElementById(
@@ -4467,7 +4213,7 @@ function setupEvents() {
 
         if (
           event.target.id ===
-          "loginModal"
+            "loginModal"
         ) {
 
           closeLoginModal();
@@ -4477,10 +4223,6 @@ function setupEvents() {
       }
     );
 
-
-  /*
-   * FORM LOGIN
-   */
 
   document
     .getElementById(
@@ -4492,10 +4234,6 @@ function setupEvents() {
     );
 
 
-  /*
-   * GOOGLE LOGIN
-   */
-
   document
     .getElementById(
       "googleLoginButton"
@@ -4505,10 +4243,6 @@ function setupEvents() {
       loginAdminGoogle
     );
 
-
-  /*
-   * TOGGLE PASSWORD
-   */
 
   document
     .getElementById(
@@ -4525,54 +4259,46 @@ function setupEvents() {
 
 
         if (!input) {
-
           return;
-
         }
 
 
         input.type =
           input.type ===
-          "password"
-
+            "password"
             ? "text"
-
             : "password";
 
       }
     );
 
 
-  /*
-   * THEME
-   */
+  /* THEME */
 
   els.themeToggle?.addEventListener(
     "click",
     () => {
 
       const current =
-        document.documentElement
-          .dataset
-          .theme;
+        document.documentElement.dataset.theme;
 
 
       setTheme(
+
         current ===
-        "dark"
+          "dark"
 
           ? "light"
 
           : "dark"
+
       );
 
     }
   );
 
 
-  /*
-   * FORM INVENTORY
-   */
+  /* FORM */
 
   els.form?.addEventListener(
     "submit",
@@ -4580,30 +4306,18 @@ function setupEvents() {
   );
 
 
-  /*
-   * CANCEL EDIT
-   */
-
   els.cancelEdit?.addEventListener(
     "click",
     resetFormToAdd
   );
 
 
-  /*
-   * RESET FORM
-   */
-
   els.resetForm?.addEventListener(
     "click",
     () => {
 
       setTimeout(
-        () => {
-
-          resetFormToAdd();
-
-        },
+        resetFormToAdd,
         0
       );
 
@@ -4611,9 +4325,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * SEARCH
-   */
+  /* SEARCH */
 
   els.searchInput?.addEventListener(
     "input",
@@ -4621,9 +4333,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * FILTER RUANGAN
-   */
+  /* FILTER */
 
   els.roomFilter?.addEventListener(
     "change",
@@ -4631,27 +4341,17 @@ function setupEvents() {
   );
 
 
-  /*
-   * FILTER KONDISI
-   */
-
   els.conditionFilter?.addEventListener(
     "change",
     renderInventory
   );
 
 
-  /*
-   * RESET FILTER
-   */
-
   els.resetFilters?.addEventListener(
     "click",
     () => {
 
-      if (
-        els.searchInput
-      ) {
+      if (els.searchInput) {
 
         els.searchInput.value =
           "";
@@ -4659,9 +4359,7 @@ function setupEvents() {
       }
 
 
-      if (
-        els.roomFilter
-      ) {
+      if (els.roomFilter) {
 
         els.roomFilter.value =
           "";
@@ -4669,9 +4367,7 @@ function setupEvents() {
       }
 
 
-      if (
-        els.conditionFilter
-      ) {
+      if (els.conditionFilter) {
 
         els.conditionFilter.value =
           "";
@@ -4685,9 +4381,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * DELETE MODAL
-   */
+  /* DELETE */
 
   els.cancelDelete?.addEventListener(
     "click",
@@ -4707,7 +4401,7 @@ function setupEvents() {
 
       if (
         event.target ===
-        els.confirmModal
+          els.confirmModal
       ) {
 
         closeDeleteModal();
@@ -4718,9 +4412,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * ESCAPE
-   */
+  /* ESC */
 
   document.addEventListener(
     "keydown",
@@ -4728,7 +4420,7 @@ function setupEvents() {
 
       if (
         event.key ===
-        "Escape"
+          "Escape"
       ) {
 
         closeDeleteModal();
@@ -4745,9 +4437,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * TOAST
-   */
+  /* TOAST */
 
   els.toastClose?.addEventListener(
     "click",
@@ -4761,9 +4451,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * EXPORT
-   */
+  /* EXPORT */
 
   els.exportButton?.addEventListener(
     "click",
@@ -4771,9 +4459,7 @@ function setupEvents() {
   );
 
 
-  /*
-   * IMPORT
-   */
+  /* IMPORT */
 
   els.importButton?.addEventListener(
     "click",
@@ -4789,37 +4475,23 @@ function setupEvents() {
     "change",
     (event) => {
 
-      const file =
-        event.target.files?.[0];
-
-
-      if (
-        file
-      ) {
-
-        importInventoryFile(
-          event
-        );
-
-      }
+      handleImport(
+        event.target.files[0]
+      );
 
     }
   );
 
 
-  /*
-   * BACKUP
-   */
+  /* BACKUP */
 
   els.backupButton?.addEventListener(
     "click",
-    backupInventory
+    backupLocalStorage
   );
 
 
-  /*
-   * RESTORE
-   */
+  /* RESTORE */
 
   els.restoreButton?.addEventListener(
     "click",
@@ -4835,37 +4507,23 @@ function setupEvents() {
     "change",
     (event) => {
 
-      const file =
-        event.target.files?.[0];
-
-
-      if (
-        file
-      ) {
-
-        restoreInventoryFile(
-          event
-        );
-
-      }
+      handleRestore(
+        event.target.files[0]
+      );
 
     }
   );
 
 
-  /*
-   * CLEAR DATA
-   */
+  /* CLEAR */
 
   els.clearDataButton?.addEventListener(
     "click",
-    clearAllInventory
+    clearAllData
   );
 
 
-  /*
-   * INSTALL
-   */
+  /* INSTALL */
 
   els.installButton?.addEventListener(
     "click",
@@ -4881,45 +4539,42 @@ function setupEvents() {
           "warning"
         );
 
-
         return;
 
       }
 
 
-      try {
-
-        deferredInstallPrompt.prompt();
+      deferredInstallPrompt.prompt();
 
 
-        await deferredInstallPrompt
-          .userChoice;
-
-
-      }
-
-      catch (
-        error
-      ) {
-
-        console.warn(
-          "Install PWA:",
-          error
-        );
-
-      }
+      await deferredInstallPrompt.userChoice;
 
 
       deferredInstallPrompt =
         null;
 
 
-      els.installButton?.classList.add(
+      els.installButton.classList.add(
         "hidden"
       );
 
     }
   );
+
+}
+
+
+/* =========================================================
+   RENDER ALL
+========================================================= */
+
+function renderAll() {
+
+  renderDashboard();
+
+  renderInventory();
+
+  renderStatistics();
 
 }
 
@@ -4933,6 +4588,7 @@ function runBootSequence() {
   const stages = [
 
     {
+
       progress:
         20,
 
@@ -4941,10 +4597,12 @@ function runBootSequence() {
 
       log:
         "CORE ONLINE"
+
     },
 
 
     {
+
       progress:
         45,
 
@@ -4953,10 +4611,12 @@ function runBootSequence() {
 
       log:
         "LOCAL STORAGE READY"
+
     },
 
 
     {
+
       progress:
         70,
 
@@ -4965,10 +4625,12 @@ function runBootSequence() {
 
       log:
         "SECURITY CHECK PASSED"
+
     },
 
 
     {
+
       progress:
         100,
 
@@ -4977,6 +4639,7 @@ function runBootSequence() {
 
       log:
         "PWA ENGINE READY"
+
     }
 
   ];
@@ -5013,7 +4676,7 @@ function runBootSequence() {
 
           if (
             index ===
-            0 &&
+              0 &&
             els.log1
           ) {
 
@@ -5025,7 +4688,7 @@ function runBootSequence() {
 
           if (
             index ===
-            1 &&
+              1 &&
             els.log2
           ) {
 
@@ -5037,7 +4700,7 @@ function runBootSequence() {
 
           if (
             index ===
-            2 &&
+              2 &&
             els.log3
           ) {
 
@@ -5049,7 +4712,7 @@ function runBootSequence() {
 
           if (
             index ===
-            3 &&
+              3 &&
             els.log4
           ) {
 
@@ -5059,44 +4722,25 @@ function runBootSequence() {
           }
 
         },
-
         index *
-        420
-
+          420
       );
 
     }
   );
 
 
-  /*
-   * Satu timer untuk menutup splash.
-   * Tidak boleh ada boot kedua.
-   */
-
   setTimeout(
     () => {
 
-      if (
-        els.splash
-      ) {
-
-        els.splash.classList.add(
-          "is-hidden"
-        );
-
-      }
+      els.splash?.classList.add(
+        "is-hidden"
+      );
 
 
-      if (
-        els.app
-      ) {
-
-        els.app.classList.remove(
-          "is-hidden"
-        );
-
-      }
+      els.app?.classList.remove(
+        "is-hidden"
+      );
 
 
       navigate(
@@ -5104,9 +4748,7 @@ function runBootSequence() {
       );
 
     },
-
     2050
-
   );
 
 }
@@ -5116,124 +4758,66 @@ function runBootSequence() {
    BOOT
 ========================================================= */
 
-let applicationBooted =
-  false;
-
-
 function boot() {
-
-  /*
-   * Pengaman agar boot tidak pernah
-   * dijalankan dua kali.
-   */
-
-  if (
-    applicationBooted
-  ) {
-
-    return;
-
-  }
-
-
-  applicationBooted =
-    true;
-
-
-  /*
-   * Theme
-   */
 
   initTheme();
 
-
-  /*
-   * Data
-   */
-
   loadInventory();
-
-
-  /*
-   * Events
-   */
 
   setupEvents();
 
-
-  /*
-   * Firebase
-   */
-
   setupFirebaseAuth();
-
-
-  /*
-   * Admin UI
-   */
 
   updateAdminLoginUI();
 
-
-  /*
-   * Footer
-   */
-
   renderPageFooters();
-
-
-  /*
-   * Logo
-   */
 
   applyCustomLogo();
 
-
-  /*
-   * PWA
-   */
-
   registerPWA();
 
-
-  /*
-   * Render awal
-   */
-
   renderAll();
-
-
-  /*
-   * Splash screen
-   */
 
   runBootSequence();
 
 }
 
 
+document.addEventListener(
+  "DOMContentLoaded",
+  boot
+);
+
 /* =========================================================
-   DOM READY
-   ========================================================= */
+   BOOT
+========================================================= */
 
-if (
-  document.readyState ===
-  "loading"
-) {
+function boot() {
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    boot,
-    {
-      once: true
-    }
-  );
+  initTheme();
+
+  loadInventory();
+
+  setupEvents();
+
+  setupFirebaseAuth();
+
+  updateAdminLoginUI();
+
+  renderPageFooters();
+
+  applyCustomLogo();
+
+  registerPWA();
+
+  renderAll();
+
+  runBootSequence();
 
 }
 
-else {
 
-  boot();
-
-}
-}
+document.addEventListener(
+  "DOMContentLoaded",
+  boot
+);
