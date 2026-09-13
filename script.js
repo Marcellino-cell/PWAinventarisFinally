@@ -1820,7 +1820,9 @@ function navigate(
 
     "add",
 
-    "stats"
+    "stats",
+
+    "Admin"
 
   ];
 
@@ -5383,6 +5385,39 @@ els.qrModal?.addEventListener(
   }
 );
 
+/* =========================================================
+   ADMIN SECRET SHORTCUT
+========================================================= */
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+
+    if (
+      event.ctrlKey &&
+      event.shiftKey &&
+      event.key.toLowerCase() === "a"
+    ) {
+
+      event.preventDefault();
+
+      if (!firebaseUser) {
+
+        showToast(
+          "Akses Ditolak",
+          "Login sebagai Admin terlebih dahulu.",
+          "warning"
+        );
+
+        return;
+      }
+
+      navigate("admin");
+    }
+
+  }
+);
+
 
 /* =========================================================
    RENDER ALL
@@ -5634,6 +5669,8 @@ function boot() {
 
   runBootSequence();
 
+  setupAdminForm();
+
 }
 
 
@@ -5641,3 +5678,280 @@ document.addEventListener(
   "DOMContentLoaded",
   boot
 );
+
+/* =========================================================
+   CREATE ADMIN
+========================================================= */
+
+async function createAdminAccount(
+  email,
+  password
+) {
+
+  if (!firebaseUser) {
+    throw new Error(
+      "Anda harus login sebagai Admin."
+    );
+  }
+
+  if (!firebaseAuthReady) {
+    throw new Error(
+      "Firebase Auth belum siap."
+    );
+  }
+
+  try {
+
+    const appModule =
+      await import(
+        "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js"
+      );
+
+    const authModule =
+      await import(
+        "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js"
+      );
+
+
+    const secondaryApp =
+      appModule.initializeApp(
+        FIREBASE_CONFIG,
+        "InventarisITAdminCreator"
+      );
+
+
+    const secondaryAuth =
+      authModule.getAuth(
+        secondaryApp
+      );
+
+
+    const credential =
+      await authModule
+        .createUserWithEmailAndPassword(
+          secondaryAuth,
+          email,
+          password
+        );
+
+
+    return credential.user;
+
+  }
+  catch (error) {
+
+    console.error(
+      "Gagal membuat Admin:",
+      error
+    );
+
+    throw error;
+  }
+}
+
+/* =========================================================
+   ADMIN FORM
+========================================================= */
+
+function setupAdminForm() {
+
+  const form =
+    document.getElementById(
+      "adminForm"
+    );
+
+  if (!form) {
+    return;
+  }
+
+
+  form.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+
+      if (!firebaseUser) {
+
+        showToast(
+          "Akses Ditolak",
+          "Login sebagai Admin terlebih dahulu.",
+          "warning"
+        );
+
+        return;
+      }
+
+
+      const email =
+        document
+          .getElementById(
+            "newAdminEmail"
+          )
+          ?.value
+          .trim();
+
+
+      const password =
+        document
+          .getElementById(
+            "newAdminPassword"
+          )
+          ?.value;
+
+
+      const confirmPassword =
+        document
+          .getElementById(
+            "confirmAdminPassword"
+          )
+          ?.value;
+
+
+      if (!email) {
+
+        showToast(
+          "Email Kosong",
+          "Masukkan email Admin.",
+          "warning"
+        );
+
+        return;
+      }
+
+
+      if (password.length < 6) {
+
+        showToast(
+          "Password Terlalu Pendek",
+          "Password minimal 6 karakter.",
+          "warning"
+        );
+
+        return;
+      }
+
+
+      if (
+        password !==
+        confirmPassword
+      ) {
+
+        showToast(
+          "Password Tidak Sama",
+          "Konfirmasi password harus sama.",
+          "warning"
+        );
+
+        return;
+      }
+
+
+      const button =
+        document.getElementById(
+          "createAdminButton"
+        );
+
+
+      try {
+
+        if (button) {
+
+          button.disabled = true;
+
+          button.textContent =
+            "Menambahkan...";
+        }
+
+
+        const user =
+          await createAdminAccount(
+            email,
+            password
+          );
+
+
+        showToast(
+          "Admin Berhasil",
+          `Akun ${user.email} berhasil dibuat.`,
+          "success"
+        );
+
+
+        form.reset();
+
+      }
+      catch (error) {
+
+        let message =
+          "Gagal menambahkan Admin.";
+
+
+        switch (
+          error?.code
+        ) {
+
+          case "auth/email-already-in-use":
+
+            message =
+              "Email tersebut sudah terdaftar.";
+
+            break;
+
+
+          case "auth/invalid-email":
+
+            message =
+              "Format email tidak valid.";
+
+            break;
+
+
+          case "auth/weak-password":
+
+            message =
+              "Password terlalu lemah.";
+
+            break;
+
+
+          case "auth/network-request-failed":
+
+            message =
+              "Koneksi internet bermasalah.";
+
+            break;
+
+
+          default:
+
+            message =
+              error?.message ||
+              message;
+        }
+
+
+        showToast(
+          "Tambah Admin Gagal",
+          message,
+          "warning"
+        );
+
+      }
+      finally {
+
+        if (button) {
+
+          button.disabled =
+            false;
+
+          button.textContent =
+            "+ Tambahkan Admin";
+        }
+
+      }
+
+    }
+  );
+}
