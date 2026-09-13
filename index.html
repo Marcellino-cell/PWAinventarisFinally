@@ -342,19 +342,6 @@
       <path d="m8 12 2.5 2.5L16 9" />
     </symbol>
 
-    <symbol
-      id="icon-qr"
-      viewBox="0 0 24 24"
-    >
-      <rect x="4" y="4" width="6" height="6"></rect>
-      <rect x="14" y="4" width="6" height="6"></rect>
-      <rect x="4" y="14" width="6" height="6"></rect>
-      <path d="M14 14h3v3h-3z"></path>
-      <path d="M18 18h2v2h-2z"></path>
-      <path d="M14 20h2"></path>
-      <path d="M20 14v2"></path>
-    </symbol>
-
   </svg>
 
 
@@ -2359,6 +2346,141 @@
 
         </section>
 
+
+        <!-- ==================================================
+             ADMIN MANAGEMENT (SECRET PAGE)
+             Dibuka melalui shortcut Ctrl + Shift + A
+        =================================================== -->
+
+        <section
+          id="page-admin"
+          class="page"
+        >
+
+          <div class="page-heading">
+
+            <div>
+
+              <span class="section-kicker">
+                ADMIN MANAGEMENT
+              </span>
+
+              <h1>
+                Kelola Admin
+              </h1>
+
+              <p>
+                Tambahkan akun administrator baru ke sistem InventarisIT.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="panel form-panel">
+
+            <div class="panel-header">
+
+              <div>
+
+                <span class="section-kicker">
+                  NEW ADMIN ACCOUNT
+                </span>
+
+                <h3>
+                  Tambahkan Akun Admin
+                </h3>
+
+              </div>
+
+            </div>
+
+
+            <form id="adminForm">
+
+              <div class="login-field">
+
+                <label for="newAdminEmail">
+                  EMAIL ADMIN
+                </label>
+
+                <input
+                  id="newAdminEmail"
+                  type="email"
+                  autocomplete="off"
+                  placeholder="admin@example.com"
+                  required
+                >
+
+              </div>
+
+
+              <div class="login-field">
+
+                <label for="newAdminPassword">
+                  PASSWORD
+                </label>
+
+                <input
+                  id="newAdminPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Minimal 6 karakter"
+                  minlength="6"
+                  required
+                >
+
+              </div>
+
+
+              <div class="login-field">
+
+                <label for="confirmAdminPassword">
+                  KONFIRMASI PASSWORD
+                </label>
+
+                <input
+                  id="confirmAdminPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Ulangi password"
+                  minlength="6"
+                  required
+                >
+
+              </div>
+
+
+              <div class="modal-actions">
+
+                <button
+                  type="submit"
+                  class="primary-btn"
+                  id="createAdminButton"
+                >
+
+                  <svg>
+                    <use href="#icon-plus"></use>
+                  </svg>
+
+                  Tambahkan Admin
+
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+
+          <!-- FOOTER -->
+
+          <div class="page-footer-container"></div>
+
+        </section>
+
       </main>
 
     </div>
@@ -2564,99 +2686,6 @@
 
 
   <!-- =====================================================
-       QR CODE MODAL
-  ====================================================== -->
-
-  <div
-    id="qrModal"
-    class="qr-modal"
-    aria-hidden="true"
-  >
-
-    <div class="qr-modal-box">
-
-      <div class="qr-modal-head">
-
-        <div class="qr-modal-title">
-
-          <div class="qr-modal-icon">
-            <svg>
-              <use href="#icon-qr"></use>
-            </svg>
-          </div>
-
-          <div>
-            <span>INVENTORY IDENTIFIER</span>
-            <h3>QR Code Inventaris</h3>
-          </div>
-
-        </div>
-
-        <button
-          id="closeQrModal"
-          class="qr-close"
-          type="button"
-          aria-label="Tutup QR"
-        >
-          ×
-        </button>
-
-      </div>
-
-      <div class="qr-modal-content">
-
-        <div
-          id="qrCode"
-          class="qr-code-box"
-        ></div>
-
-        <div class="qr-item-info">
-          <span class="qr-label">INVENTORY ITEM</span>
-          <h4 id="qrItemName">-</h4>
-
-          <div class="qr-meta">
-            <span>KODE <strong id="qrItemCode">-</strong></span>
-            <span>RUANGAN <strong id="qrItemRoom">-</strong></span>
-            <span>KONDISI <strong id="qrItemCondition">-</strong></span>
-          </div>
-        </div>
-
-        <div class="qr-id-box">
-          <span>UNIQUE ITEM ID</span>
-          <code id="qrItemId">-</code>
-        </div>
-
-      </div>
-
-      <div class="qr-modal-actions">
-
-        <button
-          id="downloadQrButton"
-          class="qr-download-btn"
-          type="button"
-        >
-          <svg>
-            <use href="#icon-download"></use>
-          </svg>
-          Download QR
-        </button>
-
-        <button
-          id="cancelQrButton"
-          class="qr-cancel-btn"
-          type="button"
-        >
-          Tutup
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- =====================================================
        DELETE MODAL
   ====================================================== -->
 
@@ -2720,10 +2749,6 @@
 
   </div>
 
-
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
-  </script>
 
   <script src="script.js"></script>
 
