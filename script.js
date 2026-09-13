@@ -3322,8 +3322,7 @@ function renderRoomStatistics() {
   }
 
 
-  const rooms =
-    {};
+  const rooms = {};
 
 
   inventory.forEach(
@@ -3356,9 +3355,12 @@ function renderRoomStatistics() {
 
 
       const quantity =
-        Number(
-          item.quantity
-        ) || 0;
+        Math.max(
+          0,
+          Number(
+            item.quantity
+          ) || 0
+        );
 
 
       rooms[room].total +=
@@ -3367,7 +3369,7 @@ function renderRoomStatistics() {
 
       if (
         item.condition ===
-          "Rusak Ringan"
+        "Rusak Ringan"
       ) {
 
         rooms[room].minor +=
@@ -3377,7 +3379,7 @@ function renderRoomStatistics() {
 
       else if (
         item.condition ===
-          "Rusak Berat"
+        "Rusak Berat"
       ) {
 
         rooms[room].major +=
@@ -3409,7 +3411,9 @@ function renderRoomStatistics() {
     );
 
 
-  if (!entries.length) {
+  if (
+    !entries.length
+  ) {
 
     els.roomStatistics.innerHTML = `
 
@@ -3440,67 +3444,168 @@ function renderRoomStatistics() {
   }
 
 
+  const grandTotal =
+    entries.reduce(
+      (
+        total,
+        [, data]
+      ) =>
+        total +
+        data.total,
+      0
+    );
+
+
   els.roomStatistics.innerHTML =
     entries
       .map(
-        ([room, data]) => {
+        (
+          [room, data],
+          index
+        ) => {
 
           const percent =
-            percentage(
-              data.total,
-              getTotals().total
-            );
+            grandTotal > 0
+              ? Math.round(
+                  data.total /
+                  grandTotal *
+                  100
+                )
+              : 0;
 
 
           return `
 
-            <div class="room-stat-item">
+            <div
+              class="room-stat-item premium-room"
+            >
 
-              <div class="room-stat-head">
-
-                <strong>
-                  ${escapeHTML(
-                    room
-                  )}
-                </strong>
-
-                <span>
-                  ${formatNumber(
-                    data.total
-                  )} unit
-                </span>
-
+              <div
+                class="room-rank"
+              >
+                ${String(
+                  index + 1
+                ).padStart(
+                  2,
+                  "0"
+                )}
               </div>
 
 
-              <div class="room-stat-bar">
+              <div
+                class="room-stat-content"
+              >
 
-                <span
-                  style="width:${percent}%"
-                ></span>
+                <div
+                  class="room-stat-head"
+                >
 
-              </div>
+                  <div
+                    class="room-title"
+                  >
+
+                    <span
+                      class="room-status-dot"
+                    ></span>
+
+                    <strong
+                      title="${escapeHTML(
+                        room
+                      )}"
+                    >
+                      ${escapeHTML(
+                        room
+                      )}
+                    </strong>
+
+                  </div>
 
 
-              <div class="room-stat-meta">
+                  <div
+                    class="room-unit"
+                  >
 
-                <span>
-                  Baik ${formatNumber(
-                    data.good
-                  )}
-                </span>
+                    <strong>
+                      ${formatNumber(
+                        data.total
+                      )}
+                    </strong>
 
-                <span>
-                  Ringan ${formatNumber(
-                    data.minor
-                  )}
-                </span>
+                    <span>
+                      UNIT
+                    </span>
 
-                <span>
-                  Berat ${formatNumber(
-                    data.major
-                  )}
-                </span>
+                  </div>
+
+                </div>
+
+
+                <div
+                  class="room-stat-bar"
+                >
+
+                  <span
+                    style="
+                      width:${percent}%
+                    "
+                  ></span>
+
+                </div>
+
+
+                <div
+                  class="room-stat-meta"
+                >
+
+                  <span>
+                    <i
+                      class="meta-dot good"
+                    ></i>
+
+                    Baik
+                    <strong>
+                      ${formatNumber(
+                        data.good
+                      )}
+                    </strong>
+                  </span>
+
+
+                  <span>
+                    <i
+                      class="meta-dot minor"
+                    ></i>
+
+                    Ringan
+                    <strong>
+                      ${formatNumber(
+                        data.minor
+                      )}
+                    </strong>
+                  </span>
+
+
+                  <span>
+                    <i
+                      class="meta-dot major"
+                    ></i>
+
+                    Berat
+                    <strong>
+                      ${formatNumber(
+                        data.major
+                      )}
+                    </strong>
+                  </span>
+
+
+                  <strong
+                    class="room-percent"
+                  >
+                    ${percent}%
+                  </strong>
+
+                </div>
 
               </div>
 
