@@ -1020,6 +1020,37 @@ const els = {
     $("confirmDelete"),
 
 
+qrModal:
+  $("qrModal"),
+
+closeQrModal:
+  $("closeQrModal"),
+
+cancelQrButton:
+  $("cancelQrButton"),
+
+qrCode:
+  $("qrCode"),
+
+qrItemName:
+  $("qrItemName"),
+
+qrItemCode:
+  $("qrItemCode"),
+
+qrItemRoom:
+  $("qrItemRoom"),
+
+qrItemCondition:
+  $("qrItemCondition"),
+
+qrItemId:
+  $("qrItemId"),
+
+downloadQrButton:
+  $("downloadQrButton"),
+
+
   bootProgressBar:
     $("bootProgressBar"),
 
