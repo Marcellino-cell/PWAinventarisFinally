@@ -2900,258 +2900,188 @@ function confirmDeleteRecord() {
    STATISTICS
 ========================================================= */
 
-function renderStatistics() {
+/* =========================================================
+   DONUT CHART
+   ========================================================= */
 
-  const totals =
-    getTotals();
+function renderDonutChart(totals) {
 
-
-  if (els.chartTotal) {
-
-    els.chartTotal.textContent =
-      formatNumber(
-        totals.total
-      );
-
+  if (!els.donutChart) {
+    return;
   }
 
+  const total = Math.max(
+    0,
+    Number(totals.total) || 0
+  );
 
-  if (els.legendGood) {
+  const good = Math.max(
+    0,
+    Number(totals.good) || 0
+  );
 
-    els.legendGood.textContent =
-      formatNumber(
-        totals.good
-      );
+  const minor = Math.max(
+    0,
+    Number(totals.minor) || 0
+  );
 
-  }
-
-
-  if (els.legendMinor) {
-
-    els.legendMinor.textContent =
-      formatNumber(
-        totals.minor
-      );
-
-  }
-
-
-  if (els.legendMajor) {
-
-    els.legendMajor.textContent =
-      formatNumber(
-        totals.major
-      );
-
-  }
-
-
-  renderDonutChart(
-    totals
+  const major = Math.max(
+    0,
+    Number(totals.major) || 0
   );
 
 
-  renderRoomStatistics();
+  /* -----------------------------------------
+     HITUNG PERSENTASE
+     ----------------------------------------- */
 
-}
+  const goodPercent = total
+    ? (good / total) * 100
+    : 0;
+
+  const minorPercent = total
+    ? (minor / total) * 100
+    : 0;
+
+  const majorPercent = total
+    ? (major / total) * 100
+    : 0;
 
 
-function renderDonutChart(
-  totals
-) {
+  const goodEnd =
+    goodPercent;
 
-  if (
-    !els.donutChart
-  ) {
-    return;
+  const minorEnd =
+    goodPercent +
+    minorPercent;
+
+
+  /* -----------------------------------------
+     DONUT
+     ----------------------------------------- */
+
+  if (total <= 0) {
+
+    els.donutChart.style.background =
+      `
+      conic-gradient(
+        rgba(255,255,255,.05) 0% 100%
+      )
+      `;
+
+  } else {
+
+    els.donutChart.style.background =
+      `
+      conic-gradient(
+        var(--green) 0% ${goodEnd}%,
+        var(--orange) ${goodEnd}% ${minorEnd}%,
+        var(--red) ${minorEnd}% 100%
+      )
+      `;
+
   }
 
 
-  const total =
-    totals.total;
+  /* -----------------------------------------
+     CENTER TOTAL
+     ----------------------------------------- */
+
+  let hole =
+    els.donutChart.querySelector(
+      ".donut-hole"
+    );
 
 
-  const good =
-    total
-      ? totals.good /
-        total *
-        100
-      : 0;
+  if (!hole) {
+
+    hole =
+      document.createElement("div");
+
+    hole.className =
+      "donut-hole";
+
+    hole.innerHTML = `
+      <strong id="chartTotal">
+        0
+      </strong>
+
+      <span>
+        TOTAL UNIT
+      </span>
+    `;
+
+    els.donutChart.appendChild(
+      hole
+    );
+
+  }
 
 
-  const minor =
-    total
-      ? totals.minor /
-        total *
-        100
-      : 0;
+  const totalElement =
+    hole.querySelector(
+      "#chartTotal"
+    );
 
 
-  const major =
-    total
-      ? totals.major /
-        total *
-        100
-      : 0;
+  if (totalElement) {
 
+    totalElement.textContent =
+      formatNumber(total);
 
-  const radius =
-    42;
-
-
-  const circumference =
-    2 *
-    Math.PI *
-    radius;
-
-
-  const segments = [
-
-    {
-
-      value:
-        good,
-
-      className:
-        "good"
-
-    },
-
-    {
-
-      value:
-        minor,
-
-      className:
-        "minor"
-
-    },
-
-    {
-
-      value:
-        major,
-
-      className:
-        "major"
-
-    }
-
-  ];
-
-
-  let offset =
-    0;
-
-
-  const circles =
-    segments
-      .map(
-        (segment) => {
-
-          const length =
-            circumference *
-            (
-              segment.value /
-              100
-            );
-
-
-          const html = `
-
-            <circle
-              class="donut-segment ${segment.className}"
-              cx="50"
-              cy="50"
-              r="${radius}"
-              stroke-dasharray="${length} ${circumference - length}"
-              stroke-dashoffset="${-offset}"
-            ></circle>
-
-          `;
-
-
-          offset +=
-            length;
-
-
-          return html;
-
-        }
-      )
-      .join("");
-
-
-  els.donutChart.innerHTML = `
-
-    <svg
-      viewBox="0 0 100 100"
-      class="donut-svg"
-      aria-label="Statistik kondisi inventaris"
-    >
-
-      <circle
-        class="donut-background"
-        cx="50"
-        cy="50"
-        r="${radius}"
-      ></circle>
-
-      ${circles}
-
-    </svg>
-
-  `;
+  }
 
 }
 
+
+/* =========================================================
+   ROOM STATISTICS
+   ========================================================= */
 
 function renderRoomStatistics() {
 
-  if (
-    !els.roomStatistics
-  ) {
+  if (!els.roomStatistics) {
     return;
   }
 
 
-  const rooms =
-    {};
+  const rooms = {};
 
+
+  /* -----------------------------------------
+     KELOMPOKKAN DATA BERDASARKAN RUANGAN
+     ----------------------------------------- */
 
   inventory.forEach(
     (item) => {
 
       const room =
-        item.room ||
+        String(
+          item.room ||
+          "Tidak diketahui"
+        ).trim() ||
         "Tidak diketahui";
+
+
+      const quantity =
+        Math.max(
+          0,
+          Number(
+            item.quantity
+          ) || 0
+        );
 
 
       if (!rooms[room]) {
 
         rooms[room] = {
-
-          total:
-            0,
-
-          good:
-            0,
-
-          minor:
-            0,
-
-          major:
-            0
-
+          total: 0,
+          good: 0,
+          minor: 0,
+          major: 0
         };
 
       }
-
-
-      const quantity =
-        Number(
-          item.quantity
-        ) || 0;
 
 
       rooms[room].total +=
@@ -3160,7 +3090,7 @@ function renderRoomStatistics() {
 
       if (
         item.condition ===
-          "Rusak Ringan"
+        "Rusak Ringan"
       ) {
 
         rooms[room].minor +=
@@ -3170,7 +3100,7 @@ function renderRoomStatistics() {
 
       else if (
         item.condition ===
-          "Rusak Berat"
+        "Rusak Berat"
       ) {
 
         rooms[room].major +=
@@ -3189,28 +3119,32 @@ function renderRoomStatistics() {
   );
 
 
+  /* -----------------------------------------
+     SORTIR DARI UNIT TERBANYAK
+     ----------------------------------------- */
+
   const entries =
     Object.entries(
       rooms
     ).sort(
-      (
-        a,
-        b
-      ) =>
+      (a, b) =>
         b[1].total -
         a[1].total
     );
 
 
+  /* -----------------------------------------
+     JIKA BELUM ADA DATA
+     ----------------------------------------- */
+
   if (!entries.length) {
 
     els.roomStatistics.innerHTML = `
-
       <div class="empty-state">
 
         <div class="empty-icon">
 
-          <svg>
+          <svg aria-hidden="true">
             <use href="#icon-location"></use>
           </svg>
 
@@ -3221,11 +3155,11 @@ function renderRoomStatistics() {
         </strong>
 
         <p>
-          Tambahkan inventaris untuk melihat statistik ruangan.
+          Tambahkan inventaris untuk
+          melihat statistik ruangan.
         </p>
 
       </div>
-
     `;
 
     return;
@@ -3233,72 +3167,77 @@ function renderRoomStatistics() {
   }
 
 
+  const grandTotal =
+    Math.max(
+      0,
+      Number(
+        getTotals().total
+      ) || 0
+    );
+
+
+  /* -----------------------------------------
+     RENDER ROOM
+     MENGGUNAKAN CLASS CSS YANG SUDAH ADA
+     ----------------------------------------- */
+
   els.roomStatistics.innerHTML =
     entries
       .map(
         ([room, data]) => {
 
           const percent =
-            percentage(
-              data.total,
-              getTotals().total
+            grandTotal > 0
+              ? (
+                  data.total /
+                  grandTotal
+                ) * 100
+              : 0;
+
+
+          const safePercent =
+            Math.max(
+              0,
+              Math.min(
+                100,
+                percent
+              )
             );
 
 
           return `
+            <div class="room-row">
 
-            <div class="room-stat-item">
-
-              <div class="room-stat-head">
-
-                <strong>
-                  ${escapeHTML(
-                    room
-                  )}
-                </strong>
-
-                <span>
-                  ${formatNumber(
-                    data.total
-                  )} unit
-                </span>
-
-              </div>
+              <span
+                title="${escapeHTML(room)}"
+              >
+                ${escapeHTML(room)}
+              </span>
 
 
-              <div class="room-stat-bar">
+              <div
+                class="room-bar"
+                aria-label="${escapeHTML(
+                  room
+                )}"
+              >
 
-                <span
-                  style="width:${percent}%"
-                ></span>
+                <i
+                  style="
+                    width:${safePercent}%;
+                  "
+                ></i>
 
               </div>
 
 
-              <div class="room-stat-meta">
-
-                <span>
-                  Baik ${formatNumber(
-                    data.good
-                  )}
-                </span>
-
-                <span>
-                  Ringan ${formatNumber(
-                    data.minor
-                  )}
-                </span>
-
-                <span>
-                  Berat ${formatNumber(
-                    data.major
-                  )}
-                </span>
-
-              </div>
+              <strong>
+                ${formatNumber(
+                  data.total
+                )}
+              </strong>
 
             </div>
-
           `;
 
         }
