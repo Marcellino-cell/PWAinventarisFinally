@@ -344,22 +344,34 @@ async function setupFirebaseAuth() {
     await loadFirebaseAuth();
 
 
-    firebaseFns.onAuthStateChanged(
-      firebaseAuth,
-      (user) => {
+firebaseFns.onAuthStateChanged(
+  firebaseAuth,
+  (user) => {
 
-        firebaseUser =
-          user || null;
-
-
-        firebaseAuthReady =
-          true;
+    firebaseUser =
+      user || null;
 
 
-        updateAdminLoginUI();
+    firebaseAuthReady =
+      true;
 
-      }
-    );
+
+    if (user) {
+
+      /*
+       * Login berhasil.
+       * Pulihkan data Admin.
+       */
+
+      restoreAdminInventory();
+
+    }
+
+
+    updateAdminLoginUI();
+
+  }
+);
 
   }
 
@@ -633,6 +645,10 @@ async function loginAdminGoogle() {
    LOGOUT ADMIN
 ========================================================= */
 
+/* =========================================================
+   LOGOUT ADMIN
+========================================================= */
+
 async function logoutAdmin() {
 
   try {
@@ -640,14 +656,33 @@ async function logoutAdmin() {
     await loadFirebaseAuth();
 
 
+    /*
+     * Simpan seluruh data sebelum logout.
+     */
+
+    backupAdminInventory();
+
+
+    /*
+     * Logout Firebase.
+     */
+
     await firebaseFns.signOut(
       firebaseAuth
     );
 
 
+    /*
+     * Setelah logout,
+     * kosongkan data aktif.
+     */
+
+    clearAdminInventorySession();
+
+
     showToast(
       "Logout Berhasil",
-      "Akses Administrator telah dikunci kembali."
+      "Sesi Admin telah berakhir. Data inventaris disembunyikan."
     );
 
   }
@@ -735,6 +770,9 @@ const FOOTER_LINKS = {
 
 const STORAGE_KEY =
   "inventarisIT_data";
+
+const ADMIN_BACKUP_KEY =
+  "inventarisIT_admin_backup";
 
 const THEME_KEY =
   "inventarisIT_theme";
@@ -1503,6 +1541,136 @@ function saveInventory() {
 
 }
 
+/* =========================================================
+   ADMIN DATA SESSION
+========================================================= */
+
+function backupAdminInventory() {
+
+  try {
+
+    localStorage.setItem(
+      ADMIN_BACKUP_KEY,
+      JSON.stringify(
+        inventory
+      )
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Backup Admin:",
+      error
+    );
+
+  }
+
+}
+
+
+function clearAdminInventorySession() {
+
+  try {
+
+    /*
+     * Simpan data terlebih dahulu
+     * sebelum dikosongkan.
+     */
+
+    backupAdminInventory();
+
+
+    /*
+     * Kosongkan data aktif.
+     */
+
+    inventory = [];
+
+
+    saveInventory();
+
+
+    /*
+     * Refresh seluruh tampilan
+     * supaya dashboard/statistik
+     * langsung menjadi 0.
+     */
+
+    renderAll();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Clear Admin Session:",
+      error
+    );
+
+  }
+
+}
+
+
+function restoreAdminInventory() {
+
+  try {
+
+    const backup =
+      localStorage.getItem(
+        ADMIN_BACKUP_KEY
+      );
+
+
+    if (!backup) {
+
+      return;
+
+    }
+
+
+    const parsed =
+      JSON.parse(
+        backup
+      );
+
+
+    if (
+      !Array.isArray(
+        parsed
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    inventory =
+      parsed.filter(
+        isValidInventoryRecord
+      );
+
+
+    saveInventory();
+
+
+    renderAll();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Restore Admin:",
+      error
+    );
+
+  }
+
+}
 
 /* =========================================================
    TOAST
