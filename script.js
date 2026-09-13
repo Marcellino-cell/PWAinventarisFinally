@@ -2956,6 +2956,11 @@ function renderStatistics() {
 }
 
 
+/* =========================================================
+   DONUT CHART - FIX
+   HANYA BAGIAN INI YANG DIPERBAIKI
+========================================================= */
+
 function renderDonutChart(
   totals
 ) {
@@ -2967,141 +2972,172 @@ function renderDonutChart(
   }
 
 
+  /* -----------------------------------------
+     NORMALISASI DATA
+  ----------------------------------------- */
+
   const total =
-    totals.total;
+    Math.max(
+      0,
+      Number(
+        totals?.total
+      ) || 0
+    );
 
 
   const good =
-    total
-      ? totals.good /
-        total *
-        100
-      : 0;
+    Math.max(
+      0,
+      Number(
+        totals?.good
+      ) || 0
+    );
 
 
   const minor =
-    total
-      ? totals.minor /
-        total *
-        100
-      : 0;
+    Math.max(
+      0,
+      Number(
+        totals?.minor
+      ) || 0
+    );
 
 
   const major =
-    total
-      ? totals.major /
-        total *
-        100
+    Math.max(
+      0,
+      Number(
+        totals?.major
+      ) || 0
+    );
+
+
+  /* -----------------------------------------
+     HITUNG PERSENTASE
+  ----------------------------------------- */
+
+  const goodPercent =
+    total > 0
+      ? (good / total) * 100
       : 0;
 
 
-  const radius =
-    42;
+  const minorPercent =
+    total > 0
+      ? (minor / total) * 100
+      : 0;
 
 
-  const circumference =
-    2 *
-    Math.PI *
-    radius;
+  const minorEnd =
+    goodPercent +
+    minorPercent;
 
 
-  const segments = [
+  /* -----------------------------------------
+     UPDATE DONUT
+     
+     JANGAN menggunakan innerHTML.
+     CSS asli kamu sudah menggunakan
+     conic-gradient pada .donut-chart.
+  ----------------------------------------- */
 
-    {
+  if (
+    total > 0
+  ) {
 
-      value:
-        good,
+    els.donutChart.style.background =
+      `conic-gradient(
+        var(--green) 0% ${goodPercent}%,
+        var(--orange) ${goodPercent}% ${minorEnd}%,
+        var(--red) ${minorEnd}% 100%
+      )`;
 
-      className:
-        "good"
+  }
 
-    },
+  else {
 
-    {
-
-      value:
-        minor,
-
-      className:
-        "minor"
-
-    },
-
-    {
-
-      value:
-        major,
-
-      className:
-        "major"
-
-    }
-
-  ];
-
-
-  let offset =
-    0;
-
-
-  const circles =
-    segments
-      .map(
-        (segment) => {
-
-          const length =
-            circumference *
-            (
-              segment.value /
-              100
-            );
-
-
-          const html = `
-
-            <circle
-              class="donut-segment ${segment.className}"
-              cx="50"
-              cy="50"
-              r="${radius}"
-              stroke-dasharray="${length} ${circumference - length}"
-              stroke-dashoffset="${-offset}"
-            ></circle>
-
-          `;
-
-
-          offset +=
-            length;
-
-
-          return html;
-
-        }
+    els.donutChart.style.background =
+      `
+      conic-gradient(
+        rgba(255,255,255,.05) 0% 100%
       )
-      .join("");
+      `;
+
+  }
 
 
-  els.donutChart.innerHTML = `
+  /* -----------------------------------------
+     TOTAL DI TENGAH DONUT
+  ----------------------------------------- */
 
-    <svg
-      viewBox="0 0 100 100"
-      class="donut-svg"
-      aria-label="Statistik kondisi inventaris"
-    >
+  let donutHole =
+    els.donutChart.querySelector(
+      ".donut-hole"
+    );
 
-      <circle
-        class="donut-background"
-        cx="50"
-        cy="50"
-        r="${radius}"
-      ></circle>
 
-      ${circles}
+  if (
+    !donutHole
+  ) {
 
-    </svg>
+    donutHole =
+      document.createElement(
+        "div"
+      );
 
-  `;
+
+    donutHole.className =
+      "donut-hole";
+
+
+    donutHole.innerHTML = `
+      <strong id="chartTotal">
+        0
+      </strong>
+
+      <span>
+        TOTAL UNIT
+      </span>
+    `;
+
+
+    els.donutChart.appendChild(
+      donutHole
+    );
+
+  }
+
+
+  /* -----------------------------------------
+     UPDATE TOTAL
+  ----------------------------------------- */
+
+  const chartTotal =
+    donutHole.querySelector(
+      "#chartTotal"
+    );
+
+
+  if (
+    chartTotal
+  ) {
+
+    chartTotal.textContent =
+      formatNumber(
+        total
+      );
+
+
+    /*
+     * Sinkronkan referensi els.chartTotal.
+     * Ini penting karena sebelumnya elemen
+     * bisa berubah / belum tersedia.
+     */
+
+    els.chartTotal =
+      chartTotal;
+
+  }
 
 }
 
