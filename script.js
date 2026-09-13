@@ -2631,19 +2631,23 @@ function editRecord(
     "";
 
 
-  const conditionInput =
-    document.getElementById(
-      "itemCondition"
-    );
+const conditionInputs =
+  document.querySelectorAll(
+    'input[name="condition"]'
+  );
 
+conditionInputs.forEach(
+  (input) => {
 
-  if (conditionInput) {
-
-    conditionInput.value =
-      item.condition ||
-      "Baik";
+    input.checked =
+      input.value ===
+      (
+        item.condition ||
+        "Baik"
+      );
 
   }
+);
 
 
   const descriptionInput =
@@ -2731,15 +2735,14 @@ function handleFormSubmit(
     );
 
 
-  const conditionInput =
-    document.getElementById(
-      "itemCondition"
-    );
+const conditionInput =
+  document.querySelector(
+    'input[name="condition"]:checked'
+  );
 
-
-  const condition =
-    conditionInput?.value ||
-    "Baik";
+const condition =
+  conditionInput?.value ||
+  "Baik";
 
 
   const descriptionInput =
