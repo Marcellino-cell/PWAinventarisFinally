@@ -2093,6 +2093,10 @@ function renderDashboard() {
    RECENT INVENTORY
 ========================================================= */
 
+/* =========================================================
+   RECENT INVENTORY - PREMIUM
+========================================================= */
+
 function renderRecentInventory() {
 
   if (!els.recentInventory) {
@@ -2108,13 +2112,13 @@ function renderRecentInventory() {
           b
         ) =>
           new Date(
-            b.createdAt ||
             b.updatedAt ||
+            b.createdAt ||
             0
           ) -
           new Date(
-            a.createdAt ||
             a.updatedAt ||
+            a.createdAt ||
             0
           )
       )
@@ -2128,9 +2132,9 @@ function renderRecentInventory() {
 
     els.recentInventory.innerHTML = `
 
-      <div class="empty-state">
+      <div class="recent-empty">
 
-        <div class="empty-icon">
+        <div class="recent-empty-icon">
 
           <svg>
             <use href="#icon-box"></use>
@@ -2138,27 +2142,33 @@ function renderRecentInventory() {
 
         </div>
 
-        <strong>
-          Belum ada data
-        </strong>
+        <div>
 
-        <p>
-          Data inventaris akan muncul di sini.
-        </p>
+          <strong>
+            Belum ada inventaris
+          </strong>
+
+          <span>
+            Data terbaru akan muncul di sini.
+          </span>
+
+        </div>
 
       </div>
 
     `;
 
     return;
-
   }
 
 
   els.recentInventory.innerHTML =
     recent
       .map(
-        (item) => {
+        (
+          item,
+          index
+        ) => {
 
           const conditionClass =
             getConditionClass(
@@ -2166,51 +2176,162 @@ function renderRecentInventory() {
             );
 
 
+          const condition =
+            item.condition ||
+            "Baik";
+
+
+          const initials =
+            getInitials(
+              item.name
+            );
+
+
           return `
 
-            <div class="recent-item">
+            <div
+              class="recent-item premium-recent"
+            >
 
-              <div class="recent-item-icon">
+              <!-- RANK -->
 
-                <svg>
-                  <use href="#icon-box"></use>
-                </svg>
-
+              <div
+                class="recent-rank"
+              >
+                ${String(
+                  index + 1
+                ).padStart(
+                  2,
+                  "0"
+                )}
               </div>
 
 
-              <div class="recent-item-info">
+              <!-- ICON -->
 
-                <strong>
+              <div
+                class="recent-item-icon premium-icon"
+              >
+
+                <span>
                   ${escapeHTML(
-                    item.name
-                  )}
-                </strong>
-
-                <small>
-                  ${escapeHTML(
-                    item.room ||
-                    "-"
-                  )}
-                </small>
-
-              </div>
-
-
-              <div class="recent-item-meta">
-
-                <span class="condition-badge ${conditionClass}">
-                  ${escapeHTML(
-                    item.condition ||
-                    "Baik"
+                    initials
                   )}
                 </span>
 
-                <small>
-                  ${formatNumber(
-                    item.quantity
-                  )} unit
-                </small>
+              </div>
+
+
+              <!-- MAIN INFO -->
+
+              <div
+                class="recent-item-info premium-info"
+              >
+
+                <div
+                  class="recent-title-row"
+                >
+
+                  <strong
+                    title="${escapeHTML(
+                      item.name
+                    )}"
+                  >
+                    ${escapeHTML(
+                      item.name
+                    )}
+                  </strong>
+
+                  <span
+                    class="recent-code"
+                  >
+                    ${escapeHTML(
+                      item.code ||
+                      "NO CODE"
+                    )}
+                  </span>
+
+                </div>
+
+
+                <div
+                  class="recent-location"
+                >
+
+                  <svg>
+                    <use
+                      href="#icon-location"
+                    ></use>
+                  </svg>
+
+                  <span>
+                    ${escapeHTML(
+                      item.room ||
+                      "Tidak diketahui"
+                    )}
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <!-- STATUS -->
+
+              <div
+                class="recent-status"
+              >
+
+                <span
+                  class="recent-condition ${conditionClass}"
+                >
+
+                  <i></i>
+
+                  ${escapeHTML(
+                    condition
+                  )}
+
+                </span>
+
+
+                <span
+                  class="recent-quantity"
+                >
+
+                  <strong>
+                    ${formatNumber(
+                      item.quantity
+                    )}
+                  </strong>
+
+                  <small>
+                    UNIT
+                  </small>
+
+                </span>
+
+              </div>
+
+
+              <!-- DATE -->
+
+              <div
+                class="recent-date"
+              >
+
+                <span>
+                  UPDATE
+                </span>
+
+                <strong>
+                  ${escapeHTML(
+                    formatDate(
+                      item.updatedAt ||
+                      item.createdAt
+                    )
+                  )}
+                </strong>
 
               </div>
 
