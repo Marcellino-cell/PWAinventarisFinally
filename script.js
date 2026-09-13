@@ -2528,6 +2528,20 @@ function createInventoryCard(
 
         <div class="inventory-card-actions">
 
+        <button
+  type="button"
+  class="icon-btn small qr-action"
+  data-action="qr"
+  data-id="${escapeHTML(
+    item.id
+  )}"
+  title="QR Code"
+>
+  <svg>
+    <use href="#icon-qr"></use>
+  </svg>
+</button>
+
           <button
             type="button"
             class="icon-btn small"
@@ -2643,6 +2657,299 @@ function createInventoryCard(
 
 }
 
+/* =========================================================
+   QR CODE
+========================================================= */
+
+let activeQrItem = null;
+
+
+function openQrModal(
+  id
+) {
+
+  const item =
+    inventory.find(
+      (record) =>
+        record.id === id
+    );
+
+
+  if (!item) {
+
+    showToast(
+      "Data Tidak Ditemukan",
+      "Data inventaris tidak ditemukan.",
+      "warning"
+    );
+
+    return;
+
+  }
+
+
+  activeQrItem =
+    item;
+
+
+  if (
+    els.qrModal
+  ) {
+
+    els.qrModal.classList.add(
+      "show"
+    );
+
+    els.qrModal.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+  }
+
+
+  if (
+    els.qrItemName
+  ) {
+
+    els.qrItemName.textContent =
+      item.name ||
+      "-";
+
+  }
+
+
+  if (
+    els.qrItemCode
+  ) {
+
+    els.qrItemCode.textContent =
+      item.code ||
+      "-";
+
+  }
+
+
+  if (
+    els.qrItemRoom
+  ) {
+
+    els.qrItemRoom.textContent =
+      item.room ||
+      "-";
+
+  }
+
+
+  if (
+    els.qrItemCondition
+  ) {
+
+    els.qrItemCondition.textContent =
+      item.condition ||
+      "Baik";
+
+  }
+
+
+  if (
+    els.qrItemId
+  ) {
+
+    els.qrItemId.textContent =
+      item.id ||
+      "-";
+
+  }
+
+
+  if (
+    !els.qrCode ||
+    typeof QRCode ===
+      "undefined"
+  ) {
+
+    showToast(
+      "QR Tidak Tersedia",
+      "Library QR Code belum berhasil dimuat.",
+      "warning"
+    );
+
+    return;
+
+  }
+
+
+  els.qrCode.innerHTML =
+    "";
+
+
+  new QRCode(
+    els.qrCode,
+    {
+      text:
+        item.id,
+
+      width:
+        220,
+
+      height:
+        220,
+
+      colorDark:
+        "#07111f",
+
+      colorLight:
+        "#ffffff",
+
+      correctLevel:
+        QRCode.CorrectLevel.H
+    }
+  );
+
+}
+
+
+function closeQrModal() {
+
+  activeQrItem =
+    null;
+
+
+  if (
+    els.qrModal
+  ) {
+
+    els.qrModal.classList.remove(
+      "show"
+    );
+
+    els.qrModal.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+  }
+
+
+  if (
+    els.qrCode
+  ) {
+
+    els.qrCode.innerHTML =
+      "";
+
+  }
+
+}
+
+
+function downloadQrCode() {
+
+  if (
+    !activeQrItem ||
+    !els.qrCode
+  ) {
+
+    return;
+
+  }
+
+
+  const canvas =
+    els.qrCode.querySelector(
+      "canvas"
+    );
+
+
+  const image =
+    els.qrCode.querySelector(
+      "img"
+    );
+
+
+  let source =
+    null;
+
+
+  if (canvas) {
+
+    source =
+      canvas.toDataURL(
+        "image/png"
+      );
+
+  }
+
+  else if (image) {
+
+    source =
+      image.src;
+
+  }
+
+
+  if (!source) {
+
+    showToast(
+      "Download Gagal",
+      "QR Code belum siap.",
+      "warning"
+    );
+
+    return;
+
+  }
+
+
+  const anchor =
+    document.createElement(
+      "a"
+    );
+
+
+  anchor.href =
+    source;
+
+
+  const safeName =
+    String(
+      activeQrItem.name ||
+      "inventaris"
+    )
+      .trim()
+      .replace(
+        /[^a-z0-9]+/gi,
+        "-"
+      )
+      .replace(
+        /^-+|-+$/g,
+        ""
+      )
+      .toLowerCase();
+
+
+  anchor.download =
+    `QR-${safeName || "inventaris"}-${activeQrItem.id}.png`;
+
+
+  document.body.appendChild(
+    anchor
+  );
+
+
+  anchor.click();
+
+
+  anchor.remove();
+
+
+  showToast(
+    "QR Berhasil Diunduh",
+    `QR ${activeQrItem.name} berhasil disimpan.`
+  );
+
+}
 
 /* =========================================================
    FORM
@@ -4502,6 +4809,19 @@ function setupNavigation() {
         const id =
           actionButton.dataset.id;
 
+        if (
+  action ===
+    "qr"
+) {
+
+  openQrModal(
+    id
+  );
+
+  return;
+
+}
+
 
         if (
           action ===
@@ -4995,6 +5315,42 @@ function setupEvents() {
   );
 
 }
+
+/* QR MODAL */
+
+els.closeQrModal?.addEventListener(
+  "click",
+  closeQrModal
+);
+
+
+els.cancelQrButton?.addEventListener(
+  "click",
+  closeQrModal
+);
+
+
+els.downloadQrButton?.addEventListener(
+  "click",
+  downloadQrCode
+);
+
+
+els.qrModal?.addEventListener(
+  "click",
+  (event) => {
+
+    if (
+      event.target ===
+        els.qrModal
+    ) {
+
+      closeQrModal();
+
+    }
+
+  }
+);
 
 
 /* =========================================================
