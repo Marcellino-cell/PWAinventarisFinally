@@ -1878,10 +1878,11 @@ function navigate(
     );
 
 
-  els.breadcrumbText.textContent =
-    page ===
-      "add"
-      ? "DATA ENTRY"
+els.breadcrumbText.textContent =
+  page === "add"
+    ? "DATA ENTRY"
+    : page === "admin"
+      ? "ADMIN MANAGEMENT"
       : page.toUpperCase();
 
 
@@ -5389,6 +5390,11 @@ els.qrModal?.addEventListener(
    ADMIN SECRET SHORTCUT
 ========================================================= */
 
+/* =========================================================
+   SECRET ADMIN PAGE
+   CTRL + SHIFT + A
+========================================================= */
+
 document.addEventListener(
   "keydown",
   (event) => {
@@ -5405,7 +5411,7 @@ document.addEventListener(
 
         showToast(
           "Akses Ditolak",
-          "Login sebagai Admin terlebih dahulu.",
+          "Silakan login sebagai Admin terlebih dahulu.",
           "warning"
         );
 
@@ -5413,6 +5419,7 @@ document.addEventListener(
       }
 
       navigate("admin");
+
     }
 
   }
