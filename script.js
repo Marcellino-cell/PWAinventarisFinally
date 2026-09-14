@@ -759,7 +759,7 @@ const FOOTER_LINKS = {
     "https://maps.app.goo.gl/LF7XkcsbJNuz49Hg7?g_st=aw",
 
   phone:
-    "https://wa.me/qr/UEMXPUCB4JO3L1"
+    "https://wa.me/6289671890915"
 
 };
 
